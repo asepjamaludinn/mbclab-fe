@@ -1,5 +1,7 @@
 import { Montserrat, Poppins } from "next/font/google";
 import "./globals.css";
+import { QueryProvider } from "@/providers/query-provider";
+import { MobileAppShell } from "@/shared/components/layout/MobileAppShell";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -15,7 +17,7 @@ const poppins = Poppins({
 
 export const metadata = {
   title: "MBCLAB Portal",
-  description: "Sistem Manajemen Praktikum dan CBT MBCLAB",
+  description: "Sistem Manajemen Praktikum MBCLAB",
 };
 
 export default function RootLayout({
@@ -25,8 +27,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`${montserrat.variable} ${poppins.variable}`}>
-      <body className="bg-white text-grey-900 font-primary antialiased">
-        {children}
+      <body className="min-h-screen bg-grey-200 text-grey-900 font-primary antialiased">
+        <QueryProvider>
+          <MobileAppShell>{children}</MobileAppShell>
+        </QueryProvider>
       </body>
     </html>
   );

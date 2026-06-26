@@ -22,40 +22,34 @@
   --color-grey-900: #333333;
   --color-grey-800: #4f4f4f;
   --color-grey-700: #828282;
+  --color-grey-500: #9ca3af;
   --color-grey-400: #bdbdbd;
   --color-grey-200: #e0e0e0;
+  --color-grey-100: #f2f4f7;
+  --color-grey-50: #f8f9fa;
 
   /* Typography Fonts */
   --font-primary: var(--font-primary), "Montserrat", sans-serif;
   --font-secondary: var(--font-secondary), "Poppins", sans-serif;
-
-  /* Custom Spacing Scale */
-  --spacing-xs: 8px;
-  --spacing-sm: 16px;
-  --spacing-md: 24px;
-  --spacing-lg: 32px;
-  --spacing-xl: 40px;
-  --spacing-2xl: 56px;
-  --spacing-3xl: 72px;
-  --spacing-4xl: 80px;
-  --spacing-5xl: 96px;
-  --spacing-6xl: 120px;
 }
 
+/* Base Variables */
 :root {
-  --background: #ffffff;
+  --background: var(--color-white);
   --foreground: var(--color-grey-900);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--color-black-dark);
-    --foreground: var(--color-grey-200);
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
 }
