@@ -8,7 +8,7 @@ export function StudentBottomNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-4 border-t border-grey-200 bg-white/90 px-2 py-3 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] backdrop-blur-md">
+    <nav className="fixed bottom-4 left-1/2 z-50 grid w-[calc(100%-32px)] max-w-[448px] -translate-x-1/2 grid-cols-4 rounded-[28px] border border-grey-200 bg-white/90 px-2 py-3 shadow-[0_8px_28px_rgba(0,0,0,0.08)] backdrop-blur-md">
       {STUDENT_NAV_ITEMS.map((item) => {
         const Icon = item.icon;
 

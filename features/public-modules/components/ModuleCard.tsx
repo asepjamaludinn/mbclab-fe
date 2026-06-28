@@ -1,68 +1,76 @@
-import { Download, FileText, LockKeyhole } from "lucide-react";
-import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
+import Image from "next/image";
+import { Download, Info, LockKeyhole } from "lucide-react";
 import { PublicModule } from "@/features/public-home";
 
 type ModuleCardProps = {
-  module: PublicModule;
+  module: PublicModule & {
+    coverUrl?: string;
+  };
   index: number;
 };
 
+const FALLBACK_COVERS = [
+  "/images/module-cover-1.jpg",
+  "/images/module-cover-2.jpg",
+  "/images/module-cover-3.jpg",
+  "/images/module-cover-4.jpg",
+];
+
 export function ModuleCard({ module, index }: ModuleCardProps) {
   const canDownload = module.isActive && module.fileUrl !== "#";
+  const coverUrl =
+    module.coverUrl || FALLBACK_COVERS[index % FALLBACK_COVERS.length];
 
   return (
-    <Card className="group p-5 hover:border-primary/20 hover:shadow-md">
-      <div className="flex gap-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition group-hover:bg-primary">
-          <FileText className="h-7 w-7 text-primary transition group-hover:text-white" />
-        </div>
+    <article className="group relative h-[230px] overflow-hidden rounded-[34px] bg-grey-900 shadow-[0_22px_60px_-30px_rgba(0,0,0,0.55)]">
+      <Image
+        src={coverUrl}
+        alt={module.title}
+        fill
+        className="object-cover transition duration-500 group-hover:scale-105"
+        sizes="(max-width: 480px) 100vw, 420px"
+      />
 
-        <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <div>
-              <span className="font-secondary text-[11px] font-bold uppercase tracking-wide text-primary">
-                Modul {index + 1}
-              </span>
-              <h3 className="mt-1 text-base font-bold leading-snug text-grey-900">
-                {module.title}
-              </h3>
-            </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/20 to-black/75" />
 
-            {!canDownload && (
-              <span className="shrink-0 rounded-full bg-grey-200 px-3 py-1 font-secondary text-[10px] font-bold text-grey-700">
-                Terkunci
-              </span>
-            )}
-          </div>
-
-          <p className="font-secondary text-xs leading-relaxed text-grey-700">
-            {module.description}
+      <div className="absolute left-5 top-5 right-5 flex items-start justify-between gap-3">
+        <div>
+          <p className="font-secondary text-[11px] font-light uppercase tracking-[0.18em] text-white/75">
+            Modul {index + 1}
           </p>
 
-          {canDownload ? (
-            <Button
-              asChild
-              size="sm"
-              className="mt-4 gap-2 font-secondary text-xs"
-            >
-              <a
-                href={module.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Download Modul
-                <Download className="h-4 w-4" />
-              </a>
-            </Button>
-          ) : (
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-grey-200 px-4 py-2 font-secondary text-xs font-semibold text-grey-700">
-              <LockKeyhole className="h-4 w-4" />
-              Belum dibuka
-            </div>
-          )}
+          <h3 className="mt-1 max-w-[230px] text-[26px] font-medium leading-[1.02] tracking-tight text-white">
+            {module.title}
+          </h3>
         </div>
+
+        <button
+          type="button"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-xl transition hover:bg-white hover:text-primary"
+          aria-label="Informasi modul"
+        >
+          <Info className="h-4 w-4" />
+        </button>
       </div>
-    </Card>
+
+      <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3">
+        {canDownload ? (
+          <a
+            href={module.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-black px-5 py-3 font-secondary text-xs font-bold text-white shadow-lg transition hover:bg-primary"
+          >
+            <Download className="h-4 w-4" />
+            Download Modul
+          </a>
+        ) : (
+          <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-black/80 px-5 py-3 font-secondary text-xs font-bold text-white backdrop-blur-xl">
+            <LockKeyhole className="h-4 w-4" />
+            Belum Dibuka
+          </div>
+        )}
+      </div>
+    </article>
   );
 }

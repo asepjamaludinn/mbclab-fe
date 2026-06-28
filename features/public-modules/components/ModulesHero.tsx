@@ -1,30 +1,48 @@
-import Image from "next/image";
+import { Search } from "lucide-react";
 
-export function ModulesHero() {
+type ModulesHeroProps = {
+  totalModules?: number;
+};
+
+export function ModulesHero({ totalModules = 0 }: ModulesHeroProps) {
   return (
-    <section className="relative overflow-hidden rounded-b-[40px] bg-primary px-4 pb-16 pt-5 text-white shadow-sm">
-      <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-secondary/40 blur-3xl" />
+    <section className="px-5 pt-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
+            MBCLAB Portal
+          </p>
 
-      <div className="relative z-10">
-        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white p-2 shadow-lg">
-          <Image
-            src="/images/logo_utama.svg"
-            alt="Logo MBC Laboratory"
-            width={56}
-            height={56}
-            className="h-full w-full object-contain"
-          />
+          <h1 className="mt-2 max-w-[260px] text-[42px] font-extrabold leading-[1.02] tracking-tight text-grey-900">
+            Pilih Modul Praktikum
+          </h1>
         </div>
 
-        <h1 className="mt-2 max-w-sm text-4xl font-bold leading-[1.05] tracking-tight text-white">
-          Modul Praktikum
-        </h1>
+        <button
+          type="button"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/70 text-grey-900 shadow-sm backdrop-blur-xl transition hover:bg-white"
+          aria-label="Cari modul"
+        >
+          <Search className="h-5 w-5" />
+        </button>
+      </div>
 
-        <p className="mt-4 max-w-sm font-secondary text-sm leading-relaxed text-white/75">
-          Akses daftar modul praktikum yang telah dipublikasikan oleh tim
-          akademik MBC Laboratory.
-        </p>
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        <span className="shrink-0 rounded-full bg-primary px-5 py-2.5 font-secondary text-xs font-bold text-white shadow-sm">
+          Semua
+        </span>
+
+        <span className="shrink-0 rounded-full border border-white/70 bg-white/70 px-5 py-2.5 font-secondary text-xs font-bold text-grey-600 shadow-sm backdrop-blur-xl">
+          Aktif
+        </span>
+
+        <span className="shrink-0 rounded-full border border-white/70 bg-white/70 px-5 py-2.5 font-secondary text-xs font-bold text-grey-600 shadow-sm backdrop-blur-xl">
+          PDF
+        </span>
+
+        <span className="shrink-0 rounded-full border border-white/70 bg-white/70 px-5 py-2.5 font-secondary text-xs font-bold text-grey-600 shadow-sm backdrop-blur-xl">
+          {totalModules} Modul
+        </span>
       </div>
     </section>
   );

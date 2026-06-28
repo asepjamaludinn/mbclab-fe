@@ -1,0 +1,31 @@
+"use client";
+
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { examService } from "../services/student-exam.service";
+
+export const useJoinExam = () => {
+  return useMutation({ mutationFn: examService.joinExam });
+};
+
+export const useSaveAnswer = () => {
+  return useMutation({ mutationFn: examService.saveAnswer });
+};
+
+export const useSubmitExam = () => {
+  return useMutation({ mutationFn: examService.submitExam });
+};
+
+export const useReportCheat = () => {
+  return useMutation({ mutationFn: examService.reportCheat });
+};
+
+export const useUnblockAttempt = () => {
+  return useMutation({ mutationFn: examService.unblockAttempt });
+};
+
+export const useTodayExamSessions = () => {
+  return useQuery({
+    queryKey: ["today-exam-sessions"],
+    queryFn: examService.getTodaySessions,
+  });
+};
