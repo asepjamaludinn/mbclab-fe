@@ -1,5 +1,4 @@
 "use client";
-
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/auth.service";
 import { LoginFormData } from "../schemas/auth.schema";
@@ -25,9 +24,6 @@ export const useLogin = ({ expectedRole }: UseLoginProps) => {
       return response;
     },
     onSuccess: (data) => {
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("user_role", data.user.role);
-
       if (data.user.role === "ADMIN") {
         router.push("/admin/dashboard");
       } else {

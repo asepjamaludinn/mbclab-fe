@@ -10,7 +10,7 @@ export function StudentAssessmentFeature() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-grey-200">
+      <div className="flex min-h-screen items-center justify-center bg-grey-50">
         <span className="font-secondary text-sm text-primary animate-pulse">
           Memuat Assessment...
         </span>
@@ -19,7 +19,7 @@ export function StudentAssessmentFeature() {
   }
 
   return (
-    <main className="min-h-screen bg-grey-200 pb-28">
+    <main className="min-h-screen bg-grey-50 pb-28">
       <section className="relative overflow-hidden rounded-b-[40px] bg-primary px-4 pb-12 pt-5 text-white shadow-sm">
         <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-secondary/40 blur-3xl" />

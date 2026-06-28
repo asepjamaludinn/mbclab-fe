@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { UserRoundCheck } from "lucide-react";
 import LogoLoop, { LogoItem } from "@/shared/components/ui/LogoLoop";
 import { PublicAssistant } from "../types/public-home.type";
@@ -25,9 +26,11 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
       <article className="w-[120px] rounded-[24px] border border-grey-200/60 bg-white px-3 py-5 text-center shadow-sm">
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-grey-100 bg-primary/5">
           {assistant.photoUrl ? (
-            <img
+            <Image
               src={assistant.photoUrl}
               alt={assistant.name}
+              width={56}
+              height={56}
               className="h-full w-full object-cover"
               loading="lazy"
             />

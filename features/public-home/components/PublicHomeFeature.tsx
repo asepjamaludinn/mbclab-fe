@@ -18,7 +18,7 @@ export function PublicHomeFeature() {
   } = usePublicAssistants();
 
   return (
-    <main className="min-h-screen bg-[#F8F9FA] pb-28 font-primary selection:bg-primary/20">
+    <main className="min-h-screen bg-grey-50 pb-28 font-primary selection:bg-primary/20">
       <HomeHero />
       <HomeWelcomeCard />
       <HomeQuickMenu menus={publicQuickMenus} />
