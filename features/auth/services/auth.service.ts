@@ -1,5 +1,5 @@
 import { api } from "@/shared/lib/api";
-import { LoginResponse, User } from "../types/auth.type";
+import { LoginResponse, User, ChangePasswordPayload } from "../types/auth.type";
 import { LoginFormData } from "../schemas/auth.schema";
 
 export const authService = {
@@ -14,6 +14,11 @@ export const authService = {
 
   getProfile: async (): Promise<User> => {
     const response = await api.get<User>("/auth/profile");
+    return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordPayload) => {
+    const response = await api.patch("/auth/change-password", data);
     return response.data;
   },
 };

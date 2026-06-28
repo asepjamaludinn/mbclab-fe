@@ -14,6 +14,9 @@ export interface User {
 }
 
 export interface LoginResponse {
-  access_token: string;
   user: User;
+}
+export interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
 }

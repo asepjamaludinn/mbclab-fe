@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Helper untuk decode JWT payload di Edge Runtime (tanpa verifikasi signature)
 function decodeJwtPayload(token: string) {
   try {
     const base64Url = token.split(".")[1];

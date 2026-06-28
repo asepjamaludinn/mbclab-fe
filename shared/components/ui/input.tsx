@@ -3,17 +3,24 @@ import { cn } from "@/shared/lib/utils";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
+  iconClassName?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, icon, ...props }, ref) => {
+  ({ className, type, icon, iconClassName, ...props }, ref) => {
     return (
       <div className="relative w-full">
         {icon && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-grey-400">
+          <div
+            className={cn(
+              "pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4",
+              iconClassName || "text-primary",
+            )}
+          >
             {icon}
           </div>
         )}
+
         <input
           type={type}
           className={cn(
@@ -28,6 +35,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
   },
 );
+
 Input.displayName = "Input";
 
 export { Input };

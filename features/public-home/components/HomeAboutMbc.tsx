@@ -8,32 +8,34 @@ import {
 const ABOUT_ITEMS = [
   {
     title: "Modul Praktikum",
-    description:
-      "Akses materi resmi dan panduan praktikum secara terpusat untuk menunjang kegiatan akademik.",
+    description: "Akses materi resmi dan panduan praktikum secara terpusat.",
     icon: BookOpenCheck,
   },
   {
     title: "Assessment",
-    description: "Evaluasi & pengumpulan tugas.",
+    description: "Evaluasi dan pengumpulan tugas.",
     icon: ClipboardList,
   },
   {
     title: "Pendampingan",
-    description: "Bantuan akademik asisten.",
+    description: "Bantuan akademik dari asisten.",
     icon: GraduationCap,
   },
 ];
 
 export function HomeAboutMbc() {
   return (
-    <section className="px-6 pt-10">
-      <div className="mb-6">
-        <h2 className="text-xl font-extrabold tracking-tight text-grey-900">
+    <section className="px-5 pt-10">
+      <div className="mb-5">
+        <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
           Tentang Portal
+        </p>
+        <h2 className="mt-1 text-xl font-extrabold tracking-tight text-grey-900">
+          Fasilitas Praktikum
         </h2>
-        <p className="mt-2 font-secondary text-xs leading-relaxed text-grey-500">
-          Fasilitas digital untuk memusatkan informasi dan administrasi
-          praktikum di lingkungan MBC Laboratory.
+        <p className="mt-2 max-w-sm font-secondary text-xs leading-relaxed text-grey-500">
+          Portal digital untuk memusatkan informasi dan administrasi praktikum
+          di lingkungan MBC Laboratory.
         </p>
       </div>
 
@@ -45,37 +47,38 @@ export function HomeAboutMbc() {
           return (
             <article
               key={item.title}
-              className={`group relative flex flex-col justify-between overflow-hidden rounded-[32px] border border-grey-200/60 bg-white shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md ${
-                isLarge ? "col-span-2 p-6" : "col-span-1 p-5"
+              className={`group relative overflow-hidden rounded-[30px] border border-white/70 bg-white/70 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white ${
+                isLarge ? "col-span-2 p-5" : "col-span-1 p-4"
               }`}
             >
-              <div className="mb-6 flex items-start justify-between">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+
+              <div className="relative z-10 mb-6 flex items-start justify-between">
                 <div
-                  className={`flex shrink-0 items-center justify-center rounded-[16px] bg-primary/5 transition-colors duration-300 group-hover:bg-primary/10 ${
+                  className={`flex shrink-0 items-center justify-center rounded-[20px] bg-primary text-white shadow-lg shadow-primary/20 ${
                     isLarge ? "h-14 w-14" : "h-12 w-12"
                   }`}
                 >
                   <Icon
-                    className={`text-primary ${
-                      isLarge ? "h-6 w-6" : "h-5 w-5"
-                    }`}
-                    strokeWidth={1.5}
+                    className={isLarge ? "h-6 w-6" : "h-5 w-5"}
+                    strokeWidth={1.6}
                   />
                 </div>
 
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grey-50 text-grey-400 transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
-                  <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grey-50 text-grey-400 transition group-hover:bg-primary group-hover:text-white">
+                  <ArrowUpRight className="h-4 w-4" />
                 </div>
               </div>
 
-              <div>
+              <div className="relative z-10">
                 <h3
-                  className={`font-bold tracking-tight text-grey-900 ${
+                  className={`font-extrabold tracking-tight text-grey-900 ${
                     isLarge ? "text-lg" : "text-sm"
                   }`}
                 >
                   {item.title}
                 </h3>
+
                 <p
                   className={`mt-1.5 font-secondary leading-relaxed text-grey-500 ${
                     isLarge ? "text-sm" : "text-[11px]"
