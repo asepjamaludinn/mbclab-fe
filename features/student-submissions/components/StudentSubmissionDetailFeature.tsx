@@ -7,19 +7,24 @@ import {
   CheckCircle2,
   FileText,
   UploadCloud,
+  Trash2,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { StudentBottomNavigation } from "@/features/student-navigation";
 import { usePublicModules } from "@/features/public-home";
 import { useUploadFile, useSubmitTp } from "../hooks/use-student-submissions";
+import axios from "axios";
+
+// 1. Import Schema dan Konstanta dari file yang sudah kita pisah
+import {
+  tpSubmissionSchema,
+  MAX_FILE_SIZE_MB,
+} from "../schemas/student-submission.schema";
 
 type StudentSubmissionDetailFeatureProps = {
   moduleId: string;
 };
-
-const MAX_FILE_SIZE_MB = 5;
-const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export function StudentSubmissionDetailFeature({
   moduleId,
@@ -29,44 +34,42 @@ export function StudentSubmissionDetailFeature({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
 
-  // Mengambil informasi judul modul dari cache list modul publik
+  const [validationError, setValidationError] = useState("");
+  const [apiError, setApiError] = useState("");
+
   const { data: modules = [] } = usePublicModules();
   const moduleInfo = modules.find((m) => m.id === moduleId);
   const moduleTitle = moduleInfo ? moduleInfo.title : `TP Modul ${moduleId}`;
 
-  // Integrasi Hooks React Query
   const { mutateAsync: uploadFile, isPending: isUploadingFile } =
     useUploadFile();
   const { mutateAsync: submitTp, isPending: isSubmitting } = useSubmitTp();
 
   const isProcessing = isUploadingFile || isSubmitting;
 
-  const validateFile = (file: File) => {
+  const validateFile = (file: File | undefined | null) => {
     setSuccessMessage("");
-    setErrorMessage("");
+    setApiError("");
+    setValidationError("");
 
-    if (file.type !== "application/pdf") {
+    const result = tpSubmissionSchema.safeParse(file);
+
+    if (!result.success) {
+      // 2. Perbaikan cara akses error Zod dengan properti .issues yang valid
+      const errorMessage =
+        result.error.issues[0]?.message || "Format file tidak valid.";
+
+      setValidationError(errorMessage);
       setSelectedFile(null);
-      setErrorMessage("File harus berformat PDF.");
       return;
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-      setSelectedFile(null);
-      setErrorMessage(`Ukuran file maksimal ${MAX_FILE_SIZE_MB} MB.`);
-      return;
-    }
-
-    setSelectedFile(file);
+    setSelectedFile(file as File);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
-    if (!file) return;
-
     validateFile(file);
   };
 
@@ -75,40 +78,51 @@ export function StudentSubmissionDetailFeature({
     setIsDragging(false);
 
     const file = event.dataTransfer.files?.[0];
-
-    if (!file) return;
-
     validateFile(file);
+  };
+
+  const handleRemoveFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setValidationError("");
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async () => {
     setSuccessMessage("");
-    setErrorMessage("");
+    setApiError("");
+    setValidationError("");
 
-    if (!selectedFile) {
-      setErrorMessage("Silakan pilih file PDF terlebih dahulu.");
+    // Validasi Zod saat tombol kumpul ditekan
+    const result = tpSubmissionSchema.safeParse(selectedFile);
+    if (!result.success) {
+      const errorMessage =
+        result.error.issues[0]?.message || "Format file tidak valid.";
+      setValidationError(errorMessage);
       return;
     }
 
     try {
-      // 1. Upload file PDF ke API upload
-      const fileUrl = await uploadFile(selectedFile);
-
-      // 2. Kirim payload URL file ke API submissions
+      const fileUrl = await uploadFile(selectedFile as File);
       await submitTp({ moduleId, fileUrl });
 
       setSuccessMessage(`${moduleTitle} berhasil dikumpulkan.`);
       setSelectedFile(null);
 
-      // Reset input file
       if (inputRef.current) {
         inputRef.current.value = "";
       }
-    } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.message ||
-          "Gagal mengunggah TP. Silakan coba lagi.",
-      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setApiError(
+          error.response?.data?.message ||
+            "Gagal mengunggah TP. Silakan coba lagi.",
+        );
+      } else {
+        setApiError("Gagal mengunggah TP. Silakan coba lagi.");
+      }
     }
   };
 
@@ -145,18 +159,22 @@ export function StudentSubmissionDetailFeature({
 
           <div className="relative z-10">
             <div
-              onClick={() => inputRef.current?.click()}
+              onClick={() => !selectedFile && inputRef.current?.click()}
               onDragOver={(event) => {
                 event.preventDefault();
-                setIsDragging(true);
+                if (!selectedFile) setIsDragging(true);
               }}
               onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              className={`cursor-pointer rounded-[30px] border-2 border-dashed p-6 text-center transition ${
-                isDragging
-                  ? "border-primary bg-primary/10"
-                  : "border-white/80 bg-white/45 hover:border-primary/40 hover:bg-white/70"
-              } backdrop-blur-xl`}
+              onDrop={(event) => {
+                if (!selectedFile) handleDrop(event);
+              }}
+              className={`relative rounded-[30px] border-2 p-6 transition backdrop-blur-xl ${
+                selectedFile
+                  ? "border-white/80 bg-white/60 shadow-sm"
+                  : isDragging
+                    ? "border-dashed border-primary bg-primary/10 cursor-pointer"
+                    : "border-dashed border-white/80 bg-white/45 hover:border-primary/40 hover:bg-white/70 cursor-pointer text-center"
+              }`}
             >
               <input
                 ref={inputRef}
@@ -166,47 +184,73 @@ export function StudentSubmissionDetailFeature({
                 onChange={handleFileChange}
               />
 
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-primary shadow-sm backdrop-blur-xl">
-                <UploadCloud className="h-8 w-8" />
-              </div>
+              {selectedFile ? (
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/10 text-info">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-extrabold text-grey-900">
+                        {selectedFile.name}
+                      </p>
+                      <p className="font-secondary text-xs text-grey-500">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
 
-              <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-                Upload Area
-              </p>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
+                    aria-label="Hapus file"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-primary shadow-sm backdrop-blur-xl">
+                    <UploadCloud className="h-8 w-8" />
+                  </div>
 
-              <h2 className="mt-2 text-lg font-extrabold tracking-tight text-grey-900">
-                Upload file PDF
-              </h2>
+                  <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
+                    Upload Area
+                  </p>
 
-              <p className="mx-auto mt-2 max-w-[260px] font-secondary text-xs leading-relaxed text-grey-500">
-                Drag and drop file ke sini atau klik untuk memilih file dari
-                perangkat Anda.
-              </p>
+                  <h2 className="mt-2 text-lg font-extrabold tracking-tight text-grey-900">
+                    Upload file PDF
+                  </h2>
 
-              <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
-                PDF • Maksimal {MAX_FILE_SIZE_MB} MB
-              </p>
+                  <p className="mx-auto mt-2 max-w-[260px] font-secondary text-xs leading-relaxed text-grey-500">
+                    Drag and drop file ke sini atau klik untuk memilih file dari
+                    perangkat Anda.
+                  </p>
+
+                  <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
+                    PDF • Maksimal {MAX_FILE_SIZE_MB} MB
+                  </p>
+                </div>
+              )}
             </div>
 
-            {selectedFile && (
-              <div className="mt-4 rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-sm backdrop-blur-xl">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-info/10 text-info">
-                    <FileText className="h-5 w-5" />
-                  </div>
+            {/* Error Validasi Zod */}
+            {validationError && (
+              <span className="mt-2 block font-secondary text-sm font-semibold text-error">
+                {validationError}
+              </span>
+            )}
 
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-extrabold text-grey-900">
-                      {selectedFile.name}
-                    </p>
-                    <p className="font-secondary text-xs text-grey-500">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                </div>
+            {/* Global API Error */}
+            {apiError && (
+              <div className="mt-4 flex items-start gap-3 rounded-[24px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error">
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>{apiError}</span>
               </div>
             )}
 
+            {/* Success Message */}
             {successMessage && (
               <div className="mt-4 flex items-start gap-3 rounded-[24px] border border-success/10 bg-success/10 p-4 font-secondary text-sm font-semibold text-success">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
@@ -214,18 +258,11 @@ export function StudentSubmissionDetailFeature({
               </div>
             )}
 
-            {errorMessage && (
-              <div className="mt-4 flex items-start gap-3 rounded-[24px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error">
-                <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-
             <Button
               type="button"
               onClick={handleSubmit}
               disabled={isProcessing}
-              className="mt-5 w-full"
+              className="mt-6 w-full"
             >
               {isProcessing ? "Mengunggah..." : "Kumpulkan TP"}
             </Button>

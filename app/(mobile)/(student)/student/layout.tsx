@@ -12,18 +12,23 @@ async function prefetchProfileData(): Promise<User | null> {
 
   if (!allCookies) return null;
 
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!apiUrl) {
+    console.error("NEXT_PUBLIC_API_URL belum diatur.");
+    return null;
+  }
+
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/auth/profile`,
-      {
-        headers: { Cookie: allCookies },
-        cache: "no-store",
-      },
-    );
+    const res = await fetch(`${apiUrl}/auth/profile`, {
+      headers: { Cookie: allCookies },
+      cache: "no-store",
+    });
 
     if (!res.ok) return null;
+
     return res.json();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Gagal prefetch profil di layout:", error);
     return null;
   }

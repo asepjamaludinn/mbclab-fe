@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -119,12 +120,14 @@ export function AccountActions({
 
       setPasswordMessage("Password berhasil diganti.");
       reset();
-    } catch (error: any) {
-      setPasswordError(
-        error?.response?.data?.message || "Gagal mengganti password.",
-      );
-    } finally {
-      setIsChangingPassword(false);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setPasswordError(
+          error.response?.data?.message || "Gagal mengganti password.",
+        );
+      } else {
+        setPasswordError("Gagal mengganti password.");
+      }
     }
   };
 
