@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowRight,
-  ClipboardCheck,
-  FileUp,
-  PenTool,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowRight, ClipboardCheck, FileUp, PenTool } from "lucide-react";
 import { useProfile } from "@/features/auth";
 import { StudentBottomNavigation } from "@/features/student-navigation";
 

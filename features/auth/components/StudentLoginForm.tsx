@@ -9,7 +9,6 @@ import {
   Eye,
   EyeOff,
   Lock,
-  ShieldCheck,
   User as UserIcon,
 } from "lucide-react";
 import Link from "next/link";

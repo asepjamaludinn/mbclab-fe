@@ -4,7 +4,6 @@ import { useProfile } from "@/features/auth";
 import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "@/features/student-submissions";
 import { DashboardHeader } from "./DashboardHeader";
-import { DashboardHero } from "./DashboardHero";
 import { DashboardQuickAccess } from "./DashboardQuickAccess";
 import { DashboardProgressSummary } from "./DashboardProgressSummary";
 import { DashboardModuleProgress } from "./DashboardModuleProgress";
@@ -53,10 +52,6 @@ export function StudentDashboardFeature() {
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,101,176,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(30,63,117,0.12),transparent_30%),linear-gradient(180deg,#f8f9fa_0%,#edf6ff_42%,#f8f9fa_100%)] pb-28">
       <DashboardHeader userName={user?.name} nim={user?.nim} />
-
-      <section className="mt-5 px-5">
-        <DashboardHero />
-      </section>
 
       <section className="mt-6 space-y-8 px-5">
         <DashboardProgressSummary modules={modules} submissions={submissions} />

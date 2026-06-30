@@ -4,19 +4,11 @@ import Image from "next/image";
 import { UserRoundCheck } from "lucide-react";
 import LogoLoop, { LogoItem } from "@/shared/components/ui/LogoLoop";
 import { PublicAssistant } from "../types/public-home.type";
+import { getInitials } from "@/shared/utils/string";
 
 type HomeAssistantListProps = {
   assistants: PublicAssistant[];
 };
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
   const assistantItems: LogoItem[] = assistants.map((assistant) => ({

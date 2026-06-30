@@ -33,14 +33,6 @@ export function StudentModulesFeature() {
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,101,176,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(30,63,117,0.12),transparent_30%),linear-gradient(180deg,#f8f9fa_0%,#edf6ff_42%,#f8f9fa_100%)] pb-28">
       <section className="px-5 pt-6">
-        <Link
-          href="/student/dashboard"
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-2 font-secondary text-xs font-bold text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
-        </Link>
-
         <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
           Materi Pembelajaran
         </p>

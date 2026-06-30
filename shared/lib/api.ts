@@ -1,7 +1,13 @@
 import axios from "axios";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+if (!apiUrl) {
+  throw new Error("NEXT_PUBLIC_API_URL belum diatur.");
+}
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
+  baseURL: apiUrl,
   withCredentials: true,
 });
 
@@ -34,7 +40,7 @@ api.interceptors.response.use(
 
       try {
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/auth/refresh`,
+          `${apiUrl}/auth/refresh`,
           {},
           { withCredentials: true },
         );

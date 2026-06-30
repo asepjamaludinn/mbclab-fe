@@ -50,3 +50,12 @@ export type PublicModuleApiResponse = {
   order: number;
   tpDeadline: string | null;
 };
+
+export type HeroCard = {
+  title: string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
+  iconClassName: string;
+  isExternal?: boolean;
+};

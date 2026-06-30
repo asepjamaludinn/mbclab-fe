@@ -1,95 +1,86 @@
-import {
-  BookOpenCheck,
-  ClipboardList,
-  GraduationCap,
-  ArrowUpRight,
-} from "lucide-react";
-
-const ABOUT_ITEMS = [
-  {
-    title: "Modul Praktikum",
-    description: "Akses materi resmi dan panduan praktikum secara terpusat.",
-    icon: BookOpenCheck,
-  },
-  {
-    title: "Assessment",
-    description: "Evaluasi dan pengumpulan tugas.",
-    icon: ClipboardList,
-  },
-  {
-    title: "Pendampingan",
-    description: "Bantuan akademik dari asisten.",
-    icon: GraduationCap,
-  },
-];
+import { GraduationCap, UserRoundCheck } from "lucide-react";
 
 export function HomeAboutMbc() {
   return (
-    <section className="px-5 pt-10">
-      <div className="mb-5">
-        <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-          Tentang Portal
-        </p>
-        <h2 className="mt-1 text-xl font-extrabold tracking-tight text-grey-900">
-          Fasilitas Praktikum
-        </h2>
-        <p className="mt-2 max-w-sm font-secondary text-xs leading-relaxed text-grey-500">
-          Portal digital untuk memusatkan informasi dan administrasi praktikum
-          di lingkungan MBC Laboratory.
-        </p>
-      </div>
+    <section className="px-5 pt-7">
+      <div className="space-y-3">
+        <div className="relative overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#0065b0_0%,#1e3f75_100%)] p-5 text-white shadow-[0_22px_55px_-36px_rgba(0,101,176,0.75)]">
+          <div className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full border border-white/15" />
+          <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full border border-white/15" />
 
-      <div className="grid grid-cols-2 gap-3">
-        {ABOUT_ITEMS.map((item, index) => {
-          const Icon = item.icon;
-          const isLarge = index === 0;
+          <div className="relative z-10">
+            <h2 className="max-w-[250px] text-2xl font-extrabold leading-tight tracking-tight">
+              Tentang MBC Laboratory
+            </h2>
 
-          return (
-            <article
-              key={item.title}
-              className={`group relative overflow-hidden rounded-[30px] border border-white/70 bg-white/70 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white ${
-                isLarge ? "col-span-2 p-5" : "col-span-1 p-4"
-              }`}
-            >
-              <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+            <p className="mt-3 max-w-[280px] font-secondary text-xs leading-relaxed text-white/75">
+              Ruang belajar berbasis riset, praktikum, dan pengembangan
+              teknologi untuk mendukung aktivitas akademik mahasiswa.
+            </p>
+          </div>
 
-              <div className="relative z-10 mb-6 flex items-start justify-between">
-                <div
-                  className={`flex shrink-0 items-center justify-center rounded-[20px] bg-primary text-white shadow-lg shadow-primary/20 ${
-                    isLarge ? "h-14 w-14" : "h-12 w-12"
-                  }`}
-                >
-                  <Icon
-                    className={isLarge ? "h-6 w-6" : "h-5 w-5"}
-                    strokeWidth={1.6}
-                  />
-                </div>
+          <div className="relative z-10 mt-5 flex gap-3">
+            <div className="rounded-full border border-white/25 bg-white/10 px-4 py-2 font-secondary text-[11px] font-semibold text-white backdrop-blur-xl">
+              Riset
+            </div>
 
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grey-50 text-grey-400 transition group-hover:bg-primary group-hover:text-white">
-                  <ArrowUpRight className="h-4 w-4" />
-                </div>
+            <div className="rounded-full bg-white px-4 py-2 font-secondary text-[11px] font-bold text-primary">
+              Praktikum
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="relative min-h-[118px] overflow-hidden rounded-[24px] bg-grey-50 p-3.5">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+
+            <div className="relative z-10 flex h-full flex-col justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+                <GraduationCap className="h-5 w-5" strokeWidth={1.7} />
               </div>
 
-              <div className="relative z-10">
-                <h3
-                  className={`font-extrabold tracking-tight text-grey-900 ${
-                    isLarge ? "text-lg" : "text-sm"
-                  }`}
-                >
-                  {item.title}
-                </h3>
-
-                <p
-                  className={`mt-1.5 font-secondary leading-relaxed text-grey-500 ${
-                    isLarge ? "text-sm" : "text-[11px]"
-                  }`}
-                >
-                  {item.description}
+              <div>
+                <p className="font-secondary text-[10px] font-semibold text-grey-500">
+                  Modul Praktikum
                 </p>
+
+                <div className="mt-1 flex items-end gap-1">
+                  <span className="text-[38px] font-extrabold leading-none tracking-tight text-grey-900">
+                    3
+                  </span>
+                  <span className="mb-1 font-secondary text-xs font-bold text-primary">
+                    modul
+                  </span>
+                </div>
               </div>
-            </article>
-          );
-        })}
+            </div>
+          </div>
+
+          <div className="relative min-h-[140px] overflow-hidden rounded-[24px] bg-grey-50 p-3.5">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+
+            <div className="relative z-10 flex h-full flex-col justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+                <UserRoundCheck className="h-5 w-5" strokeWidth={1.7} />
+              </div>
+
+              <div>
+                <p className="font-secondary text-[10px] font-semibold text-grey-500">
+                  Asisten Praktikum
+                </p>
+
+                <div className="mt-1 flex items-end gap-1">
+                  <span className="text-[38px] font-extrabold leading-none tracking-tight text-grey-900">
+                    14
+                  </span>
+                  <span className="mb-1 font-secondary text-xs font-bold text-primary">
+                    orang
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

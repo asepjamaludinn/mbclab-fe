@@ -5,14 +5,59 @@ import {
   MessageCircle,
   User,
   UserRoundCheck,
+  BookOpenCheck,
+  UsersRound,
 } from "lucide-react";
 import {
   PublicBottomNavItem,
   PublicQuickMenu,
+  HeroCard,
 } from "../types/public-home.type";
 
 export const WHATSAPP_COMMUNITY_URL =
   "https://chat.whatsapp.com/ISI_LINK_COMMUNITY_KAMU";
+
+export const OA_LINE_MBC_LAB_URL = "https://line.me/R/ti/p/@mbclab";
+export const SPS_URL = "https://igracias.telkomuniversity.ac.id/";
+
+export const HERO_CARDS: HeroCard[] = [
+  {
+    title: "Modul",
+    description: "Materi",
+    href: "/modul",
+    icon: BookOpenCheck,
+    iconClassName: "bg-primary text-white",
+  },
+  {
+    title: "Assessment",
+    description: "TP & TA",
+    href: "/assessment",
+    icon: ClipboardCheck,
+    iconClassName: "bg-warning text-white",
+  },
+  {
+    title: "Asisten",
+    description: "Tim lab",
+    href: "#asisten",
+    icon: UserRoundCheck,
+    iconClassName: "bg-secondary text-white",
+  },
+  {
+    title: "Kelompok",
+    description: "Info SPS",
+    href: "#kelompok",
+    icon: UsersRound,
+    iconClassName: "bg-info text-white",
+  },
+  {
+    title: "Kontak",
+    description: "OA LINE",
+    href: OA_LINE_MBC_LAB_URL,
+    icon: MessageCircle,
+    iconClassName: "bg-success text-white",
+    isExternal: true,
+  },
+];
 
 export const publicQuickMenus: PublicQuickMenu[] = [
   {
