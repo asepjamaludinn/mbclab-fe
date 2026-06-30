@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { StudentBottomNavigation } from "@/features/student-navigation";
-import { TodayExamSession } from "../../types/student-exam.type";
+import { TodayExamSession } from "../types/student-exam.type";
 import { PracticumModule } from "@/features/student-modules";
 
 type Props = {

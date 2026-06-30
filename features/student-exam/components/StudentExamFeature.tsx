@@ -3,11 +3,11 @@
 import { useStudentModules } from "@/features/student-modules";
 import { useTodayExamSessions } from "../hooks/use-student-exam";
 import { useExamSession } from "../hooks/use-exam-session";
-import { ExamSelectModule } from "./views/ExamSelectModule";
-import { ExamEnterCode } from "./views/ExamEnterCode";
-import { ExamInProgress } from "./views/ExamInProgress";
-import { ExamBlocked } from "./views/ExamBlocked";
-import { ExamSubmitted } from "./views/ExamSubmitted";
+import { ExamSelectModule } from "../views/ExamSelectModule";
+import { ExamEnterCode } from "../views/ExamEnterCode";
+import { ExamInProgress } from "../views/ExamInProgress";
+import { ExamBlocked } from "../views/ExamBlocked";
+import { ExamSubmitted } from "../views/ExamSubmitted";
 
 export function StudentExamFeature() {
   const { data: modulesRes, isLoading: isModulesLoading } = useStudentModules();

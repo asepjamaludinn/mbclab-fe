@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Question } from "../../types/student-exam.type";
-import { AnswerOption } from "../../hooks/use-exam-session";
+import { Question } from "../types/student-exam.type";
+import { AnswerOption } from "../hooks/use-exam-session";
 
 type Props = {
   questions: Question[];
