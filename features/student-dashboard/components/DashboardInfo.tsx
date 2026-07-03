@@ -1,52 +1,71 @@
-import { AlertCircle, CalendarDays, FileText } from "lucide-react";
+import { AlertCircle, FileText, MapPin } from "lucide-react";
 
 export function DashboardInfo() {
-  return (
-    <section className="rounded-[34px] border border-white/70 bg-white/75 p-5 shadow-[0_18px_50px_-30px_rgba(0,101,176,0.4)] backdrop-blur-xl">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-warning/10 text-warning">
-          <CalendarDays className="h-6 w-6" strokeWidth={1.5} />
-        </div>
+  const iconClassName =
+    "flex shrink-0 items-center justify-center rounded-full border border-white/45 bg-primary/80 text-white shadow-[0_10px_24px_-14px_rgba(0,101,176,0.9)] backdrop-blur-xl";
 
-        <div>
-          <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-            Reminder
-          </p>
-          <h2 className="text-base font-extrabold text-grey-900">
-            Informasi Praktikum
-          </h2>
-        </div>
+  const cardClassName =
+    "rounded-[28px] border border-white/40 bg-white/20 shadow-[0_18px_45px_-28px_rgba(0,101,176,0.55),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-2xl transition duration-300 hover:-translate-y-0.5 hover:bg-white/25 hover:shadow-[0_22px_55px_-30px_rgba(0,101,176,0.7),inset_0_1px_0_rgba(255,255,255,0.65)]";
+
+  return (
+    <section>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-extrabold tracking-tight">
+          Informasi Praktikum
+        </h2>
       </div>
 
       <div className="space-y-3">
-        <div className="rounded-[26px] bg-grey-50/90 p-4">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[16px] bg-primary/10 text-primary">
-            <FileText className="h-5 w-5" strokeWidth={1.5} />
+        <div className={`${cardClassName} p-4`}>
+          <div className="flex items-start gap-3">
+            <div className={`h-12 w-12 ${iconClassName}`}>
+              <MapPin className="h-6 w-6" strokeWidth={1.8} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
+                Ruang Praktikum
+              </p>
+
+              <h3 className="mt-1 text-[28px] font-extrabold leading-none tracking-tight text-grey-900">
+                TULT 11.12
+              </h3>
+
+              <p className="mt-2 font-secondary text-xs leading-relaxed text-grey-700">
+                Datang sesuai jadwal dan shift praktikum yang sudah ditentukan.
+              </p>
+            </div>
           </div>
-
-          <p className="text-sm font-bold text-grey-900">
-            Periksa modul sebelum mengerjakan TP
-          </p>
-
-          <p className="mt-1 font-secondary text-xs leading-relaxed text-grey-500">
-            Pastikan kamu membaca modul praktikum terlebih dahulu sebelum
-            mengumpulkan TP atau mengikuti TA.
-          </p>
         </div>
 
-        <div className="rounded-[26px] bg-warning/10 p-4">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[16px] bg-warning/10 text-warning">
-            <AlertCircle className="h-5 w-5" strokeWidth={1.5} />
+        <div className="grid grid-cols-2 gap-3">
+          <div className={`${cardClassName} p-4`}>
+            <div className={`mb-4 h-10 w-10 ${iconClassName}`}>
+              <FileText className="h-5 w-5" strokeWidth={1.8} />
+            </div>
+
+            <p className="text-sm font-extrabold leading-tight text-grey-900">
+              Baca modul sebelum TA
+            </p>
+
+            <p className="mt-2 font-secondary text-[11px] leading-relaxed text-grey-500">
+              Pastikan materi sudah dipahami.
+            </p>
           </div>
 
-          <p className="text-sm font-bold text-grey-900">
-            Jadwal dan assessment dapat berubah
-          </p>
+          <div className={`${cardClassName} p-4`}>
+            <div className={`mb-4 h-10 w-10 ${iconClassName}`}>
+              <AlertCircle className="h-5 w-5" strokeWidth={1.8} />
+            </div>
 
-          <p className="mt-1 font-secondary text-xs leading-relaxed text-grey-700">
-            Selalu ikuti arahan terbaru dari asisten praktikum terkait jadwal,
-            batas waktu TP, dan pelaksanaan TA.
-          </p>
+            <p className="text-sm font-extrabold leading-tight text-grey-900">
+              Jadwal bisa berubah
+            </p>
+
+            <p className="mt-2 font-secondary text-[11px] leading-relaxed text-grey-500">
+              Ikuti arahan terbaru dari asisten praktikum.
+            </p>
+          </div>
         </div>
       </div>
     </section>

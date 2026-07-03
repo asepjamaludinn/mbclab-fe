@@ -1,28 +1,34 @@
-import { BookOpen, ClipboardList, FileText } from "lucide-react";
+import {
+  BookOpen,
+  ClipboardCheck,
+  UserRoundCheck,
+  MessageCircle,
+} from "lucide-react";
+
+export const WHATSAPP_COMMUNITY_URL =
+  "https://chat.whatsapp.com/ISI_LINK_COMMUNITY_KAMU";
 
 export const DASHBOARD_QUICK_ACCESS_ITEMS = [
   {
-    title: "Akses Modul",
-    description: "Buka materi, panduan praktikum, dan modul pembelajaran.",
+    title: "Modul",
     href: "/student/modules",
     icon: BookOpen,
-    variant: "large",
-    className: "bg-primary text-white shadow-primary/20",
   },
   {
-    title: "Kumpulkan TP",
-    description: "Upload laporan PDF.",
-    href: "/student/submissions",
-    icon: FileText,
-    variant: "small",
-    className: "bg-success text-white shadow-success/20",
+    title: "Asisten",
+    href: "#asisten",
+    icon: UserRoundCheck,
   },
+
   {
-    title: "Kerjakan TA",
-    description: "Masuk sesi kuis.",
+    title: "Assessment",
     href: "/student/assessment",
-    icon: ClipboardList,
-    variant: "small",
-    className: "bg-warning text-white shadow-warning/20",
+    icon: ClipboardCheck,
   },
-] as const;
+  {
+    title: "Info TP",
+    href: WHATSAPP_COMMUNITY_URL,
+    icon: MessageCircle,
+    isExternal: true,
+  },
+];

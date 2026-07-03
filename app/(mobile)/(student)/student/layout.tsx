@@ -1,3 +1,5 @@
+// app\(mobile)\(student)\student\layout.tsx
+
 import { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
@@ -7,6 +9,7 @@ import { StudentBottomNavigation } from "@/features/student-navigation";
 import { User } from "@/features/auth";
 
 async function prefetchProfileData(): Promise<User | null> {
+  // ... (kode fetch profile tidak ada yang diubah)
   const cookieStore = await cookies();
   const allCookies = cookieStore.toString();
 
@@ -47,9 +50,9 @@ export default async function StudentLayout({
   });
 
   return (
-    <div className="min-h-screen bg-grey-200">
+    <div className="relative min-h-screen bg-white">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <main className="pb-28">{children}</main>
+        {children}
         <StudentBottomNavigation />
       </HydrationBoundary>
     </div>

@@ -1,16 +1,18 @@
+import Link from "next/link";
 import {
   CheckCircle2,
-  ChevronRight,
   Clock3,
+  Download,
+  FileCheck2,
+  FileText,
   LockKeyhole,
   PlayCircle,
 } from "lucide-react";
 import { PracticumModule } from "@/features/student-modules";
-import { Submission } from "@/features/student-submissions";
 
 type DashboardModuleProgressProps = {
-  modules: PracticumModule[];
-  submissions: Submission[];
+  activeModule: PracticumModule | null;
+  isTpSubmitted: boolean;
 };
 
 function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
@@ -19,7 +21,7 @@ function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
       icon: LockKeyhole,
       label: "Terkunci",
       className: "bg-grey-200 text-grey-700",
-      dotClassName: "bg-grey-400",
+      iconClassName: "border-white/45 bg-grey-500/70 text-white",
     };
   }
 
@@ -28,7 +30,7 @@ function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
       icon: CheckCircle2,
       label: "TP Selesai",
       className: "bg-success/10 text-success",
-      dotClassName: "bg-success",
+      iconClassName: "border-white/45 bg-success/80 text-white",
     };
   }
 
@@ -36,121 +38,146 @@ function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
     icon: PlayCircle,
     label: "Aktif",
     className: "bg-primary/10 text-primary",
-    dotClassName: "bg-primary",
+    iconClassName: "border-white/45 bg-primary/80 text-white",
   };
 }
 
 export function DashboardModuleProgress({
-  modules,
-  submissions,
+  activeModule,
+  isTpSubmitted,
 }: DashboardModuleProgressProps) {
-  const timelineModules = modules.slice(0, 3).map((mod) => {
-    const isTpSubmitted = submissions.some((sub) => sub.moduleId === mod.id);
-    return { ...mod, isTpSubmitted };
-  });
+  const config = activeModule
+    ? getStatusConfig(activeModule.isActive, isTpSubmitted)
+    : null;
+
+  const Icon = config?.icon;
+
+  const canDownload = !!activeModule?.fileUrl && activeModule.fileUrl !== "#";
 
   return (
     <section>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-            Timeline
-          </p>
-          <h2 className="mt-1 text-xl font-extrabold tracking-tight text-grey-900">
-            Progres Modul
-          </h2>
-        </div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-extrabold tracking-tight text-white">
+          Modul Terbaru
+        </h2>
 
-        <button className="rounded-full bg-white/70 px-3 py-1 font-secondary text-[10px] font-bold text-primary shadow-sm backdrop-blur">
+        <Link
+          href="/student/modules"
+          className="font-secondary text-[11px] font-bold text-white transition hover:text-white/75"
+        >
           Lihat Semua
-        </button>
+        </Link>
       </div>
 
-      <div className="space-y-3">
-        {timelineModules.length === 0 ? (
-          <div className="rounded-[30px] border border-white/70 bg-white/80 p-5 text-center shadow-sm">
-            <p className="font-secondary text-sm font-semibold text-grey-500">
-              Belum ada modul praktikum.
-            </p>
+      {!activeModule || !config || !Icon ? (
+        <div className="rounded-[34px] border border-white/45 bg-white/20 p-6 text-center shadow-[0_18px_50px_-32px_rgba(0,101,176,0.35)] backdrop-blur-2xl">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl">
+            <FileText className="h-6 w-6" strokeWidth={1.7} />
           </div>
-        ) : (
-          timelineModules.map((item) => {
-            const config = getStatusConfig(item.isActive, item.isTpSubmitted);
-            const Icon = config.icon;
 
-            return (
-              <article
-                key={item.id}
-                className="group relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-4 shadow-[0_16px_45px_-30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:bg-white"
+          <p className="font-secondary text-sm font-semibold text-white/80">
+            Belum ada modul aktif.
+          </p>
+        </div>
+      ) : (
+        <article className="relative overflow-hidden rounded-[36px] border border-white/35 bg-white/20 p-5 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.55)] backdrop-blur-2xl">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.28)_0%,rgba(234,248,255,0.16)_55%,rgba(215,247,255,0.18)_100%)]" />
+          <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-[70px]" />
+          <div className="pointer-events-none absolute -bottom-24 -left-20 h-60 w-60 rounded-full bg-secondary/10 blur-[80px]" />
+
+          <div className="relative z-10">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div
+                className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border shadow-sm backdrop-blur-xl ${config.iconClassName}`}
               >
-                <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary/5 blur-2xl" />
+                <Icon className="h-7 w-7" strokeWidth={1.7} />
+              </div>
 
-                <div className="relative z-10 flex items-start gap-4">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-sm ${config.dotClassName}`}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    {/* Hapus garis timeline vertikal jika item terakhir untuk estetika bisa ditambahkan logika, tapi kita biarkan default */}
-                    <div className="mt-2 h-12 w-px bg-grey-200" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                          Modul {item.order}
-                        </p>
-
-                        <h3 className="mt-1 text-base font-extrabold leading-tight text-grey-900">
-                          {item.title}
-                        </h3>
-                      </div>
-
-                      <div
-                        className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 font-secondary text-[10px] font-bold ${config.className}`}
-                      >
-                        {config.label}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3">
-                      <div className="rounded-[20px] bg-grey-50/90 p-3">
-                        <div className="mb-2 flex items-center gap-2">
-                          <Clock3 className="h-4 w-4 text-primary" />
-                          <p className="font-secondary text-[10px] font-bold uppercase tracking-wide text-grey-500">
-                            TP
-                          </p>
-                        </div>
-
-                        <p className="text-xs font-bold text-grey-900">
-                          {item.isTpSubmitted ? "Selesai" : "Belum dikumpulkan"}
-                        </p>
-                      </div>
-
-                      <div className="rounded-[20px] bg-grey-50/90 p-3">
-                        <div className="mb-2 flex items-center gap-2">
-                          <Clock3 className="h-4 w-4 text-warning" />
-                          <p className="font-secondary text-[10px] font-bold uppercase tracking-wide text-grey-500">
-                            TA
-                          </p>
-                        </div>
-
-                        <p className="text-xs font-bold text-grey-900">
-                          Belum dikerjakan
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <ChevronRight className="mt-3 h-5 w-5 shrink-0 text-grey-300 transition group-hover:translate-x-1 group-hover:text-primary" />
+              {canDownload ? (
+                <a
+                  href={activeModule.fileUrl as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
+                  aria-label="Download modul"
+                >
+                  <Download className="h-5 w-5" strokeWidth={1.8} />
+                </a>
+              ) : (
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/20 text-grey-500 shadow-sm backdrop-blur-xl"
+                  aria-label="Modul belum dapat diunduh"
+                >
+                  <Download className="h-5 w-5" strokeWidth={1.8} />
                 </div>
-              </article>
-            );
-          })
-        )}
-      </div>
+              )}
+            </div>
+
+            <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+              Modul {activeModule.order}
+            </p>
+
+            <h3 className="mt-2 line-clamp-2 text-[26px] font-extrabold leading-[1.05] tracking-tight text-grey-900">
+              {activeModule.title}
+            </h3>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span
+                className={`rounded-full px-3 py-1 font-secondary text-[11px] font-bold ${config.className}`}
+              >
+                {config.label}
+              </span>
+
+              <span className="rounded-full border border-white/45 bg-white/25 px-3 py-1 font-secondary text-[11px] font-bold text-grey-700 shadow-sm backdrop-blur-xl">
+                Praktikum
+              </span>
+            </div>
+
+            <div className="my-6 grid grid-cols-2 divide-x divide-white/35 rounded-[26px] border border-white/35 bg-white/20 px-3 py-4 shadow-sm backdrop-blur-xl">
+              <div className="text-center">
+                <div className="mb-2 flex items-center justify-center gap-1.5">
+                  <FileCheck2 className="h-4 w-4 text-primary" />
+                  <p className="text-lg font-extrabold text-grey-900">
+                    {isTpSubmitted ? "Selesai" : "Belum"}
+                  </p>
+                </div>
+
+                <p className="font-secondary text-xs font-medium text-grey-500">
+                  Status TP
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-2 flex items-center justify-center gap-1.5">
+                  <Clock3 className="h-4 w-4 text-warning" />
+                  <p className="text-lg font-extrabold text-grey-900">Belum</p>
+                </div>
+
+                <p className="font-secondary text-xs font-medium text-grey-500">
+                  Status TA
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/student/modules"
+                className="flex h-[52px] flex-1 items-center justify-center rounded-full border border-white/45 bg-white/25 font-secondary text-sm font-extrabold text-grey-900 shadow-sm backdrop-blur-xl transition hover:border-primary hover:bg-primary hover:text-white active:scale-[0.98]"
+              >
+                Lihat Detail Modul
+              </Link>
+
+              <Link
+                href="/student/submissions"
+                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
+                aria-label="Upload TP"
+              >
+                <FileCheck2 className="h-5 w-5" strokeWidth={1.8} />
+              </Link>
+            </div>
+          </div>
+        </article>
+      )}
     </section>
   );
 }
