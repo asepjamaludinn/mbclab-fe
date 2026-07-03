@@ -20,22 +20,40 @@ import { Input } from "@/shared/components/ui/input";
 export function StudentLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
-  const {
-    mutate: login,
-    isPending,
-    error,
-  } = useLogin({ expectedRole: "STUDENT" });
+  const { mutate: login, isPending } = useLogin({ expectedRole: "STUDENT" });
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = (data: LoginFormData) => {
-    login(data);
+    login(data, {
+      onError: (err) => {
+        const errorMessage = err.message.toLowerCase();
+
+        if (
+          errorMessage.includes("nim") &&
+          !errorMessage.includes("password")
+        ) {
+          setError("nim", { type: "server", message: err.message });
+        } else if (
+          errorMessage.includes("password") &&
+          !errorMessage.includes("nim")
+        ) {
+          setError("password", { type: "server", message: err.message });
+        } else {
+          setError("root.serverError", {
+            type: "server",
+            message: err.message,
+          });
+        }
+      },
+    });
   };
 
   const getInputClassName = (hasError?: boolean) =>
@@ -56,10 +74,8 @@ export function StudentLoginForm() {
           href="/"
           className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 font-secondary text-xs font-bold text-white shadow-sm backdrop-blur-xl transition hover:bg-white hover:text-primary"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
+          <ArrowLeft className="h-4 w-4" /> Kembali
         </Link>
-
         <div className="mt-8 text-white">
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-white p-2 shadow-sm">
             <Image
@@ -71,13 +87,11 @@ export function StudentLoginForm() {
               priority
             />
           </div>
-
           <h1 className="max-w-sm text-[42px] font-extrabold leading-[1.02] tracking-[-0.04em]">
             Login
             <br />
             Praktikan
           </h1>
-
           <p className="mt-4 max-w-[310px] font-secondary text-sm leading-relaxed text-white/75">
             Masuk menggunakan NIM dan password untuk mengakses dashboard
             praktikum.
@@ -87,9 +101,6 @@ export function StudentLoginForm() {
 
       <section className="relative z-10 mt-8 px-5">
         <div className="relative overflow-hidden rounded-[34px] border border-white/70 bg-white/75 p-5 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.55)] backdrop-blur-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-primary/10 blur-[55px]" />
-          <div className="pointer-events-none absolute -left-16 bottom-0 h-40 w-40 rounded-full bg-secondary/10 blur-[55px]" />
-
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="relative z-10 space-y-5"
@@ -98,16 +109,13 @@ export function StudentLoginForm() {
               <label className="mb-2 block font-secondary text-sm font-bold text-grey-900">
                 NIM
               </label>
-
               <Input
                 {...register("nim")}
                 type="text"
                 placeholder="Masukkan NIM Anda"
                 icon={
                   <UserIcon
-                    className={`h-5 w-5 ${
-                      errors.nim ? "text-error" : "text-primary"
-                    }`}
+                    className={`h-5 w-5 ${errors.nim ? "text-error" : "text-primary"}`}
                   />
                 }
                 className={getInputClassName(!!errors.nim)}
@@ -124,7 +132,6 @@ export function StudentLoginForm() {
               <label className="mb-2 block font-secondary text-sm font-bold text-grey-900">
                 Password
               </label>
-
               <div className="relative">
                 <Input
                   {...register("password")}
@@ -132,28 +139,15 @@ export function StudentLoginForm() {
                   placeholder="••••••••"
                   icon={
                     <Lock
-                      className={`h-5 w-5 ${
-                        errors.password ? "text-error" : "text-primary"
-                      }`}
+                      className={`h-5 w-5 ${errors.password ? "text-error" : "text-primary"}`}
                     />
                   }
-                  onPaste={(e) => e.preventDefault()}
-                  onCopy={(e) => e.preventDefault()}
-                  onCut={(e) => e.preventDefault()}
                   className={`${getInputClassName(!!errors.password)} pr-12`}
                 />
-
                 <button
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition ${
-                    errors.password
-                      ? "text-error hover:text-error"
-                      : "text-grey-500 hover:text-primary"
-                  }`}
-                  aria-label={
-                    showPassword ? "Sembunyikan password" : "Tampilkan password"
-                  }
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 ${errors.password ? "text-error" : "text-grey-500"}`}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -170,16 +164,16 @@ export function StudentLoginForm() {
               )}
             </div>
 
-            {error && (
-              <div className="rounded-[22px] border border-error/10 bg-error/10 p-4 text-center font-secondary text-sm font-semibold text-error">
-                {error.message || "NIM atau Password salah."}
-              </div>
+            {errors.root?.serverError && (
+              <span className="block -mt-2 font-secondary text-sm font-medium text-error">
+                {errors.root.serverError.message}
+              </span>
             )}
 
             <button
               type="submit"
               disabled={isPending}
-              className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 font-secondary text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70 active:scale-[0.98]"
+              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 font-secondary text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70 active:scale-[0.98]"
             >
               {isPending ? "Memproses..." : "Masuk"}
               <LogIn className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

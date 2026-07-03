@@ -3,6 +3,13 @@
 import { useProfile } from "@/features/auth";
 import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "@/features/student-submissions";
+
+import {
+  HomeGroupInfo,
+  HomeAssistantList,
+  usePublicAssistants,
+} from "@/features/public-home";
+
 import { DashboardHeader } from "./DashboardHeader";
 import { DashboardQuickAccess } from "./DashboardQuickAccess";
 import { DashboardProgressSummary } from "./DashboardProgressSummary";
@@ -14,6 +21,12 @@ export function StudentDashboardFeature() {
   const { data: modulesRes, isLoading: isModulesLoading } = useStudentModules();
   const { data: submissions = [], isLoading: isSubmissionsLoading } =
     useMySubmissions();
+
+  const {
+    data: assistants = [],
+    isLoading: isAssistantsLoading,
+    isError: isAssistantsError,
+  } = usePublicAssistants();
 
   const isLoading = isUserLoading || isModulesLoading || isSubmissionsLoading;
 
@@ -81,6 +94,35 @@ export function StudentDashboardFeature() {
 
           <DashboardInfo />
         </section>
+
+        <HomeGroupInfo />
+
+        {isAssistantsLoading ? (
+          <section className="px-5 pt-8">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-extrabold tracking-tight text-grey-900">
+                Tim Asisten
+              </h2>
+              <span className="font-secondary text-[11px] font-bold text-primary">
+                Memuat...
+              </span>
+            </div>
+            <div className="h-36 animate-pulse rounded-[30px] bg-white/80 shadow-sm backdrop-blur-xl" />
+          </section>
+        ) : isAssistantsError ? (
+          <section className="px-5 pt-8">
+            <div className="rounded-[30px] border border-error/10 bg-white/80 p-6 text-center shadow-sm backdrop-blur-xl">
+              <h2 className="text-sm font-extrabold text-error">
+                Data asisten gagal dimuat
+              </h2>
+              <p className="mt-1 font-secondary text-xs text-grey-500">
+                Silakan coba beberapa saat lagi.
+              </p>
+            </div>
+          </section>
+        ) : (
+          <HomeAssistantList assistants={assistants} />
+        )}
       </div>
     </main>
   );
