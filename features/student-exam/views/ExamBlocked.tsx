@@ -19,47 +19,56 @@ export function ExamBlocked({
   onUnblock,
 }: ExamBlockedProps) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-grey-900 px-5 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-error/20 text-error">
-        <ShieldAlert className="h-10 w-10" strokeWidth={1.8} />
-      </div>
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#1e293b_0%,#0f172a_100%)] px-5 text-center font-primary">
+      {/* Ambient Red Glows for urgency */}
+      <div className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-error/20 blur-[100px]" />
 
-      <h1 className="mt-6 text-2xl font-extrabold text-white">
-        Ujian Diblokir!
-      </h1>
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[28px] bg-error/20 text-error shadow-[0_0_40px_-10px_rgba(220,38,38,0.4)] backdrop-blur-xl border border-error/20">
+          <ShieldAlert className="h-12 w-12" strokeWidth={1.8} />
+        </div>
 
-      <p className="mt-2 font-secondary text-sm text-grey-400">
-        Sistem mendeteksi Anda meninggalkan halaman ujian. Silakan minta{" "}
-        <b className="text-white">Kode Unblock</b> kepada Asisten Praktikum.
-      </p>
+        <h1 className="mt-8 text-3xl font-extrabold tracking-tight text-white">
+          Ujian Terblokir!
+        </h1>
 
-      <form
-        onSubmit={onUnblock}
-        className="mt-8 w-full max-w-sm rounded-3xl bg-grey-800 p-6 shadow-xl"
-      >
-        <Input
-          value={unblockCode}
-          onChange={(e) => setUnblockCode(e.target.value)}
-          placeholder="Masukkan 6 digit kode"
-          className="mb-4 bg-grey-900 text-center font-bold text-xl tracking-widest text-white placeholder:text-grey-600 focus:ring-error/20 border-grey-700"
-          maxLength={6}
-        />
+        <p className="mt-3 font-secondary text-[15px] leading-relaxed text-slate-300">
+          Sistem mendeteksi Anda meninggalkan atau menutup tab ujian. Silakan
+          minta <strong className="font-bold text-white">Kode Unblock</strong>{" "}
+          kepada Asisten Praktikum yang bertugas.
+        </p>
 
-        {unblockError && (
-          <p className="mb-4 font-secondary text-sm text-error">
-            {unblockError}
-          </p>
-        )}
-
-        <Button
-          type="submit"
-          disabled={isUnblocking}
-          variant="danger"
-          className="w-full"
+        <form
+          onSubmit={onUnblock}
+          className="mt-8 overflow-hidden rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl"
         >
-          {isUnblocking ? "Membuka..." : "Buka Blokir"}
-        </Button>
-      </form>
+          <div className="space-y-5">
+            <Input
+              value={unblockCode}
+              onChange={(e) => setUnblockCode(e.target.value)}
+              placeholder="000000"
+              className="h-16 rounded-2xl border-white/20 bg-slate-900/50 text-center font-secondary text-2xl font-bold tracking-[0.3em] text-white shadow-inner placeholder:text-slate-600 focus:border-error focus:ring-error/20"
+              maxLength={6}
+              autoComplete="off"
+            />
+
+            {unblockError && (
+              <p className="rounded-xl border border-error/20 bg-error/10 p-3 font-secondary text-sm font-semibold text-error-400">
+                {unblockError}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isUnblocking || unblockCode.length < 6}
+              variant="danger"
+              className="h-[52px] w-full rounded-2xl text-[15px] shadow-error/25 disabled:opacity-50"
+            >
+              {isUnblocking ? "Memverifikasi..." : "Buka Blokir Sesi"}
+            </Button>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }

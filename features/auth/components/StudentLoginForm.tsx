@@ -38,6 +38,13 @@ export function StudentLoginForm() {
     login(data);
   };
 
+  const getInputClassName = (hasError?: boolean) =>
+    `rounded-[22px] bg-white/80 text-grey-900 placeholder:text-grey-400 shadow-sm backdrop-blur-xl transition ${
+      hasError
+        ? "border-2 border-error focus:border-error focus:ring-2 focus:ring-error/20"
+        : "border border-white/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+    }`;
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
@@ -96,8 +103,14 @@ export function StudentLoginForm() {
                 {...register("nim")}
                 type="text"
                 placeholder="Masukkan NIM Anda"
-                icon={<UserIcon className="h-5 w-5 text-primary" />}
-                className="rounded-[22px] border border-white/70 bg-white/80 text-grey-900 placeholder:text-grey-400 shadow-sm backdrop-blur-xl"
+                icon={
+                  <UserIcon
+                    className={`h-5 w-5 ${
+                      errors.nim ? "text-error" : "text-primary"
+                    }`}
+                  />
+                }
+                className={getInputClassName(!!errors.nim)}
               />
 
               {errors.nim && (
@@ -117,17 +130,27 @@ export function StudentLoginForm() {
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  icon={<Lock className="h-5 w-5 text-primary" />}
+                  icon={
+                    <Lock
+                      className={`h-5 w-5 ${
+                        errors.password ? "text-error" : "text-primary"
+                      }`}
+                    />
+                  }
                   onPaste={(e) => e.preventDefault()}
                   onCopy={(e) => e.preventDefault()}
                   onCut={(e) => e.preventDefault()}
-                  className="rounded-[22px] border border-white/70 bg-white/80 pr-12 text-grey-900 placeholder:text-grey-400 shadow-sm backdrop-blur-xl"
+                  className={`${getInputClassName(!!errors.password)} pr-12`}
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-grey-500 transition hover:text-primary"
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition ${
+                    errors.password
+                      ? "text-error hover:text-error"
+                      : "text-grey-500 hover:text-primary"
+                  }`}
                   aria-label={
                     showPassword ? "Sembunyikan password" : "Tampilkan password"
                   }

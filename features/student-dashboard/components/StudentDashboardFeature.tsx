@@ -19,29 +19,29 @@ export function StudentDashboardFeature() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(0,101,176,0.16),transparent_34%),linear-gradient(180deg,#f8f9fa_0%,#eef6ff_45%,#f8f9fa_100%)] pb-28">
-        <section className="px-5 pt-6">
+      <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+        <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
+        <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
+
+        <section className="relative z-10 px-5 pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="h-3 w-12 animate-pulse rounded-full bg-grey-200" />
-              <div className="mt-3 h-6 w-40 animate-pulse rounded-xl bg-grey-200" />
-              <div className="mt-2 h-3 w-24 animate-pulse rounded-full bg-grey-200" />
+              <div className="h-3 w-20 animate-pulse rounded-full bg-white/25" />
+              <div className="mt-3 h-8 w-44 animate-pulse rounded-2xl bg-white/25" />
+              <div className="mt-2 h-3 w-28 animate-pulse rounded-full bg-white/20" />
             </div>
-            <div className="h-12 w-12 animate-pulse rounded-2xl bg-grey-200" />
+
+            <div className="h-12 w-12 animate-pulse rounded-full bg-white/25" />
           </div>
         </section>
 
-        <section className="mt-6 px-5">
-          <div className="h-60 animate-pulse rounded-[36px] bg-primary/20" />
-        </section>
-
-        <section className="mt-6 space-y-4 px-5">
-          <div className="h-36 animate-pulse rounded-[32px] bg-white" />
+        <section className="relative z-10 mt-8 space-y-4 px-5">
+          <div className="h-44 animate-pulse rounded-[34px] bg-white/70 shadow-sm backdrop-blur-xl" />
           <div className="grid grid-cols-2 gap-3">
-            <div className="h-28 animate-pulse rounded-[28px] bg-white" />
-            <div className="h-28 animate-pulse rounded-[28px] bg-white" />
+            <div className="h-32 animate-pulse rounded-[28px] bg-white/70 shadow-sm backdrop-blur-xl" />
+            <div className="h-32 animate-pulse rounded-[28px] bg-white/70 shadow-sm backdrop-blur-xl" />
           </div>
-          <div className="h-48 animate-pulse rounded-[32px] bg-white" />
+          <div className="h-52 animate-pulse rounded-[34px] bg-white/70 shadow-sm backdrop-blur-xl" />
         </section>
       </main>
     );
@@ -49,19 +49,39 @@ export function StudentDashboardFeature() {
 
   const modules = modulesRes?.data || [];
 
+  const activeModule =
+    modules.find((module) => module.isActive) || modules[0] || null;
+
+  const isTpSubmitted = activeModule
+    ? submissions.some((sub) => sub.moduleId === activeModule.id)
+    : false;
+
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,101,176,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(30,63,117,0.12),transparent_30%),linear-gradient(180deg,#f8f9fa_0%,#edf6ff_42%,#f8f9fa_100%)] pb-28">
-      <DashboardHeader userName={user?.name} nim={user?.nim} />
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+      <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
+      <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
 
-      <section className="mt-6 space-y-8 px-5">
-        <DashboardProgressSummary modules={modules} submissions={submissions} />
+      <div className="relative z-10">
+        <DashboardHeader userName={user?.name} nim={user?.nim} />
 
-        <DashboardQuickAccess />
+        <section className="mt-8 space-y-7 px-5">
+          <DashboardProgressSummary
+            modules={modules}
+            submissions={submissions}
+            userName={user?.name}
+          />
 
-        <DashboardModuleProgress modules={modules} submissions={submissions} />
+          <DashboardQuickAccess />
 
-        <DashboardInfo />
-      </section>
+          <DashboardModuleProgress
+            activeModule={activeModule}
+            isTpSubmitted={isTpSubmitted}
+          />
+
+          <DashboardInfo />
+        </section>
+      </div>
     </main>
   );
 }

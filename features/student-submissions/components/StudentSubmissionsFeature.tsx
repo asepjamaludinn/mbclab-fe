@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ClipboardCheck,
-  FileText,
-  UploadCloud,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
 import { StudentBottomNavigation } from "@/features/student-navigation";
 import { usePublicModules } from "@/features/public-home";
 import { useMySubmissions } from "../hooks/use-student-submissions";
@@ -30,134 +24,110 @@ export function StudentSubmissionsFeature() {
   });
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,101,176,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(30,63,117,0.12),transparent_30%),linear-gradient(180deg,#f8f9fa_0%,#edf6ff_42%,#f8f9fa_100%)] pb-28">
-      <section className="px-5 pt-6">
-        <Link
-          href="/student/assessment"
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-2 font-secondary text-xs font-bold text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
-        </Link>
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+      <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
+      <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
 
-        <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-          Tugas Pendahuluan
-        </p>
+      <div className="relative z-10">
+        {/* Header yang lebih to-the-point */}
+        <section className="px-5 pt-8 text-white">
+          <Link
+            href="/student/assessment"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-secondary text-xs font-bold text-white shadow-sm backdrop-blur-md transition hover:bg-white/20 active:scale-[0.96]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Kembali
+          </Link>
 
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-grey-900">
-          Pilih Modul TP
-        </h1>
+          <h1 className="text-[32px] font-extrabold tracking-tight drop-shadow-sm">
+            Tugas Pendahuluan
+          </h1>
 
-        <p className="mt-2 max-w-sm font-secondary text-sm leading-relaxed text-grey-500">
-          Pilih modul praktikum yang ingin dikumpulkan dalam format PDF.
-        </p>
-      </section>
+          <p className="mt-2 max-w-sm font-secondary text-sm leading-relaxed text-white/85">
+            Pilih modul praktikum di bawah ini untuk mengunggah file. Pastikan
+            format file adalah <strong>PDF</strong>.
+          </p>
+        </section>
 
-      <section className="mt-5 px-5">
-        <div className="relative overflow-hidden rounded-[38px] border border-white/70 bg-white/45 px-5 pb-5 pt-5 text-grey-900 shadow-[0_24px_70px_-32px_rgba(0,101,176,0.45)] backdrop-blur-2xl">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-[70px]" />
-          <div className="pointer-events-none absolute -bottom-24 -left-20 h-60 w-60 rounded-full bg-secondary/15 blur-[80px]" />
-          <div className="pointer-events-none absolute left-1/2 top-8 h-40 w-40 -translate-x-1/2 rounded-full bg-white/60 blur-[60px]" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/80 via-white/35 to-primary/10" />
-
-          <div className="relative z-10">
-            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-primary shadow-sm backdrop-blur-xl">
-              <ClipboardCheck className="h-7 w-7" strokeWidth={1.8} />
+        {/* Module List - Langsung ke konten utama */}
+        <section className="mt-8 space-y-4 px-5">
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-28 w-full animate-pulse rounded-[30px] bg-white/40 backdrop-blur-xl"
+                />
+              ))}
             </div>
-
-            <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.2em] text-primary/70">
-              Upload TP
-            </p>
-
-            <h2 className="mt-3 max-w-[285px] text-[28px] font-extrabold leading-[1.08] tracking-tight text-grey-900">
-              Kumpulkan laporan TP sesuai modul
-            </h2>
-
-            <p className="mt-4 max-w-[290px] font-secondary text-sm leading-relaxed text-grey-600">
-              Pastikan file sudah sesuai format dan ukuran sebelum dikirim ke
-              sistem.
-            </p>
-
-            <div className="mt-6 flex items-center gap-2 rounded-2xl border border-primary/10 bg-primary/10 px-4 py-3 text-primary">
-              <UploadCloud className="h-4 w-4 shrink-0" />
-              <p className="font-secondary text-xs font-semibold">
-                Format file yang diterima hanya PDF.
+          ) : combinedModules.length === 0 ? (
+            <div className="rounded-[30px] border border-white/50 bg-white/40 p-6 text-center shadow-sm backdrop-blur-xl">
+              <p className="font-secondary text-sm font-semibold text-slate-600">
+                Belum ada modul yang aktif.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-6 space-y-4 px-5">
-        {isLoading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-28 w-full animate-pulse rounded-[30px] bg-white/60"
-              />
-            ))}
-          </div>
-        ) : combinedModules.length === 0 ? (
-          <div className="rounded-[30px] border border-white/70 bg-white/80 p-5 text-center shadow-sm">
-            <p className="font-secondary text-sm font-semibold text-grey-500">
-              Belum ada modul yang aktif.
-            </p>
-          </div>
-        ) : (
-          combinedModules.map((module) => (
-            <Link
-              key={module.id}
-              href={`/student/submissions/${module.id}`}
-              className="group block"
-            >
-              <article className="relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-[0_16px_45px_-28px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white">
-                <div
-                  className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${module.isSubmitted ? "bg-success/10" : "bg-info/10"}`}
-                />
-
-                <div className="relative z-10 flex items-center justify-between gap-4">
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div
-                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] text-white shadow-lg ${module.isSubmitted ? "bg-success shadow-success/20" : "bg-info shadow-info/20"}`}
-                    >
-                      <FileText className="h-7 w-7" strokeWidth={1.7} />
-                    </div>
-
-                    <div className="min-w-0">
-                      <p
-                        className={`font-secondary text-[10px] font-bold uppercase tracking-[0.18em] ${module.isSubmitted ? "text-success" : "text-info"}`}
-                      >
-                        PDF Submission
-                      </p>
-
-                      <h2 className="mt-1 text-base font-extrabold text-grey-900">
-                        {module.title}
-                      </h2>
-
-                      <p className="mt-1 truncate font-secondary text-xs leading-relaxed text-grey-500">
-                        {module.description}
-                      </p>
-
-                      <span
-                        className={`mt-3 inline-flex rounded-full px-3 py-1 font-secondary text-[11px] font-semibold ${module.isSubmitted ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}
-                      >
-                        {module.status}
-                      </span>
-                    </div>
-                  </div>
-
+          ) : (
+            combinedModules.map((module) => (
+              <Link
+                key={module.id}
+                href={`/student/submissions/${module.id}`}
+                className="group block"
+              >
+                <article className="relative overflow-hidden rounded-[30px] border border-white/60 bg-white/60 p-5 shadow-[0_16px_45px_-28px_rgba(0,101,176,0.15)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/80 active:scale-[0.98]">
                   <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-grey-50 text-grey-400 transition ${module.isSubmitted ? "group-hover:bg-success" : "group-hover:bg-info"} group-hover:text-white`}
-                  >
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${
+                      module.isSubmitted ? "bg-success/20" : "bg-info/20"
+                    }`}
+                  />
+
+                  <div className="relative z-10 flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div
+                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] text-white shadow-md ${
+                          module.isSubmitted
+                            ? "bg-success shadow-success/20"
+                            : "bg-info shadow-info/20"
+                        }`}
+                      >
+                        <FileText className="h-7 w-7" strokeWidth={1.8} />
+                      </div>
+
+                      <div className="min-w-0">
+                        <h2 className="text-[17px] font-extrabold tracking-tight text-slate-900">
+                          {module.title}
+                        </h2>
+
+                        <div className="mt-2 flex items-center">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-secondary text-[11px] font-bold ${
+                              module.isSubmitted
+                                ? "bg-success/15 text-success-700"
+                                : "bg-warning/15 text-warning-700"
+                            }`}
+                          >
+                            {module.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
+                        module.isSubmitted
+                          ? "bg-success/10 text-success group-hover:bg-success group-hover:text-white"
+                          : "bg-info/10 text-info group-hover:bg-info group-hover:text-white"
+                      }`}
+                    >
+                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                    </div>
                   </div>
-                </div>
-              </article>
-            </Link>
-          ))
-        )}
-      </section>
+                </article>
+              </Link>
+            ))
+          )}
+        </section>
+      </div>
 
       <StudentBottomNavigation />
     </main>

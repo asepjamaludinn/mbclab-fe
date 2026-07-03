@@ -24,105 +24,122 @@ export function ExamSelectModule({
   onSelectSession,
 }: Props) {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(0,101,176,0.18),transparent_32%),linear-gradient(180deg,#f8f9fa_0%,#edf6ff_42%,#f8f9fa_100%)] pb-28">
-      <section className="px-5 pt-6">
-        <Link
-          href="/student/dashboard"
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-2 font-secondary text-xs font-bold text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> Kembali
-        </Link>
-        <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-          Tes Awal (TA)
-        </p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-grey-900">
-          Pilih Modul Ujian
-        </h1>
-        <p className="mt-2 font-secondary text-sm leading-relaxed text-grey-500">
-          Modul hanya akan terbuka sesuai jadwal sesi praktikum kelompok Anda
-          hari ini.
-        </p>
-      </section>
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+      <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
+      <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
 
-      <section className="mt-6 space-y-4 px-5">
-        {isLoadingData ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-28 w-full animate-pulse rounded-[30px] bg-white/60"
-              />
-            ))}
-          </div>
-        ) : modules.length === 0 ? (
-          <div className="rounded-[30px] border border-white/70 bg-white/80 p-5 text-center shadow-sm">
-            <p className="font-secondary text-sm font-semibold text-grey-500">
-              Belum ada modul praktikum aktif.
-            </p>
-          </div>
-        ) : (
-          modules.map((mod) => {
-            const session = todaySessions.find((s) => s.moduleId === mod.id);
-            let statusLabel = "Tidak Ada Jadwal Hari Ini";
-            let statusClass = "bg-grey-200 text-grey-600";
-            let actionButton = null;
+      <div className="relative z-10">
+        <section className="px-5 pt-8 text-white">
+          <Link
+            href="/student/assessment"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-secondary text-xs font-bold text-white shadow-sm backdrop-blur-md transition hover:bg-white/20 active:scale-[0.96]"
+          >
+            <ArrowLeft className="h-4 w-4" /> Kembali
+          </Link>
 
-            if (session) {
-              const now = new Date();
-              const start = new Date(session.startTime);
-              const end = new Date(session.endTime);
+          <h1 className="text-[32px] font-extrabold tracking-tight drop-shadow-sm">
+            Tes Awal (TA)
+          </h1>
+          <p className="mt-2 max-w-sm font-secondary text-sm leading-relaxed text-white/85">
+            Pilih modul ujian. Akses hanya akan terbuka sesuai dengan jadwal
+            sesi praktikum kelompok Anda hari ini.
+          </p>
+        </section>
 
-              if (now < start) {
-                statusLabel = `Mulai Pukul ${start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
-                statusClass = "bg-warning/10 text-warning";
-              } else if (now > end) {
-                statusLabel = "Waktu Ujian Berakhir";
-                statusClass = "bg-error/10 text-error";
-              } else {
-                statusLabel = "Sedang Berlangsung";
-                statusClass = "bg-success/10 text-success";
-                actionButton = (
-                  <Button size="sm" onClick={() => onSelectSession(session.id)}>
-                    Masuk Ujian <ArrowRight className="h-4 w-4" />
-                  </Button>
-                );
-              }
-            }
+        <section className="mt-8 space-y-4 px-5">
+          {isLoadingData ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-28 w-full animate-pulse rounded-[30px] bg-white/40 backdrop-blur-xl"
+                />
+              ))}
+            </div>
+          ) : modules.length === 0 ? (
+            <div className="rounded-[30px] border border-white/50 bg-white/40 p-6 text-center shadow-sm backdrop-blur-xl">
+              <p className="font-secondary text-sm font-semibold text-slate-600">
+                Belum ada modul praktikum aktif.
+              </p>
+            </div>
+          ) : (
+            modules.map((mod) => {
+              const session = todaySessions.find((s) => s.moduleId === mod.id);
+              let statusLabel = "Tidak Ada Jadwal Hari Ini";
+              let statusClass =
+                "bg-slate-100 text-slate-500 border border-slate-200";
+              let actionButton = null;
 
-            return (
-              <article
-                key={mod.id}
-                className="relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-[0_16px_45px_-28px_rgba(0,0,0,0.35)] backdrop-blur-xl"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-primary/10 text-primary shadow-sm">
-                    {actionButton ? (
-                      <ClipboardList className="h-7 w-7" strokeWidth={1.8} />
-                    ) : (
-                      <LockKeyhole className="h-6 w-6" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-base font-extrabold text-grey-900">
-                      {mod.title}
-                    </h2>
-                    <span
-                      className={`mt-2 inline-block rounded-full px-3 py-1 font-secondary text-[10px] font-bold ${statusClass}`}
+              if (session) {
+                const now = new Date();
+                const start = new Date(session.startTime);
+                const end = new Date(session.endTime);
+
+                if (now < start) {
+                  statusLabel = `Mulai Pukul ${start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
+                  statusClass =
+                    "bg-warning/15 text-warning-700 border border-warning/20";
+                } else if (now > end) {
+                  statusLabel = "Waktu Ujian Berakhir";
+                  statusClass =
+                    "bg-error/10 text-error-700 border border-error/20";
+                } else {
+                  statusLabel = "Sedang Berlangsung";
+                  statusClass =
+                    "bg-success/15 text-success-700 border border-success/20";
+                  actionButton = (
+                    <Button
+                      onClick={() => onSelectSession(session.id)}
+                      className="w-full h-11 rounded-xl shadow-primary/25"
                     >
-                      {statusLabel}
-                    </span>
+                      Masuk Ujian <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  );
+                }
+              }
+
+              return (
+                <article
+                  key={mod.id}
+                  className="relative overflow-hidden rounded-[30px] border border-white/60 bg-white/60 p-5 shadow-[0_16px_45px_-28px_rgba(0,101,176,0.15)] backdrop-blur-2xl"
+                >
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] shadow-sm ${actionButton ? "bg-primary text-white shadow-primary/30" : "bg-white text-slate-400"}`}
+                    >
+                      {actionButton ? (
+                        <ClipboardList className="h-7 w-7" strokeWidth={1.8} />
+                      ) : (
+                        <LockKeyhole className="h-6 w-6" strokeWidth={1.8} />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1 pt-1">
+                      <h2 className="text-[17px] font-extrabold text-slate-900 tracking-tight">
+                        {mod.title}
+                      </h2>
+                      <div className="mt-2 flex flex-wrap items-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-secondary text-[11px] font-bold ${statusClass}`}
+                        >
+                          {statusLabel}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                {actionButton && (
-                  <div className="mt-5 border-t border-grey-100 pt-4 flex justify-end">
-                    {actionButton}
-                  </div>
-                )}
-              </article>
-            );
-          })
-        )}
-      </section>
+
+                  {actionButton && (
+                    <div className="mt-5 border-t border-white/40 pt-4">
+                      {actionButton}
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )}
+        </section>
+      </div>
       <StudentBottomNavigation />
     </main>
   );
