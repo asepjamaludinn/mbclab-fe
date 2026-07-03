@@ -95,7 +95,7 @@ export function DashboardModuleProgress({
 
               {canDownload ? (
                 <a
-                  href={activeModule.fileUrl}
+                  href={activeModule.fileUrl as string}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
