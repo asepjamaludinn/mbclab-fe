@@ -6,7 +6,6 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { StudentBottomNavigation } from "@/features/student-navigation";
 import { TodayExamSession } from "../types/student-exam.type";
 import { PracticumModule } from "@/features/student-modules";
 
@@ -24,7 +23,7 @@ export function ExamSelectModule({
   onSelectSession,
 }: Props) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
       <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
@@ -140,7 +139,6 @@ export function ExamSelectModule({
           )}
         </section>
       </div>
-      <StudentBottomNavigation />
     </main>
   );
 }

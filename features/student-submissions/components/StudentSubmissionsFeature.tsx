@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
-import { StudentBottomNavigation } from "@/features/student-navigation";
 import { usePublicModules } from "@/features/public-home";
 import { useMySubmissions } from "../hooks/use-student-submissions";
 
@@ -24,13 +23,12 @@ export function StudentSubmissionsFeature() {
   });
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
       <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
 
       <div className="relative z-10">
-        {/* Header yang lebih to-the-point */}
         <section className="px-5 pt-8 text-white">
           <Link
             href="/student/assessment"
@@ -50,7 +48,6 @@ export function StudentSubmissionsFeature() {
           </p>
         </section>
 
-        {/* Module List - Langsung ke konten utama */}
         <section className="mt-8 space-y-4 px-5">
           {isLoading ? (
             <div className="space-y-4">
@@ -128,8 +125,6 @@ export function StudentSubmissionsFeature() {
           )}
         </section>
       </div>
-
-      <StudentBottomNavigation />
     </main>
   );
 }
