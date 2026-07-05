@@ -44,6 +44,20 @@ export const examService = {
     return response.data;
   },
 
+  reportCheatKeepAlive: (sessionId: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl || typeof window === "undefined") return;
+
+    fetch(`${apiUrl}/exam-attempts/${sessionId}/cheat`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      keepalive: true,
+      credentials: "include",
+    }).catch(() => {});
+  },
+
   unblockAttempt: async ({ sessionId, code }: UnblockPayload) => {
     const response = await api.patch<{ message: string; attempt: any }>(
       `/exam-attempts/${sessionId}/unblock`,

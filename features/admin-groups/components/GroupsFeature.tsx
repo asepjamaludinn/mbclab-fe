@@ -216,7 +216,6 @@ export function GroupsFeature() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          {/* Tag <a> pembuka yang sebelumnya hilang telah ditambahkan di bawah ini */}
           <a
             href={adminGroupService.exportCsvUrl()}
             target="_blank"

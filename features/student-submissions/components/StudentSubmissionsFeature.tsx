@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
-import { useStudentModules } from "@/features/student-modules"; // <-- Berubah
+import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "../hooks/use-student-submissions";
 
 export function StudentSubmissionsFeature() {
-  const { data: modulesRes, isLoading: isLoadingModules } = useStudentModules(); // <-- Berubah
+  const { data: modulesRes, isLoading: isLoadingModules } = useStudentModules();
   const { data: submissions = [], isLoading: isLoadingSubmissions } =
     useMySubmissions();
 
   const isLoading = isLoadingModules || isLoadingSubmissions;
-  const modules = modulesRes?.data || []; // <-- Tambahan
+  const modules = modulesRes?.data || [];
 
   const combinedModules = modules.map((module) => {
     const submission = submissions.find((sub) => sub.moduleId === module.id);
@@ -95,7 +95,6 @@ export function StudentSubmissionsFeature() {
                           {module.title}
                         </h2>
 
-                        {/* Menampilkan Deadline TP jika ada */}
                         {module.tpDeadline && !module.isSubmitted && (
                           <p className="mt-0.5 font-secondary text-[11px] font-medium text-slate-500">
                             Batas:{" "}

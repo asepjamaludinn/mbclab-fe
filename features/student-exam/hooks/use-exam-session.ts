@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ExamAttempt, Question } from "../types/student-exam.type";
 import {
   useJoinExam,
@@ -7,6 +7,7 @@ import {
   useSubmitExam,
   useUnblockAttempt,
 } from "./use-student-exam";
+import { examService } from "../services/student-exam.service";
 import axios from "axios";
 
 export type ExamState =
@@ -23,19 +24,16 @@ export function useExamSession() {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [accessCode, setAccessCode] = useState("");
   const [joinError, setJoinError] = useState("");
-
   const [attempt, setAttempt] = useState<ExamAttempt | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerOption>>({});
   const [timeLeft, setTimeLeft] = useState("--:--");
-
   const [unblockCode, setUnblockCode] = useState("");
   const [unblockError, setUnblockError] = useState("");
-
-  // Pesan status dari server untuk state BLOCKED / DISQUALIFIED, misalnya
-  // "pelanggaran ke-3 dari maksimal 5" atau "nilai TA Anda 0".
   const [statusMessage, setStatusMessage] = useState("");
+
+  const cheatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { mutateAsync: joinExam, isPending: isJoining } = useJoinExam();
   const { mutateAsync: saveAnswer } = useSaveAnswer();
@@ -71,7 +69,7 @@ export function useExamSession() {
   useEffect(() => {
     if (examState !== "IN_PROGRESS" || !attempt) return;
 
-    const handleBlur = async () => {
+    const executeCheatReport = async () => {
       try {
         const res = await reportCheat(selectedSessionId);
 
@@ -97,8 +95,52 @@ export function useExamSession() {
       }
     };
 
-    window.addEventListener("blur", handleBlur);
-    return () => window.removeEventListener("blur", handleBlur);
+    const handleHidden = () => {
+      if (cheatTimeoutRef.current) return;
+
+      cheatTimeoutRef.current = setTimeout(() => {
+        executeCheatReport();
+        cheatTimeoutRef.current = null;
+      }, 3000);
+    };
+
+    const handleVisible = () => {
+      if (cheatTimeoutRef.current) {
+        clearTimeout(cheatTimeoutRef.current);
+        cheatTimeoutRef.current = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        handleHidden();
+      } else {
+        handleVisible();
+      }
+    };
+
+    const handlePageHide = () => {
+      if (examState === "IN_PROGRESS") {
+        examService.reportCheatKeepAlive(selectedSessionId);
+      }
+    };
+
+    window.addEventListener("blur", handleHidden);
+    window.addEventListener("focus", handleVisible);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("blur", handleHidden);
+      window.removeEventListener("focus", handleVisible);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+
+      if (cheatTimeoutRef.current) {
+        clearTimeout(cheatTimeoutRef.current);
+        cheatTimeoutRef.current = null;
+      }
+    };
   }, [examState, attempt, selectedSessionId, reportCheat]);
 
   const handleJoin = async (e: React.FormEvent) => {

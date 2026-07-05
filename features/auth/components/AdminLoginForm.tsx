@@ -48,8 +48,6 @@ export function AdminLoginForm() {
     });
   };
 
-  // ClassName input disamakan gayanya dengan student (agak rounded/pill)
-  // namun disesuaikan warnanya agar cocok di atas background putih/abu terang
   const getInputClassName = (hasError?: boolean) =>
     `h-13 rounded-[22px] bg-white text-grey-900 placeholder:text-grey-400 shadow-sm transition ${
       hasError
@@ -59,9 +57,7 @@ export function AdminLoginForm() {
 
   return (
     <main className="flex min-h-screen w-full bg-grey-50 font-primary">
-      {/* Kolom Kiri - Branding dengan lengkungan (rounded-r-[48px]) di kanan atas dan bawah */}
       <section className="relative z-10 hidden w-1/2 flex-col justify-center overflow-hidden rounded-r-[48px] bg-[linear-gradient(135deg,#0065b0_0%,#1e3f75_100%)] px-16 shadow-[12px_0_40px_rgba(0,101,176,0.15)] lg:flex xl:px-24">
-        {/* Dekorasi Latar Belakang */}
         <div className="pointer-events-none absolute -right-24 top-10 h-[500px] w-[500px] rounded-full bg-white/10 blur-[120px]" />
         <div className="pointer-events-none absolute -left-20 bottom-10 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px]" />
         <div className="pointer-events-none absolute inset-0 bg-[url('/images/pattern-grid.svg')] opacity-5" />
