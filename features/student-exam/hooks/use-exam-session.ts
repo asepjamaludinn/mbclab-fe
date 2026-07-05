@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ExamAttempt, Question } from "../types/student-exam.type";
 import {
   useJoinExam,
@@ -18,6 +18,7 @@ export type ExamState =
   | "DISQUALIFIED"
   | "SUBMITTED";
 export type AnswerOption = "A" | "B" | "C" | "D" | "E";
+export type SaveStatus = "idle" | "saving" | "error" | "success";
 
 export function useExamSession() {
   const [examState, setExamState] = useState<ExamState>("SELECT_MODULE");
@@ -32,6 +33,7 @@ export function useExamSession() {
   const [unblockCode, setUnblockCode] = useState("");
   const [unblockError, setUnblockError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const cheatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -178,21 +180,33 @@ export function useExamSession() {
     }
   };
 
-  const handleSelectAnswer = async (
-    questionId: string,
-    option: AnswerOption,
-  ) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: option }));
-    try {
-      await saveAnswer({
-        sessionId: selectedSessionId,
-        questionId,
-        selectedOption: option,
-      });
-    } catch (error) {
-      console.error("Gagal menyimpan jawaban:", error);
-    }
-  };
+  const handleSelectAnswer = useCallback(
+    async (questionId: string, option: AnswerOption, retryCount = 0) => {
+      setAnswers((prev) => ({ ...prev, [questionId]: option }));
+      setSaveStatus("saving");
+
+      try {
+        await saveAnswer({
+          sessionId: selectedSessionId,
+          questionId,
+          selectedOption: option,
+        });
+        setSaveStatus("success");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (error) {
+        if (retryCount < 3) {
+          const delay = Math.pow(2, retryCount) * 1000;
+          setTimeout(
+            () => handleSelectAnswer(questionId, option, retryCount + 1),
+            delay,
+          );
+        } else {
+          setSaveStatus("error");
+        }
+      }
+    },
+    [selectedSessionId, saveAnswer],
+  );
 
   const handleForceSubmit = async () => {
     try {
@@ -266,6 +280,7 @@ export function useExamSession() {
       isSubmitting,
       isUnblocking,
       statusMessage,
+      saveStatus,
       cheatCount: attempt?.cheatCount ?? 0,
     },
     actions: {

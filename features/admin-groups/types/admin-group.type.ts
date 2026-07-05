@@ -42,3 +42,10 @@ export type UnassignedStudent = {
   nim: string;
   name: string;
 };
+
+export type BulkDeleteGroupsResult = {
+  message: string;
+  deletedCount: number;
+  failedCount: number;
+  failedGroups: { id: string; name: string; reason: string }[];
+};

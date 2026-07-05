@@ -52,6 +52,7 @@ export function StudentExamFeature() {
           answers={state.answers}
           timeLeft={state.timeLeft}
           isSubmitting={state.isSubmitting}
+          saveStatus={state.saveStatus}
           setCurrentIdx={actions.setCurrentIdx}
           onSelectAnswer={actions.handleSelectAnswer}
           onManualSubmit={actions.handleManualSubmit}

@@ -5,6 +5,7 @@ import {
   AdminGroupsResponse,
   AssignStudentsResult,
   UnassignedStudent,
+  BulkDeleteGroupsResult,
 } from "../types/admin-group.type";
 
 export const adminGroupService = {
@@ -31,8 +32,12 @@ export const adminGroupService = {
     return res.data;
   },
 
-  bulkDeleteGroups: async (groupIds: string[]) => {
-    const res = await api.post("/groups/bulk-delete", { groupIds });
+  bulkDeleteGroups: async (
+    groupIds: string[],
+  ): Promise<BulkDeleteGroupsResult> => {
+    const res = await api.post<BulkDeleteGroupsResult>("/groups/bulk-delete", {
+      groupIds,
+    });
     return res.data;
   },
 

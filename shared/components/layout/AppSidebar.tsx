@@ -15,6 +15,8 @@ import {
   Settings,
   LogOut,
   ChevronsUpDown,
+  UserRoundCheck,
+  History,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -49,7 +51,10 @@ const MAIN_MENUS = [
   { label: "Praktikan", href: "/admin/students", icon: Users },
   { label: "Sesi Ujian", href: "/admin/sessions", icon: ClipboardCheck },
   { label: "Nilai & TP", href: "/admin/grades", icon: FileText },
+  { label: "Asisten Lab", href: "/admin/assistants", icon: UserRoundCheck },
+  { label: "Audit Log", href: "/admin/audit-logs", icon: History },
 ];
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
