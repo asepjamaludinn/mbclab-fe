@@ -6,19 +6,19 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { TodayExamSession } from "../types/student-exam.type";
+import { MyExamSession } from "../types/student-exam.type";
 import { PracticumModule } from "@/features/student-modules";
 
 type Props = {
   modules: PracticumModule[];
-  todaySessions: TodayExamSession[];
+  mySessions: MyExamSession[];
   isLoadingData: boolean;
   onSelectSession: (sessionId: string) => void;
 };
 
 export function ExamSelectModule({
   modules,
-  todaySessions,
+  mySessions,
   isLoadingData,
   onSelectSession,
 }: Props) {
@@ -41,8 +41,8 @@ export function ExamSelectModule({
             Tes Awal (TA)
           </h1>
           <p className="mt-2 max-w-sm font-secondary text-sm leading-relaxed text-white/85">
-            Pilih modul ujian. Akses hanya akan terbuka sesuai dengan jadwal
-            sesi praktikum kelompok Anda hari ini.
+            Pilih modul ujian. Akses ujian akan terbuka secara otomatis sesuai
+            dengan jadwal praktikum kelompok Anda.
           </p>
         </section>
 
@@ -64,37 +64,61 @@ export function ExamSelectModule({
             </div>
           ) : (
             modules.map((mod) => {
-              const session = todaySessions.find((s) => s.moduleId === mod.id);
-              let statusLabel = "Tidak Ada Jadwal Hari Ini";
+              const session = mySessions.find((s) => s.moduleId === mod.id);
+              let statusLabel = "Belum Ada Jadwal";
               let statusClass =
                 "bg-slate-100 text-slate-500 border border-slate-200";
               let actionButton = null;
 
               if (session) {
                 const now = new Date();
+                const sessionDate = new Date(session.date);
                 const start = new Date(session.startTime);
                 const end = new Date(session.endTime);
 
-                if (now < start) {
-                  statusLabel = `Mulai Pukul ${start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
+                const isToday =
+                  now.getFullYear() === sessionDate.getFullYear() &&
+                  now.getMonth() === sessionDate.getMonth() &&
+                  now.getDate() === sessionDate.getDate();
+
+                const formattedDate = sessionDate.toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
+
+                const shiftName = session.shift.replace("_", " ");
+
+                if (isToday) {
+                  if (now < start) {
+                    statusLabel = `Hari ini Pukul ${start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
+                    statusClass =
+                      "bg-info/15 text-info-700 border border-info/20";
+                  } else if (now > end) {
+                    statusLabel = "Waktu Ujian Berakhir";
+                    statusClass =
+                      "bg-error/10 text-error-700 border border-error/20";
+                  } else {
+                    statusLabel = "Sedang Berlangsung";
+                    statusClass =
+                      "bg-success/15 text-success-700 border border-success/20";
+                    actionButton = (
+                      <Button
+                        onClick={() => onSelectSession(session.id)}
+                        className="w-full h-11 rounded-xl shadow-primary/25"
+                      >
+                        Masuk Ujian <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    );
+                  }
+                } else if (sessionDate > now) {
+                  statusLabel = `Jadwal: ${formattedDate} (${shiftName})`;
                   statusClass =
                     "bg-warning/15 text-warning-700 border border-warning/20";
-                } else if (now > end) {
-                  statusLabel = "Waktu Ujian Berakhir";
-                  statusClass =
-                    "bg-error/10 text-error-700 border border-error/20";
                 } else {
-                  statusLabel = "Sedang Berlangsung";
+                  statusLabel = `Sesi Telah Berlalu (${formattedDate})`;
                   statusClass =
-                    "bg-success/15 text-success-700 border border-success/20";
-                  actionButton = (
-                    <Button
-                      onClick={() => onSelectSession(session.id)}
-                      className="w-full h-11 rounded-xl shadow-primary/25"
-                    >
-                      Masuk Ujian <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  );
+                    "bg-slate-100 text-slate-500 border border-slate-200";
                 }
               }
 

@@ -23,9 +23,9 @@ export const useUnblockAttempt = () => {
   return useMutation({ mutationFn: examService.unblockAttempt });
 };
 
-export const useTodayExamSessions = () => {
+export const useMyExamSessions = () => {
   return useQuery({
-    queryKey: ["today-exam-sessions"],
-    queryFn: examService.getTodaySessions,
+    queryKey: ["my-exam-sessions"],
+    queryFn: examService.getMySessions,
   });
 };

@@ -14,6 +14,7 @@ export type ExamState =
   | "ENTER_CODE"
   | "IN_PROGRESS"
   | "BLOCKED"
+  | "DISQUALIFIED"
   | "SUBMITTED";
 export type AnswerOption = "A" | "B" | "C" | "D" | "E";
 
@@ -31,6 +32,10 @@ export function useExamSession() {
 
   const [unblockCode, setUnblockCode] = useState("");
   const [unblockError, setUnblockError] = useState("");
+
+  // Pesan status dari server untuk state BLOCKED / DISQUALIFIED, misalnya
+  // "pelanggaran ke-3 dari maksimal 5" atau "nilai TA Anda 0".
+  const [statusMessage, setStatusMessage] = useState("");
 
   const { mutateAsync: joinExam, isPending: isJoining } = useJoinExam();
   const { mutateAsync: saveAnswer } = useSaveAnswer();
@@ -69,7 +74,23 @@ export function useExamSession() {
     const handleBlur = async () => {
       try {
         const res = await reportCheat(selectedSessionId);
-        setAttempt(res.attempt);
+
+        setStatusMessage(res.message);
+
+        if (res.disqualified) {
+          setExamState("DISQUALIFIED");
+          return;
+        }
+
+        setAttempt((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: res.attempt.status,
+                cheatCount: res.attempt.cheatCount,
+              }
+            : prev,
+        );
         setExamState("BLOCKED");
       } catch (error) {
         console.error("Gagal merekam indikasi kecurangan:", error);
@@ -80,7 +101,6 @@ export function useExamSession() {
     return () => window.removeEventListener("blur", handleBlur);
   }, [examState, attempt, selectedSessionId, reportCheat]);
 
-  // Handlers
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     setJoinError("");
@@ -100,6 +120,12 @@ export function useExamSession() {
         String(error.response.data?.message).includes("diblokir")
       ) {
         setExamState("BLOCKED");
+      } else if (
+        axios.isAxiosError(error) &&
+        String(error.response?.data?.message).includes("melebihi batas")
+      ) {
+        setStatusMessage(error.response?.data?.message ?? "");
+        setExamState("DISQUALIFIED");
       } else if (axios.isAxiosError(error)) {
         setJoinError(
           error.response?.data?.message || "Gagal masuk ke sesi ujian.",
@@ -165,11 +191,17 @@ export function useExamSession() {
       setAttempt(res.attempt);
       setExamState("IN_PROGRESS");
       setUnblockCode("");
+      setStatusMessage("");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        setUnblockError(
-          error.response?.data?.message || "Kode unblock tidak valid.",
-        );
+        const message =
+          error.response?.data?.message || "Kode unblock tidak valid.";
+        setUnblockError(message);
+
+        if (String(message).includes("diakhiri")) {
+          setStatusMessage(message);
+          setExamState("DISQUALIFIED");
+        }
       } else {
         setUnblockError("Kode unblock tidak valid.");
       }
@@ -191,6 +223,8 @@ export function useExamSession() {
       isJoining,
       isSubmitting,
       isUnblocking,
+      statusMessage,
+      cheatCount: attempt?.cheatCount ?? 0,
     },
     actions: {
       setExamState,

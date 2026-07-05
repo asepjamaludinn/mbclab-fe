@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
-import { usePublicModules } from "@/features/public-home";
+import { useStudentModules } from "@/features/student-modules"; // <-- Berubah
 import { useMySubmissions } from "../hooks/use-student-submissions";
 
 export function StudentSubmissionsFeature() {
-  const { data: modules = [], isLoading: isLoadingModules } =
-    usePublicModules();
+  const { data: modulesRes, isLoading: isLoadingModules } = useStudentModules(); // <-- Berubah
   const { data: submissions = [], isLoading: isLoadingSubmissions } =
     useMySubmissions();
 
   const isLoading = isLoadingModules || isLoadingSubmissions;
+  const modules = modulesRes?.data || []; // <-- Tambahan
 
   const combinedModules = modules.map((module) => {
     const submission = submissions.find((sub) => sub.moduleId === module.id);
@@ -94,6 +94,23 @@ export function StudentSubmissionsFeature() {
                         <h2 className="text-[17px] font-extrabold tracking-tight text-slate-900">
                           {module.title}
                         </h2>
+
+                        {/* Menampilkan Deadline TP jika ada */}
+                        {module.tpDeadline && !module.isSubmitted && (
+                          <p className="mt-0.5 font-secondary text-[11px] font-medium text-slate-500">
+                            Batas:{" "}
+                            {new Date(module.tpDeadline).toLocaleString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}{" "}
+                            WIB
+                          </p>
+                        )}
 
                         <div className="mt-2 flex items-center">
                           <span

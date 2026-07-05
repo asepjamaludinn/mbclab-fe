@@ -48,9 +48,6 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
     <section id="asisten" className="px-5 pt-10">
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-            Assistant Team
-          </p>
           <h2 className="mt-1 text-xl font-extrabold tracking-tight text-grey-900">
             Tim Asisten
           </h2>

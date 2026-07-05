@@ -9,10 +9,7 @@ type DashboardHeaderProps = {
   isLoggingOut?: boolean;
 };
 
-export function DashboardHeader({
-  userName = "Praktikan",
-  nim,
-}: DashboardHeaderProps) {
+export function DashboardHeader({ userName = "", nim }: DashboardHeaderProps) {
   return (
     <header className="flex items-center justify-between px-5 pt-6 text-white">
       <Link href="/student/account" className="flex min-w-0 items-center gap-3">

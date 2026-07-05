@@ -34,13 +34,26 @@ export type UnblockPayload = {
   code: string;
 };
 
-export type TodayExamSession = {
+export type MyExamSession = {
   id: string;
   moduleId: string;
+  date: string;
+  shift: string;
   startTime: string;
   endTime: string;
   module: {
     title: string;
     order: number;
+  };
+};
+
+export type ReportCheatResponse = {
+  message: string;
+  disqualified: boolean;
+  attempt: {
+    id: string;
+    cheatCount: number;
+    status: ExamAttempt["status"];
+    score?: number;
   };
 };

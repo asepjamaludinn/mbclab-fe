@@ -16,11 +16,24 @@ const PUBLIC_ENDPOINTS = [
   "/practicum-modules/public",
 ];
 
+let isRefreshing = false;
+let refreshSubscribers: Array<(success: boolean) => void> = [];
+
+function subscribeTokenRefresh(cb: (success: boolean) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function onRefreshed(success: boolean) {
+  refreshSubscribers.forEach((cb) => cb(success));
+  refreshSubscribers = [];
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     const requestUrl = originalRequest?.url || "";
+    const status = error.response?.status;
 
     const isPublicRequest = PUBLIC_ENDPOINTS.some((endpoint) =>
       requestUrl.includes(endpoint),
@@ -30,13 +43,31 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    if (status === 429) {
+      return Promise.reject(error);
+    }
+
     if (
-      error.response?.status === 401 &&
+      status === 401 &&
       !originalRequest._retry &&
       originalRequest.url !== "/auth/login" &&
       originalRequest.url !== "/auth/refresh"
     ) {
       originalRequest._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          subscribeTokenRefresh((success) => {
+            if (success) {
+              resolve(api(originalRequest));
+            } else {
+              reject(error);
+            }
+          });
+        });
+      }
+
+      isRefreshing = true;
 
       try {
         await axios.post(
@@ -45,9 +76,21 @@ api.interceptors.response.use(
           { withCredentials: true },
         );
 
+        isRefreshing = false;
+        onRefreshed(true);
+
         return api(originalRequest);
       } catch (refreshError) {
-        window.location.href = "/login/student";
+        isRefreshing = false;
+        onRefreshed(false);
+
+        if (typeof window !== "undefined") {
+          if (window.location.pathname.startsWith("/admin")) {
+            window.location.href = "/login/admin";
+          } else {
+            window.location.href = "/login/student";
+          }
+        }
         return Promise.reject(refreshError);
       }
     }
