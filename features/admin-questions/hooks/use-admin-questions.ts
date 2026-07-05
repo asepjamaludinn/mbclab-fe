@@ -47,3 +47,12 @@ export const useDeleteQuestion = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-questions"] }),
   });
 };
+
+export const useBulkImportQuestions = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ moduleId, file }: { moduleId: string; file: File }) =>
+      adminQuestionService.bulkImportCsv(moduleId, file),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-questions"] }),
+  });
+};

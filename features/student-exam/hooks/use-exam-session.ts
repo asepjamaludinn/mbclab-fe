@@ -127,16 +127,24 @@ export function useExamSession() {
       }
     };
 
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // triggers native browser confirmation dialog
+      return "";
+    };
+
     window.addEventListener("blur", handleHidden);
     window.addEventListener("focus", handleVisible);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       window.removeEventListener("blur", handleHidden);
       window.removeEventListener("focus", handleVisible);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
 
       if (cheatTimeoutRef.current) {
         clearTimeout(cheatTimeoutRef.current);

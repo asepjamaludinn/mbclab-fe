@@ -54,6 +54,11 @@ export const AUDIT_ACTION_CATEGORIES: AuditActionCategory[] = [
       { value: "CREATE_QUESTION", label: "Buat Soal", tone: "success" },
       { value: "UPDATE_QUESTION", label: "Ubah Soal", tone: "info" },
       { value: "DELETE_QUESTION", label: "Hapus Soal", tone: "error" },
+      {
+        value: "BULK_IMPORT_QUESTIONS",
+        label: "Impor Soal (Massal)",
+        tone: "success",
+      },
     ],
   },
   {

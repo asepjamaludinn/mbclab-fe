@@ -48,4 +48,19 @@ export const adminQuestionService = {
     const res = await api.delete(`/questions/${id}`);
     return res.data;
   },
+
+  bulkImportCsv: async (
+    moduleId: string,
+    file: File,
+  ): Promise<BulkImportQuestionsResult> => {
+    const formData = new FormData();
+    formData.append("moduleId", moduleId);
+    formData.append("file", file);
+    const res = await api.post<BulkImportQuestionsResult>(
+      "/questions/bulk-import",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data;
+  },
 };

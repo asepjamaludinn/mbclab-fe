@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, HelpCircle, Pencil, Trash2 } from "lucide-react";
+import { Plus, HelpCircle, Pencil, Trash2, UploadCloud } from "lucide-react";
 import { useAdminQuestions } from "../hooks/use-admin-questions";
 import { AdminQuestion, QuestionType } from "../types/admin-question.type";
 import { useStudentModules } from "@/features/student-modules";
@@ -10,6 +10,7 @@ import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
 import { QuestionFormDialog } from "./QuestionFormDialog";
 import { DeleteQuestionDialog } from "./DeleteQuestionDialog";
+import { BulkImportQuestionsDialog } from "./BulkImportQuestionsDialog";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -33,6 +34,7 @@ export function QuestionsFeature() {
   );
   const [deletingQuestion, setDeletingQuestion] =
     useState<AdminQuestion | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   useEffect(() => {
     setPage(1);
@@ -153,13 +155,23 @@ export function QuestionsFeature() {
           </p>
         </div>
 
-        <Button
-          onClick={openCreateDialog}
-          className="h-10 shrink-0 rounded-lg px-4 shadow-sm"
-        >
-          <Plus className="mr-2 h-4 w-4" strokeWidth={2} />
-          Tambah Soal
-        </Button>
+        <div className="flex shrink-0 items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setImportOpen(true)}
+            className="h-10 rounded-lg px-4 shadow-sm"
+          >
+            <UploadCloud className="mr-2 h-4 w-4" strokeWidth={2} />
+            Import CSV
+          </Button>
+          <Button
+            onClick={openCreateDialog}
+            className="h-10 rounded-lg px-4 shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4" strokeWidth={2} />
+            Tambah Soal
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -208,6 +220,10 @@ export function QuestionsFeature() {
       <DeleteQuestionDialog
         question={deletingQuestion}
         onOpenChange={(open) => !open && setDeletingQuestion(null)}
+      />
+      <BulkImportQuestionsDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
       />
     </div>
   );

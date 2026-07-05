@@ -42,4 +42,11 @@ export type CreateQuestionPayload = {
   correctAnswer?: AnswerOption;
 };
 
+export type BulkImportQuestionsResult = {
+  message: string;
+  importedCount: number;
+  failedCount: number;
+  failedRows: { row: number; reason: string }[];
+};
+
 export type UpdateQuestionPayload = Partial<CreateQuestionPayload>;
