@@ -1,8 +1,9 @@
 import { api } from "@/shared/lib/api";
 import {
   JoinExamResponse,
+  MyExamSession,
+  ReportCheatResponse,
   SaveAnswerPayload,
-  TodayExamSession,
   UnblockPayload,
 } from "../types/student-exam.type";
 
@@ -18,10 +19,8 @@ export const examService = {
     return response.data;
   },
 
-  getTodaySessions: async (): Promise<TodayExamSession[]> => {
-    const response = await api.get<TodayExamSession[]>(
-      "/exam-sessions/today/me",
-    );
+  getMySessions: async (): Promise<MyExamSession[]> => {
+    const response = await api.get<MyExamSession[]>("/exam-sessions/me");
     return response.data;
   },
 
@@ -38,11 +37,25 @@ export const examService = {
     return response.data;
   },
 
-  reportCheat: async (sessionId: string) => {
-    const response = await api.patch<{ message: string; attempt: any }>(
+  reportCheat: async (sessionId: string): Promise<ReportCheatResponse> => {
+    const response = await api.patch<ReportCheatResponse>(
       `/exam-attempts/${sessionId}/cheat`,
     );
     return response.data;
+  },
+
+  reportCheatKeepAlive: (sessionId: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl || typeof window === "undefined") return;
+
+    fetch(`${apiUrl}/exam-attempts/${sessionId}/cheat`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      keepalive: true,
+      credentials: "include",
+    }).catch(() => {});
   },
 
   unblockAttempt: async ({ sessionId, code }: UnblockPayload) => {

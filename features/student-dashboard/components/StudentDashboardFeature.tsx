@@ -3,6 +3,7 @@
 import { useProfile } from "@/features/auth";
 import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "@/features/student-submissions";
+import { StudentBottomNavigation } from "@/features/student-navigation";
 
 import {
   HomeGroupInfo,
@@ -74,7 +75,6 @@ export function StudentDashboardFeature() {
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
       <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
-
       <div className="relative z-10">
         <DashboardHeader userName={user?.name} nim={user?.nim} />
 
@@ -124,6 +124,7 @@ export function StudentDashboardFeature() {
           <HomeAssistantList assistants={assistants} />
         )}
       </div>
+      <StudentBottomNavigation />
     </main>
   );
 }

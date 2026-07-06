@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
-import { StudentBottomNavigation } from "@/features/student-navigation";
-import { usePublicModules } from "@/features/public-home";
+import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "../hooks/use-student-submissions";
 
 export function StudentSubmissionsFeature() {
-  const { data: modules = [], isLoading: isLoadingModules } =
-    usePublicModules();
+  const { data: modulesRes, isLoading: isLoadingModules } = useStudentModules();
   const { data: submissions = [], isLoading: isLoadingSubmissions } =
     useMySubmissions();
 
   const isLoading = isLoadingModules || isLoadingSubmissions;
+  const modules = modulesRes?.data || [];
 
   const combinedModules = modules.map((module) => {
     const submission = submissions.find((sub) => sub.moduleId === module.id);
@@ -24,13 +23,12 @@ export function StudentSubmissionsFeature() {
   });
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
       <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
 
       <div className="relative z-10">
-        {/* Header yang lebih to-the-point */}
         <section className="px-5 pt-8 text-white">
           <Link
             href="/student/assessment"
@@ -50,7 +48,6 @@ export function StudentSubmissionsFeature() {
           </p>
         </section>
 
-        {/* Module List - Langsung ke konten utama */}
         <section className="mt-8 space-y-4 px-5">
           {isLoading ? (
             <div className="space-y-4">
@@ -98,6 +95,22 @@ export function StudentSubmissionsFeature() {
                           {module.title}
                         </h2>
 
+                        {module.tpDeadline && !module.isSubmitted && (
+                          <p className="mt-0.5 font-secondary text-[11px] font-medium text-slate-500">
+                            Batas:{" "}
+                            {new Date(module.tpDeadline).toLocaleString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}{" "}
+                            WIB
+                          </p>
+                        )}
+
                         <div className="mt-2 flex items-center">
                           <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-secondary text-[11px] font-bold ${
@@ -128,8 +141,6 @@ export function StudentSubmissionsFeature() {
           )}
         </section>
       </div>
-
-      <StudentBottomNavigation />
     </main>
   );
 }

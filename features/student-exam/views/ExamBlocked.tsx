@@ -9,6 +9,8 @@ type ExamBlockedProps = {
   unblockError: string;
   isUnblocking: boolean;
   onUnblock: (e: React.FormEvent) => void;
+  statusMessage?: string;
+  cheatCount?: number;
 };
 
 export function ExamBlocked({
@@ -17,10 +19,11 @@ export function ExamBlocked({
   unblockError,
   isUnblocking,
   onUnblock,
+  statusMessage,
+  cheatCount,
 }: ExamBlockedProps) {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#1e293b_0%,#0f172a_100%)] px-5 text-center font-primary">
-      {/* Ambient Red Glows for urgency */}
       <div className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-error/20 blur-[100px]" />
 
       <div className="relative z-10 w-full max-w-sm">
@@ -33,10 +36,18 @@ export function ExamBlocked({
         </h1>
 
         <p className="mt-3 font-secondary text-[15px] leading-relaxed text-slate-300">
-          Sistem mendeteksi Anda meninggalkan atau menutup tab ujian. Silakan
-          minta <strong className="font-bold text-white">Kode Unblock</strong>{" "}
-          kepada Asisten Praktikum yang bertugas.
+          {statusMessage ||
+            "Sistem mendeteksi Anda meninggalkan atau menutup tab ujian."}{" "}
+          Silakan minta{" "}
+          <strong className="font-bold text-white">Kode Unblock</strong> kepada
+          Asisten Praktikum yang bertugas.
         </p>
+
+        {typeof cheatCount === "number" && cheatCount > 0 && (
+          <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-4 py-1.5 font-secondary text-xs font-bold text-warning-700">
+            Pelanggaran ke-{cheatCount} dari maksimal 5
+          </div>
+        )}
 
         <form
           onSubmit={onUnblock}

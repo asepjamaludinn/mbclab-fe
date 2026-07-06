@@ -5,6 +5,7 @@ import { UserRoundCheck } from "lucide-react";
 import LogoLoop, { LogoItem } from "@/shared/components/ui/LogoLoop";
 import { PublicAssistant } from "../types/public-home.type";
 import { getInitials } from "@/shared/utils/string";
+import { resolveAssetUrl } from "@/shared/utils/asset-url";
 
 type HomeAssistantListProps = {
   assistants: PublicAssistant[];
@@ -19,12 +20,13 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-primary/5">
           {assistant.photoUrl ? (
             <Image
-              src={assistant.photoUrl}
+              src={resolveAssetUrl(assistant.photoUrl)}
               alt={assistant.name}
               width={56}
               height={56}
               className="h-full w-full object-cover"
               loading="lazy"
+              unoptimized
             />
           ) : (
             <span className="font-secondary text-sm font-bold text-primary">
@@ -48,9 +50,6 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
     <section id="asisten" className="px-5 pt-10">
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <p className="font-secondary text-[11px] font-bold uppercase tracking-[0.18em] text-primary/70">
-            Assistant Team
-          </p>
           <h2 className="mt-1 text-xl font-extrabold tracking-tight text-grey-900">
             Tim Asisten
           </h2>

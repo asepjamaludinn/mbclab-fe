@@ -1,0 +1,272 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Search, Download, Pencil, GraduationCap } from "lucide-react";
+import { useAdminGrades } from "../hooks/use-admin-grades";
+import { AdminGrade } from "../types/admin-grade.type";
+import { adminGradeService } from "../services/admin-grade.service";
+import { useStudentModules } from "@/features/student-modules";
+import { useAdminGroups } from "@/features/admin-groups/hooks/use-admin-groups";
+import { Button } from "@/shared/components/ui/button";
+import { getInitials } from "@/shared/utils/string";
+import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
+import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
+import { EditTpScoreDialog } from "./EditTpScoreDialog";
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+function formatScore(score: number | null) {
+  if (score === null || score === undefined) return "-";
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+function ScorePill({
+  score,
+  tone,
+}: {
+  score: number | null;
+  tone: "info" | "warning";
+}) {
+  if (score === null) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-grey-100 px-2.5 py-1 font-secondary text-xs font-bold text-grey-400">
+        Belum ada
+      </span>
+    );
+  }
+
+  const toneClass =
+    tone === "info"
+      ? "bg-info/10 text-info-700"
+      : "bg-warning/10 text-warning-700";
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-xs font-bold ${toneClass}`}
+    >
+      {formatScore(score)}
+    </span>
+  );
+}
+
+export function GradesFeature() {
+  const [searchInput, setSearchInput] = useState("");
+  const [nim, setNim] = useState("");
+  const [moduleId, setModuleId] = useState("");
+  const [groupId, setGroupId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const [editingGrade, setEditingGrade] = useState<AdminGrade | null>(null);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setNim(searchInput.trim()), 300);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [nim, moduleId, groupId, pageSize]);
+
+  const { data: modulesRes } = useStudentModules(1, 50);
+  const modules = modulesRes?.data ?? [];
+
+  const moduleOptions = useMemo(
+    () => [
+      { value: "", label: "Semua Modul" },
+      ...modules.map((m) => ({
+        value: m.id,
+        label: `Modul ${m.order} — ${m.title}`,
+      })),
+    ],
+    [modules],
+  );
+
+  const { data: groupsRes } = useAdminGroups({ page: 1, limit: 200 });
+  const groups = groupsRes?.data ?? [];
+
+  const groupOptions = useMemo(
+    () => [
+      { value: "", label: "Semua Kelompok" },
+      ...groups.map((g) => ({ value: g.id, label: g.name })),
+    ],
+    [groups],
+  );
+
+  const { data, isLoading, isError } = useAdminGrades({
+    moduleId: moduleId || undefined,
+    groupId: groupId || undefined,
+    nim: nim || undefined,
+    page,
+    limit: pageSize,
+  });
+
+  const grades = data?.data ?? [];
+  const meta = data?.meta;
+
+  const columns: DataTableColumn<AdminGrade>[] = [
+    {
+      key: "student",
+      header: "Praktikan",
+      render: (grade) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-bold text-primary">
+            {getInitials(grade.student.name)}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-grey-900">
+              {grade.student.name}
+            </p>
+            <p className="font-secondary text-xs text-grey-500">
+              {grade.student.nim}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "group",
+      header: "Kelompok",
+      render: (grade) =>
+        grade.student.group?.name ? (
+          <span className="font-secondary text-sm text-grey-600">
+            {grade.student.group.name}
+          </span>
+        ) : (
+          <span className="font-secondary text-sm text-grey-400">
+            Belum ada
+          </span>
+        ),
+    },
+    {
+      key: "module",
+      header: "Modul",
+      render: (grade) => (
+        <span className="font-secondary text-sm text-grey-700">
+          {grade.module.title}
+        </span>
+      ),
+    },
+    {
+      key: "tpScore",
+      header: "Nilai TP",
+      render: (grade) => <ScorePill score={grade.tpScore} tone="info" />,
+    },
+    {
+      key: "taScore",
+      header: "Nilai TA",
+      render: (grade) => <ScorePill score={grade.taScore} tone="warning" />,
+    },
+    {
+      key: "average",
+      header: "Rata-rata",
+      render: (grade) => {
+        const hasBoth = grade.tpScore !== null && grade.taScore !== null;
+        const average = hasBoth
+          ? ((grade.tpScore as number) + (grade.taScore as number)) / 2
+          : null;
+
+        return (
+          <span className="font-secondary text-sm font-bold text-grey-900">
+            {average !== null ? formatScore(average) : "-"}
+          </span>
+        );
+      },
+    },
+    {
+      key: "actions",
+      header: "Aksi",
+      headerClassName:
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+      render: (grade) => (
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            onClick={() => setEditingGrade(grade)}
+            title="Ubah Nilai TP"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-primary/10 hover:text-primary"
+            aria-label="Ubah nilai TP"
+          >
+            <Pencil className="h-4 w-4" strokeWidth={2} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="flex w-full flex-col gap-6 font-primary">
+      <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
+            Nilai & TP
+          </h1>
+          <p className="mt-1 font-secondary text-sm text-grey-500">
+            Pantau nilai TP dan TA seluruh praktikan per modul praktikum.
+          </p>
+        </div>
+
+        <a
+          href={adminGradeService.exportCsvUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Button variant="outline" className="h-10 rounded-lg px-4 shadow-sm">
+            <Download className="mr-2 h-4 w-4" strokeWidth={2} />
+            Export CSV
+          </Button>
+        </a>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
+          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Cari berdasarkan NIM..."
+            className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+          />
+        </div>
+
+        <FilterDropdown
+          value={moduleId}
+          options={moduleOptions}
+          onChange={setModuleId}
+          widthClassName="sm:w-64"
+        />
+
+        <FilterDropdown
+          value={groupId}
+          options={groupOptions}
+          onChange={setGroupId}
+          widthClassName="sm:w-56"
+        />
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={grades}
+        rowKey={(g) => g.id}
+        isLoading={isLoading}
+        isError={isError}
+        errorMessage="Gagal memuat data nilai."
+        emptyIcon={GraduationCap}
+        emptyTitle="Belum ada data nilai"
+        emptyDescription="Nilai TP akan muncul setelah praktikan mengumpulkan TP, dan nilai TA setelah mengikuti ujian."
+        page={page}
+        pageSize={pageSize}
+        totalItems={meta?.total ?? 0}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        itemsLabel="data nilai"
+      />
+
+      <EditTpScoreDialog
+        grade={editingGrade}
+        onOpenChange={(open) => !open && setEditingGrade(null)}
+      />
+    </div>
+  );
+}

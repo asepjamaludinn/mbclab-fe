@@ -7,6 +7,7 @@ export const useMySubmissions = () => {
   return useQuery({
     queryKey: ["my-submissions"],
     queryFn: submissionsService.getMySubmissions,
+    staleTime: 60 * 1000,
   });
 };
 

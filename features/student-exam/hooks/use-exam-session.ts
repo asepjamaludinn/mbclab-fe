@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ExamAttempt, Question } from "../types/student-exam.type";
 import {
   useJoinExam,
@@ -7,6 +7,7 @@ import {
   useSubmitExam,
   useUnblockAttempt,
 } from "./use-student-exam";
+import { examService } from "../services/student-exam.service";
 import axios from "axios";
 
 export type ExamState =
@@ -14,23 +15,27 @@ export type ExamState =
   | "ENTER_CODE"
   | "IN_PROGRESS"
   | "BLOCKED"
+  | "DISQUALIFIED"
   | "SUBMITTED";
 export type AnswerOption = "A" | "B" | "C" | "D" | "E";
+export type SaveStatus = "idle" | "saving" | "error" | "success";
 
 export function useExamSession() {
   const [examState, setExamState] = useState<ExamState>("SELECT_MODULE");
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [accessCode, setAccessCode] = useState("");
   const [joinError, setJoinError] = useState("");
-
   const [attempt, setAttempt] = useState<ExamAttempt | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerOption>>({});
   const [timeLeft, setTimeLeft] = useState("--:--");
-
   const [unblockCode, setUnblockCode] = useState("");
   const [unblockError, setUnblockError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+
+  const cheatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { mutateAsync: joinExam, isPending: isJoining } = useJoinExam();
   const { mutateAsync: saveAnswer } = useSaveAnswer();
@@ -66,21 +71,88 @@ export function useExamSession() {
   useEffect(() => {
     if (examState !== "IN_PROGRESS" || !attempt) return;
 
-    const handleBlur = async () => {
+    const executeCheatReport = async () => {
       try {
         const res = await reportCheat(selectedSessionId);
-        setAttempt(res.attempt);
+
+        setStatusMessage(res.message);
+
+        if (res.disqualified) {
+          setExamState("DISQUALIFIED");
+          return;
+        }
+
+        setAttempt((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: res.attempt.status,
+                cheatCount: res.attempt.cheatCount,
+              }
+            : prev,
+        );
         setExamState("BLOCKED");
       } catch (error) {
         console.error("Gagal merekam indikasi kecurangan:", error);
       }
     };
 
-    window.addEventListener("blur", handleBlur);
-    return () => window.removeEventListener("blur", handleBlur);
+    const handleHidden = () => {
+      if (cheatTimeoutRef.current) return;
+
+      cheatTimeoutRef.current = setTimeout(() => {
+        executeCheatReport();
+        cheatTimeoutRef.current = null;
+      }, 3000);
+    };
+
+    const handleVisible = () => {
+      if (cheatTimeoutRef.current) {
+        clearTimeout(cheatTimeoutRef.current);
+        cheatTimeoutRef.current = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        handleHidden();
+      } else {
+        handleVisible();
+      }
+    };
+
+    const handlePageHide = () => {
+      if (examState === "IN_PROGRESS") {
+        examService.reportCheatKeepAlive(selectedSessionId);
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // triggers native browser confirmation dialog
+      return "";
+    };
+
+    window.addEventListener("blur", handleHidden);
+    window.addEventListener("focus", handleVisible);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("blur", handleHidden);
+      window.removeEventListener("focus", handleVisible);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+
+      if (cheatTimeoutRef.current) {
+        clearTimeout(cheatTimeoutRef.current);
+        cheatTimeoutRef.current = null;
+      }
+    };
   }, [examState, attempt, selectedSessionId, reportCheat]);
 
-  // Handlers
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     setJoinError("");
@@ -100,6 +172,12 @@ export function useExamSession() {
         String(error.response.data?.message).includes("diblokir")
       ) {
         setExamState("BLOCKED");
+      } else if (
+        axios.isAxiosError(error) &&
+        String(error.response?.data?.message).includes("melebihi batas")
+      ) {
+        setStatusMessage(error.response?.data?.message ?? "");
+        setExamState("DISQUALIFIED");
       } else if (axios.isAxiosError(error)) {
         setJoinError(
           error.response?.data?.message || "Gagal masuk ke sesi ujian.",
@@ -110,21 +188,33 @@ export function useExamSession() {
     }
   };
 
-  const handleSelectAnswer = async (
-    questionId: string,
-    option: AnswerOption,
-  ) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: option }));
-    try {
-      await saveAnswer({
-        sessionId: selectedSessionId,
-        questionId,
-        selectedOption: option,
-      });
-    } catch (error) {
-      console.error("Gagal menyimpan jawaban:", error);
-    }
-  };
+  const handleSelectAnswer = useCallback(
+    async (questionId: string, option: AnswerOption, retryCount = 0) => {
+      setAnswers((prev) => ({ ...prev, [questionId]: option }));
+      setSaveStatus("saving");
+
+      try {
+        await saveAnswer({
+          sessionId: selectedSessionId,
+          questionId,
+          selectedOption: option,
+        });
+        setSaveStatus("success");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (error) {
+        if (retryCount < 3) {
+          const delay = Math.pow(2, retryCount) * 1000;
+          setTimeout(
+            () => handleSelectAnswer(questionId, option, retryCount + 1),
+            delay,
+          );
+        } else {
+          setSaveStatus("error");
+        }
+      }
+    },
+    [selectedSessionId, saveAnswer],
+  );
 
   const handleForceSubmit = async () => {
     try {
@@ -165,11 +255,17 @@ export function useExamSession() {
       setAttempt(res.attempt);
       setExamState("IN_PROGRESS");
       setUnblockCode("");
+      setStatusMessage("");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        setUnblockError(
-          error.response?.data?.message || "Kode unblock tidak valid.",
-        );
+        const message =
+          error.response?.data?.message || "Kode unblock tidak valid.";
+        setUnblockError(message);
+
+        if (String(message).includes("diakhiri")) {
+          setStatusMessage(message);
+          setExamState("DISQUALIFIED");
+        }
       } else {
         setUnblockError("Kode unblock tidak valid.");
       }
@@ -191,6 +287,9 @@ export function useExamSession() {
       isJoining,
       isSubmitting,
       isUnblocking,
+      statusMessage,
+      saveStatus,
+      cheatCount: attempt?.cheatCount ?? 0,
     },
     actions: {
       setExamState,

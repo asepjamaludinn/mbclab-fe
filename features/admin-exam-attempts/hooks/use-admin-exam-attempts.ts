@@ -1,0 +1,22 @@
+"use client";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { adminExamAttemptService } from "../services/admin-exam-attempt.service";
+
+export const useStuckAttempts = () => {
+  return useQuery({
+    queryKey: ["stuck-exam-attempts"],
+    queryFn: adminExamAttemptService.getStuckAttempts,
+    refetchInterval: 30 * 1000,
+  });
+};
+
+export const useForceSubmitAttempt = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (attemptId: string) =>
+      adminExamAttemptService.forceSubmit(attemptId),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["stuck-exam-attempts"] }),
+  });
+};

@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   Clock3,
@@ -19,22 +23,41 @@ export function DashboardProgressSummary({
   submissions,
   userName = "Praktikan",
 }: DashboardProgressSummaryProps) {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/student/search?q=${encodeURIComponent(searchQuery)}`);
+    } else {
+      router.push("/student/modules");
+    }
+  };
+
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 flex-1 items-center gap-3 rounded-full border border-white/25 bg-white/15 px-4 text-white shadow-sm backdrop-blur-xl">
+        <form
+          onSubmit={handleSearch}
+          className="flex h-11 flex-1 items-center gap-3 rounded-full border border-white/25 bg-white/15 px-4 text-white shadow-sm backdrop-blur-xl transition-all focus-within:border-white/50 focus-within:bg-white/25"
+        >
           <Search
             className="h-[18px] w-[18px] text-white/80"
             strokeWidth={1.8}
           />
-
-          <span className="font-secondary text-xs font-medium text-white/75">
-            Cari modul atau informasi...
-          </span>
-        </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari modul atau informasi..."
+            className="w-full bg-transparent font-secondary text-xs font-medium text-white placeholder:text-white/75 focus:outline-none"
+          />
+        </form>
 
         <button
           type="button"
+          onClick={() => router.push("/student/search?filter=open")}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/15 text-white shadow-sm backdrop-blur-xl transition hover:bg-white hover:text-primary active:scale-[0.96]"
           aria-label="Filter"
         >
@@ -53,12 +76,10 @@ export function DashboardProgressSummary({
               <p className="font-secondary text-xs font-semibold text-white/80">
                 Jadwal Praktikum
               </p>
-
               <h2 className="mt-1 max-w-[240px] text-[28px] font-extrabold leading-[1.05] tracking-tight">
                 {userName}
               </h2>
             </div>
-
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
               <CalendarDays className="h-6 w-6" strokeWidth={1.8} />
             </div>
@@ -69,12 +90,10 @@ export function DashboardProgressSummary({
               <CalendarDays className="h-4 w-4" strokeWidth={1.8} />
               <span>Hari Praktikum</span>
             </div>
-
             <div className="flex items-center gap-2 font-secondary text-sm font-semibold text-white">
               <Layers3 className="h-4 w-4" strokeWidth={1.8} />
               <span>Shift Praktikum</span>
             </div>
-
             <div className="flex items-center gap-2 font-secondary text-sm font-semibold text-white">
               <Clock3 className="h-4 w-4" strokeWidth={1.8} />
               <span>Jam Praktikum</span>

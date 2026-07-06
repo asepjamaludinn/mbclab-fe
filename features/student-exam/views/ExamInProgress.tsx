@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Question } from "../types/student-exam.type";
-import { AnswerOption } from "../hooks/use-exam-session";
+import { AnswerOption, SaveStatus } from "../hooks/use-exam-session";
 
 type Props = {
   questions: Question[];
@@ -9,6 +9,7 @@ type Props = {
   answers: Record<string, AnswerOption>;
   timeLeft: string;
   isSubmitting: boolean;
+  saveStatus: SaveStatus;
   setCurrentIdx: (idx: number | ((prev: number) => number)) => void;
   onSelectAnswer: (questionId: string, option: AnswerOption) => void;
   onManualSubmit: () => void;
@@ -20,6 +21,7 @@ export function ExamInProgress({
   answers,
   timeLeft,
   isSubmitting,
+  saveStatus,
   setCurrentIdx,
   onSelectAnswer,
   onManualSubmit,
@@ -27,12 +29,25 @@ export function ExamInProgress({
   const currentQuestion = questions[currentIdx];
   const isLastQuestion = currentIdx === questions.length - 1;
   const isTimeCritical =
-    timeLeft.startsWith("00:") || timeLeft.startsWith("01:"); // Kurang dari 2 menit
+    timeLeft.startsWith("00:") || timeLeft.startsWith("01:");
 
   return (
     <main className="min-h-screen bg-slate-50 pb-24 font-primary selection:bg-primary/20">
-      {/* Top Navigation & Timer */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200 px-5 py-4 shadow-sm">
+      <div className="pointer-events-none fixed left-0 right-0 top-20 z-50 flex justify-center">
+        {saveStatus === "saving" && (
+          <div className="flex animate-pulse items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 font-secondary text-[11px] font-bold text-primary shadow-sm backdrop-blur-md">
+            Menyimpan jawaban...
+          </div>
+        )}
+        {saveStatus === "error" && (
+          <div className="flex items-center gap-2 rounded-full border border-error/20 bg-error/10 px-4 py-1.5 font-secondary text-[11px] font-bold text-error shadow-sm backdrop-blur-md">
+            <AlertCircle className="h-3.5 w-3.5" /> Gagal menyimpan jawaban,
+            coba pilih ulang.
+          </div>
+        )}
+      </div>
+
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 px-5 py-4 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <div
             className={`flex items-center gap-2 rounded-full px-4 py-2 transition-colors ${isTimeCritical ? "bg-error/10 text-error" : "bg-primary/10 text-primary"}`}
@@ -41,7 +56,7 @@ export function ExamInProgress({
               className={`h-4.5 w-4.5 shrink-0 ${isTimeCritical && "animate-pulse"}`}
               strokeWidth={2}
             />
-            <span className="font-secondary text-[15px] font-extrabold tabular-nums tracking-wide">
+            <span className="tabular-nums font-secondary text-[15px] font-extrabold tracking-wide">
               {timeLeft}
             </span>
           </div>
@@ -50,14 +65,13 @@ export function ExamInProgress({
             onClick={onManualSubmit}
             disabled={isSubmitting}
             variant="outline"
-            className="border-error/30 text-error hover:bg-error/10 hover:text-error-700 h-9 rounded-full px-4 text-xs font-bold"
+            className="h-9 rounded-full border-error/30 px-4 text-xs font-bold text-error hover:bg-error/10 hover:text-error-700"
           >
             {isSubmitting ? "Menyimpan..." : "Akhiri Ujian"}
           </Button>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mx-auto max-w-2xl mt-4 flex gap-1">
+        <div className="mx-auto mt-4 flex max-w-2xl gap-1">
           {questions.map((q, i) => {
             const isAnswered = !!answers[q.id];
             return (
@@ -76,9 +90,8 @@ export function ExamInProgress({
         </div>
       </header>
 
-      {/* Question Content */}
       <section className="mx-auto max-w-2xl px-5 pt-8">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-xl bg-slate-200/60 px-3 py-1 font-secondary text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-xl bg-slate-200/60 px-3 py-1 font-secondary text-xs font-extrabold uppercase tracking-wider text-slate-600">
           Soal {currentIdx + 1} dari {questions.length}
         </div>
 
@@ -86,7 +99,6 @@ export function ExamInProgress({
           {currentQuestion?.content}
         </h2>
 
-        {/* Options */}
         <div className="mt-8 space-y-3">
           {(["A", "B", "C", "D", "E"] as AnswerOption[]).map((opt) => {
             const optionText =
@@ -115,7 +127,7 @@ export function ExamInProgress({
                   {opt}
                 </div>
                 <p
-                  className={`font-secondary text-[15px] leading-relaxed pt-0.5 ${
+                  className={`pt-0.5 font-secondary text-[15px] leading-relaxed ${
                     isSelected
                       ? "font-semibold text-slate-900"
                       : "text-slate-700"
@@ -129,8 +141,7 @@ export function ExamInProgress({
         </div>
       </section>
 
-      {/* Bottom Navigation Control */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white/90 backdrop-blur-lg p-4 pb-safe">
+      <div className="pb-safe fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white/90 p-4 backdrop-blur-lg">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
           <Button
             variant="outline"

@@ -55,7 +55,7 @@ export function AccountHeader({
             </p>
 
             <h2 className="mt-1 truncate text-2xl font-extrabold tracking-tight text-grey-900">
-              {name || "Praktikan"}
+              {name || "..."}
             </h2>
 
             <p className="mt-1 truncate font-secondary text-xs font-semibold text-grey-600">

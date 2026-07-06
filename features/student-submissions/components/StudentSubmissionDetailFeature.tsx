@@ -11,7 +11,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { StudentBottomNavigation } from "@/features/student-navigation";
 import { usePublicModules } from "@/features/public-home";
 import { useUploadFile, useSubmitTp } from "../hooks/use-student-submissions";
 import axios from "axios";
@@ -122,13 +121,12 @@ export function StudentSubmissionDetailFeature({
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
       <div className="pointer-events-none absolute -left-24 top-52 h-64 w-64 rounded-full bg-white/10 blur-[80px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]" />
 
       <div className="relative z-10">
-        {/* Header - Disederhanakan */}
         <section className="px-5 pt-8 text-white">
           <Link
             href="/student/submissions"
@@ -217,14 +215,12 @@ export function StudentSubmissionDetailFeature({
                 )}
               </div>
 
-              {/* Error Validasi Zod */}
               {validationError && (
                 <span className="mt-3 block font-secondary text-sm font-semibold text-error">
                   {validationError}
                 </span>
               )}
 
-              {/* Global API Error */}
               {apiError && (
                 <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error-700">
                   <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-error" />
@@ -232,7 +228,6 @@ export function StudentSubmissionDetailFeature({
                 </div>
               )}
 
-              {/* Success Message */}
               {successMessage && (
                 <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-success/10 bg-success/10 p-4 font-secondary text-sm font-semibold text-success-700">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
@@ -252,8 +247,6 @@ export function StudentSubmissionDetailFeature({
           </div>
         </section>
       </div>
-
-      <StudentBottomNavigation />
     </main>
   );
 }

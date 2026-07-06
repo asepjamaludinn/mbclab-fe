@@ -1,18 +1,19 @@
 "use client";
 
 import { useStudentModules } from "@/features/student-modules";
-import { useTodayExamSessions } from "../hooks/use-student-exam";
+import { useMyExamSessions } from "../hooks/use-student-exam";
 import { useExamSession } from "../hooks/use-exam-session";
 import { ExamSelectModule } from "../views/ExamSelectModule";
 import { ExamEnterCode } from "../views/ExamEnterCode";
 import { ExamInProgress } from "../views/ExamInProgress";
 import { ExamBlocked } from "../views/ExamBlocked";
+import { ExamDisqualified } from "../views/ExamDisqualified";
 import { ExamSubmitted } from "../views/ExamSubmitted";
 
 export function StudentExamFeature() {
   const { data: modulesRes, isLoading: isModulesLoading } = useStudentModules();
-  const { data: todaySessions = [], isLoading: isSessionsLoading } =
-    useTodayExamSessions();
+  const { data: mySessions = [], isLoading: isSessionsLoading } =
+    useMyExamSessions();
   const isLoadingData = isModulesLoading || isSessionsLoading;
 
   const { state, actions } = useExamSession();
@@ -22,7 +23,7 @@ export function StudentExamFeature() {
       return (
         <ExamSelectModule
           modules={modulesRes?.data || []}
-          todaySessions={todaySessions}
+          mySessions={mySessions}
           isLoadingData={isLoadingData}
           onSelectSession={(id) => {
             actions.setSelectedSessionId(id);
@@ -51,6 +52,7 @@ export function StudentExamFeature() {
           answers={state.answers}
           timeLeft={state.timeLeft}
           isSubmitting={state.isSubmitting}
+          saveStatus={state.saveStatus}
           setCurrentIdx={actions.setCurrentIdx}
           onSelectAnswer={actions.handleSelectAnswer}
           onManualSubmit={actions.handleManualSubmit}
@@ -65,8 +67,13 @@ export function StudentExamFeature() {
           unblockError={state.unblockError}
           isUnblocking={state.isUnblocking}
           onUnblock={actions.handleUnblock}
+          statusMessage={state.statusMessage}
+          cheatCount={state.cheatCount}
         />
       );
+
+    case "DISQUALIFIED":
+      return <ExamDisqualified message={state.statusMessage} />;
 
     case "SUBMITTED":
       return <ExamSubmitted />;
