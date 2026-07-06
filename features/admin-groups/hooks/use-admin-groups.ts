@@ -1,12 +1,15 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { adminGroupService } from "../services/admin-group.service";
+import {
+  adminGroupService,
+  GroupsQueryParams,
+} from "../services/admin-group.service";
 
-export const useAdminGroups = (page = 1, limit = 50) => {
+export const useAdminGroups = (params: GroupsQueryParams = {}) => {
   return useQuery({
-    queryKey: ["admin-groups", page, limit],
-    queryFn: () => adminGroupService.getGroups(page, limit),
+    queryKey: ["admin-groups", params],
+    queryFn: () => adminGroupService.getGroups(params),
   });
 };
 

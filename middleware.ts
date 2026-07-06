@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-function decodeJwtPayload(token: string) {
+function decodeJwtPayload(token: string): any | null {
   try {
     const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
@@ -17,6 +18,16 @@ function decodeJwtPayload(token: string) {
   }
 }
 
+function decodeValidPayload(token: string | undefined) {
+  if (!token) return null;
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+  if (typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()) {
+    return null;
+  }
+  return payload;
+}
+
 const STUDENT_PASSWORD_EXEMPT_PATHS = ["/student/account"];
 
 const ADMIN_FORCE_PASSWORD_LANDING_PATH = "/admin/dashboard";
@@ -27,12 +38,13 @@ export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get("refresh_token")?.value;
   const { pathname } = request.nextUrl;
 
-  const activeToken = accessToken || refreshToken;
-  const payload = activeToken ? decodeJwtPayload(activeToken) : null;
+  const payload =
+    decodeValidPayload(accessToken) ?? decodeValidPayload(refreshToken);
+
   const userRole = payload?.role;
   const mustChangePassword = payload?.mustChangePassword === true;
 
-  if (!activeToken || !payload) {
+  if (!payload) {
     if (pathname.startsWith("/student")) {
       return NextResponse.redirect(new URL("/login/student", request.url));
     }

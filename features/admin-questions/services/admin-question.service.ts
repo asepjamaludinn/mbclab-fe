@@ -5,6 +5,7 @@ import {
   CreateQuestionPayload,
   QuestionType,
   UpdateQuestionPayload,
+  BulkImportQuestionsResult,
 } from "../types/admin-question.type";
 
 export type QuestionsQueryParams = {

@@ -16,6 +16,12 @@ const PUBLIC_ENDPOINTS = [
   "/practicum-modules/public",
 ];
 
+const NO_REFRESH_RETRY_ENDPOINTS = [
+  "/auth/login",
+  "/auth/refresh",
+  "/auth/logout",
+];
+
 let isRefreshing = false;
 let refreshSubscribers: Array<(success: boolean) => void> = [];
 
@@ -47,12 +53,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (
-      status === 401 &&
-      !originalRequest._retry &&
-      originalRequest.url !== "/auth/login" &&
-      originalRequest.url !== "/auth/refresh"
-    ) {
+    const isNoRefreshRetryRequest = NO_REFRESH_RETRY_ENDPOINTS.some(
+      (endpoint) => requestUrl.includes(endpoint),
+    );
+
+    if (status === 401 && !originalRequest._retry && !isNoRefreshRetryRequest) {
       originalRequest._retry = true;
 
       if (isRefreshing) {
@@ -84,7 +89,10 @@ api.interceptors.response.use(
         isRefreshing = false;
         onRefreshed(false);
 
-        if (typeof window !== "undefined") {
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/login")
+        ) {
           if (window.location.pathname.startsWith("/admin")) {
             window.location.href = "/login/admin";
           } else {

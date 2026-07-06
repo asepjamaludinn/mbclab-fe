@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldAlert } from "lucide-react";
@@ -10,7 +10,8 @@ import {
   ChangePasswordFormData,
   PASSWORD_POLICY_HINT,
 } from "@/features/auth/schemas/auth.schema";
-import { useChangePassword } from "@/features/auth";
+import { useChangePassword, useProfile } from "@/features/auth";
+import { useSyncMustChangePasswordFlag } from "@/shared/hooks/use-sync-password-flag";
 import { Button } from "@/shared/components/ui/button";
 import { PasswordInput } from "@/shared/components/ui/password-input";
 import {
@@ -23,11 +24,14 @@ import {
 } from "@/shared/components/ui/dialog";
 
 export function ForcePasswordChangeDialog() {
-  const searchParams = useSearchParams();
   const router = useRouter();
 
-  const isForced = searchParams.get("forceChangePassword") === "1";
-  const [open, setOpen] = useState(isForced);
+  const { data: user } = useProfile("ADMIN");
+
+  useSyncMustChangePasswordFlag(user);
+
+  const isForced = user?.mustChangePassword === true;
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setOpen(isForced);

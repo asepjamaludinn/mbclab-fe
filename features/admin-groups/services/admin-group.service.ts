@@ -8,10 +8,29 @@ import {
   BulkDeleteGroupsResult,
 } from "../types/admin-group.type";
 
+export type GroupsQueryParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: "all" | "filled" | "empty";
+  sortField?: "name" | "members";
+  sortDir?: "asc" | "desc";
+};
+
 export const adminGroupService = {
-  getGroups: async (page = 1, limit = 50): Promise<AdminGroupsResponse> => {
+  getGroups: async (
+    params: GroupsQueryParams = {},
+  ): Promise<AdminGroupsResponse> => {
     const res = await api.get<AdminGroupsResponse>("/groups", {
-      params: { page, limit },
+      params: {
+        page: params.page ?? 1,
+        limit: params.limit ?? 10,
+        search: params.search || undefined,
+        status:
+          params.status && params.status !== "all" ? params.status : undefined,
+        sortField: params.sortField,
+        sortDir: params.sortDir,
+      },
     });
     return res.data;
   },

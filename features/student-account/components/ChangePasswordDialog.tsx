@@ -14,6 +14,7 @@ import {
 
 import { useChangePassword } from "@/features/auth";
 import { useProfile } from "@/features/auth";
+import { useSyncMustChangePasswordFlag } from "@/shared/hooks/use-sync-password-flag";
 
 import { Button } from "@/shared/components/ui/button";
 import { PasswordInput } from "@/shared/components/ui/password-input";
@@ -40,13 +41,13 @@ export function ChangePasswordDialog({
   iconClassName,
   chevronClassName,
 }: ChangePasswordDialogProps) {
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: user } = useProfile();
 
-  const isForced =
-    searchParams.get("forceChangePassword") === "1" ||
-    user?.mustChangePassword === true;
+  useSyncMustChangePasswordFlag(user);
+
+  const isForced = user?.mustChangePassword === true;
 
   const [open, setOpen] = useState(false);
 

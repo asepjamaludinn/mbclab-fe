@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
@@ -57,17 +56,18 @@ const MAIN_MENUS = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: user } = useProfile("ADMIN");
 
   const handleLogout = async () => {
     try {
       await authService.logout();
-      queryClient.clear();
-      router.replace("/login/admin");
     } catch (err) {
-      console.error(err);
+      console.error("Gagal memanggil endpoint logout:", err);
+    } finally {
+      queryClient.clear();
+
+      window.location.href = "/login/admin";
     }
   };
 
@@ -95,7 +95,6 @@ export function AppSidebar() {
 
       <SidebarSeparator />
 
-      {/* MENU */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>

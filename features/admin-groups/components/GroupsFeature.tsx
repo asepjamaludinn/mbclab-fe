@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -12,7 +12,6 @@ import {
   UserCog,
   Users,
   SlidersHorizontal,
-  AlertTriangle,
 } from "lucide-react";
 import { useAdminGroups } from "../hooks/use-admin-groups";
 import { AdminGroup } from "../types/admin-group.type";
@@ -31,10 +30,6 @@ type SortDir = "asc" | "desc";
 type StatusFilter = "all" | "filled" | "empty";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-// Batas atas fetch dari backend — client-side search/sort butuh seluruh dataset
-// dalam satu batch. Jika total kelompok pernah melebihi angka ini, naikkan nilai
-// ini atau pindahkan filter/sort ke backend.
-const FETCH_LIMIT = 500;
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Semua Kelompok" },
@@ -43,12 +38,8 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
 ];
 
 export function GroupsFeature() {
-  const { data, isLoading, isError } = useAdminGroups(1, FETCH_LIMIT);
-  const groups = data?.data ?? [];
-  const totalOnServer = data?.meta?.total ?? groups.length;
-  const isTruncated = totalOnServer > groups.length;
-
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sort, setSort] = useState<{ field: SortField; dir: SortDir }>({
     field: "name",
@@ -62,38 +53,26 @@ export function GroupsFeature() {
   const [deletingGroup, setDeletingGroup] = useState<AdminGroup | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
-  const filteredSorted = useMemo(() => {
-    let result = groups.filter((g) =>
-      g.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-
-    if (statusFilter === "filled") {
-      result = result.filter((g) => (g._count?.students ?? 0) > 0);
-    } else if (statusFilter === "empty") {
-      result = result.filter((g) => (g._count?.students ?? 0) === 0);
-    }
-
-    result = [...result].sort((a, b) => {
-      const cmp =
-        sort.field === "name"
-          ? a.name.localeCompare(b.name)
-          : (a._count?.students ?? 0) - (b._count?.students ?? 0);
-      return sort.dir === "asc" ? cmp : -cmp;
-    });
-
-    return result;
-  }, [groups, searchQuery, statusFilter, sort]);
+  useEffect(() => {
+    const timeout = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, statusFilter, pageSize]);
+  }, [search, statusFilter, sort, pageSize]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredSorted.length / pageSize));
-  const safePage = Math.min(page, totalPages);
-  const paginated = filteredSorted.slice(
-    (safePage - 1) * pageSize,
-    safePage * pageSize,
-  );
+  const { data, isLoading, isError } = useAdminGroups({
+    page,
+    limit: pageSize,
+    search,
+    status: statusFilter,
+    sortField: sort.field,
+    sortDir: sort.dir,
+  });
+
+  const groups = data?.data ?? [];
+  const meta = data?.meta;
 
   const {
     selectedIds,
@@ -131,7 +110,7 @@ export function GroupsFeature() {
         "w-12 px-0 py-3.5 font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
       cellClassName:
         "px-0 py-4 font-secondary text-xs font-semibold text-grey-400",
-      render: (_group, idx) => (safePage - 1) * pageSize + idx + 1,
+      render: (_group, idx) => (page - 1) * pageSize + idx + 1,
     },
     {
       key: "name",
@@ -239,17 +218,6 @@ export function GroupsFeature() {
         </div>
       </div>
 
-      {isTruncated && (
-        <div className="flex items-start gap-2.5 rounded-2xl border border-warning/15 bg-warning/5 px-4 py-3 font-secondary text-sm text-warning-700">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>
-            Menampilkan {groups.length} dari total {totalOnServer} kelompok di
-            server. Sebagian data belum dimuat — hubungi developer untuk
-            menaikkan batas pengambilan data.
-          </span>
-        </div>
-      )}
-
       {selectedIds.size > 0 ? (
         <SelectionToolbar
           count={selectedIds.size}
@@ -273,8 +241,8 @@ export function GroupsFeature() {
             <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
             <input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Cari nama kelompok..."
               className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
             />
@@ -296,32 +264,24 @@ export function GroupsFeature() {
 
       <DataTable
         columns={columns}
-        data={paginated}
+        data={groups}
         rowKey={(g) => g.id}
         isLoading={isLoading}
         isError={isError}
         errorMessage="Gagal memuat data kelompok."
         emptyIcon={UsersRound}
-        emptyTitle={
-          groups.length === 0
-            ? "Belum ada kelompok"
-            : "Tidak ada kelompok yang cocok"
-        }
-        emptyDescription={
-          groups.length === 0
-            ? 'Klik "Buat Kelompok" untuk membuat kelompok pertama.'
-            : "Coba ubah kata kunci pencarian atau filter."
-        }
+        emptyTitle="Tidak ada kelompok yang cocok"
+        emptyDescription="Coba ubah kata kunci pencarian atau filter."
         selection={{
-          isAllSelected: isListAllSelected(paginated),
-          isSomeSelected: isListSomeSelected(paginated),
+          isAllSelected: isListAllSelected(groups),
+          isSomeSelected: isListSomeSelected(groups),
           onToggleRow: toggleRow,
-          onToggleAll: () => toggleList(paginated),
+          onToggleAll: () => toggleList(groups),
           isRowSelected: (id) => selectedIds.has(id),
         }}
-        page={safePage}
+        page={page}
         pageSize={pageSize}
-        totalItems={filteredSorted.length}
+        totalItems={meta?.total ?? 0}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         pageSizeOptions={PAGE_SIZE_OPTIONS}

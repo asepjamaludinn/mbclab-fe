@@ -52,7 +52,7 @@ export function ExamSessionFormDialog({
 
   const { data: modulesRes } = useStudentModules(1, 50);
   const modules = modulesRes?.data ?? [];
-  const { data: groupsRes } = useAdminGroups(1, 200);
+  const { data: groupsRes } = useAdminGroups({ page: 1, limit: 200 });
   const groups = groupsRes?.data ?? [];
 
   const { mutateAsync: createSession, isPending: isCreating } =

@@ -7,6 +7,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/shared/components/ui/sidebar";
+import { IdleLogoutWatcher } from "./IdleLogoutWatcher";
 
 type AdminAppShellProps = {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ type AdminAppShellProps = {
 export function AdminAppShell({ children }: AdminAppShellProps) {
   return (
     <SidebarProvider>
+      <IdleLogoutWatcher />
       <AppSidebar />
 
       <SidebarInset>

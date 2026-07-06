@@ -1,29 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/features/auth";
 
 export function useLogout() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
+
     try {
-      setIsLoggingOut(true);
-
       await authService.logout();
-
+    } catch (error) {
+      console.error("Gagal memanggil endpoint logout:", error);
+    } finally {
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.clear();
 
-      router.replace("/login/student");
-      router.refresh();
-    } catch (error) {
-      console.error("Logout failed", error);
-      setIsLoggingOut(false);
+      window.location.href = "/login/student";
     }
   };
 

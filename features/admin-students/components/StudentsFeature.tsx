@@ -71,7 +71,7 @@ export function StudentsFeature() {
     setPage(1);
   }, [search, groupId, status, pageSize]);
 
-  const { data: groupsRes } = useAdminGroups(1, 200);
+  const { data: groupsRes } = useAdminGroups({ page: 1, limit: 200 });
   const groups = groupsRes?.data ?? [];
 
   const groupOptions = useMemo(
