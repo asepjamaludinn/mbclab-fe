@@ -8,15 +8,18 @@ import {
   useUnblockAttempt,
 } from "./use-student-exam";
 import { examService } from "../services/student-exam.service";
+import { showToast } from "@/shared/lib/toast";
 import axios from "axios";
 
 export type ExamState =
   | "SELECT_MODULE"
+  | "RULES_AGREEMENT"
   | "ENTER_CODE"
   | "IN_PROGRESS"
   | "BLOCKED"
   | "DISQUALIFIED"
   | "SUBMITTED";
+
 export type AnswerOption = "A" | "B" | "C" | "D" | "E";
 export type SaveStatus = "idle" | "saving" | "error" | "success";
 
@@ -129,7 +132,7 @@ export function useExamSession() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = ""; // triggers native browser confirmation dialog
+      e.returnValue = "";
       return "";
     };
 
@@ -226,20 +229,17 @@ export function useExamSession() {
   };
 
   const handleManualSubmit = async () => {
-    if (
-      !confirm(
-        "Apakah Anda yakin ingin menyelesaikan ujian ini? Jawaban tidak dapat diubah lagi.",
-      )
-    )
-      return;
     try {
       await submitExam(selectedSessionId);
       setExamState("SUBMITTED");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        alert(error.response?.data?.message || "Gagal menyelesaikan ujian.");
+        showToast.error(
+          "Gagal Submit",
+          error.response?.data?.message || "Gagal menyelesaikan ujian.",
+        );
       } else {
-        alert("Gagal menyelesaikan ujian.");
+        showToast.error("Gagal Submit", "Gagal menyelesaikan ujian.");
       }
     }
   };

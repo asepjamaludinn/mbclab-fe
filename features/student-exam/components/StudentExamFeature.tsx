@@ -1,9 +1,13 @@
 "use client";
 
 import { useStudentModules } from "@/features/student-modules";
-import { useMyExamSessions } from "../hooks/use-student-exam";
+import {
+  useMyExamSessions,
+  useMyExamAttempts,
+} from "../hooks/use-student-exam";
 import { useExamSession } from "../hooks/use-exam-session";
 import { ExamSelectModule } from "../views/ExamSelectModule";
+import { ExamRules } from "../views/ExamRules";
 import { ExamEnterCode } from "../views/ExamEnterCode";
 import { ExamInProgress } from "../views/ExamInProgress";
 import { ExamBlocked } from "../views/ExamBlocked";
@@ -11,10 +15,17 @@ import { ExamDisqualified } from "../views/ExamDisqualified";
 import { ExamSubmitted } from "../views/ExamSubmitted";
 
 export function StudentExamFeature() {
-  const { data: modulesRes, isLoading: isModulesLoading } = useStudentModules();
+  const { data: modulesRes, isLoading: isModulesLoading } = useStudentModules(
+    1,
+    100,
+  );
   const { data: mySessions = [], isLoading: isSessionsLoading } =
     useMyExamSessions();
-  const isLoadingData = isModulesLoading || isSessionsLoading;
+  const { data: myAttempts = [], isLoading: isAttemptsLoading } =
+    useMyExamAttempts();
+
+  const isLoadingData =
+    isModulesLoading || isSessionsLoading || isAttemptsLoading;
 
   const { state, actions } = useExamSession();
 
@@ -24,11 +35,20 @@ export function StudentExamFeature() {
         <ExamSelectModule
           modules={modulesRes?.data || []}
           mySessions={mySessions}
+          myAttempts={myAttempts}
           isLoadingData={isLoadingData}
           onSelectSession={(id) => {
             actions.setSelectedSessionId(id);
-            actions.setExamState("ENTER_CODE");
+            actions.setExamState("RULES_AGREEMENT");
           }}
+        />
+      );
+
+    case "RULES_AGREEMENT":
+      return (
+        <ExamRules
+          onAgree={() => actions.setExamState("ENTER_CODE")}
+          onCancel={() => actions.setExamState("SELECT_MODULE")}
         />
       );
 

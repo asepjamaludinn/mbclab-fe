@@ -35,6 +35,7 @@ function toDatetimeLocal(value?: string | null) {
 }
 
 const DEADLINE_PRESETS = [
+  { label: "Tutup Sekarang", hours: 0 },
   { label: "+1 Hari", hours: 24 },
   { label: "+3 Hari", hours: 72 },
   { label: "+1 Minggu", hours: 168 },
@@ -96,6 +97,11 @@ export function ModuleFormDialog({
 
   const applyPreset = (hours: number) => {
     const target = new Date(Date.now() + hours * 60 * 60 * 1000);
+
+    if (hours === 0) {
+      target.setMinutes(target.getMinutes() - 1);
+    }
+
     setValue("tpDeadline", toDatetimeLocal(target.toISOString()), {
       shouldDirty: true,
     });
@@ -192,7 +198,7 @@ export function ModuleFormDialog({
               />
             </div>
 
-            {/* --- Bagian Deadline TP (auto closed) --- */}
+            {/* --- Bagian Deadline TP --- */}
             <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
               <div className="flex items-center justify-between">
                 <label className="block font-secondary text-xs font-bold text-grey-700">
@@ -228,7 +234,11 @@ export function ModuleFormDialog({
                     key={preset.label}
                     type="button"
                     onClick={() => applyPreset(preset.hours)}
-                    className="rounded-full border border-primary/20 bg-white px-3 py-1 font-secondary text-[11px] font-bold text-primary transition hover:bg-primary hover:text-white"
+                    className={`rounded-full border px-3 py-1 font-secondary text-[11px] font-bold transition ${
+                      preset.hours === 0
+                        ? "border-error/20 bg-error/10 text-error hover:bg-error hover:text-white"
+                        : "border-primary/20 bg-white text-primary hover:bg-primary hover:text-white"
+                    }`}
                   >
                     {preset.label}
                   </button>

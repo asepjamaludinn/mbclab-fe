@@ -45,6 +45,7 @@ export type MyExamSession = {
     title: string;
     order: number;
   };
+  attempts?: { status: string }[];
 };
 
 export type ReportCheatResponse = {
@@ -55,5 +56,22 @@ export type ReportCheatResponse = {
     cheatCount: number;
     status: ExamAttempt["status"];
     score?: number;
+  };
+};
+
+export type MyExamAttemptHistory = {
+  id: string;
+  status: ExamAttempt["status"];
+  score: number;
+  startedAt: string | null;
+  submittedAt: string | null;
+  cheatCount: number;
+  session: {
+    date: string;
+    shift: string;
+    module: {
+      title: string;
+      order: number;
+    };
   };
 };

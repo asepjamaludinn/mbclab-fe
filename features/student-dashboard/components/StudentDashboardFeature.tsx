@@ -1,3 +1,5 @@
+// features/student-dashboard/components/StudentDashboardFeature.tsx
+
 "use client";
 
 import { useProfile } from "@/features/auth";
@@ -24,7 +26,6 @@ export function StudentDashboardFeature() {
   const { data: submissions = [], isLoading: isSubmissionsLoading } =
     useMySubmissions();
 
-  // Fetch jadwal ujian real
   const { data: mySessions = [], isLoading: isSessionsLoading } =
     useMyExamSessions();
 
@@ -81,6 +82,12 @@ export function StudentDashboardFeature() {
     ? submissions.some((sub) => sub.moduleId === activeModule.id)
     : false;
 
+  // Cek apakah TA sudah disubmit (status === 'SUBMITTED')
+  const isTaSubmitted =
+    activeSession?.attempts?.some(
+      (attempt) => attempt.status === "SUBMITTED",
+    ) || false;
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
@@ -100,6 +107,7 @@ export function StudentDashboardFeature() {
           <DashboardModuleProgress
             activeModule={activeModule}
             isTpSubmitted={isTpSubmitted}
+            isTaSubmitted={isTaSubmitted}
           />
 
           <DashboardInfo />
