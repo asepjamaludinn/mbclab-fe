@@ -4,6 +4,7 @@ import { useProfile } from "@/features/auth";
 import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "@/features/student-submissions";
 import { StudentBottomNavigation } from "@/features/student-navigation";
+import { useMyExamSessions } from "@/features/student-exam";
 
 import {
   HomeGroupInfo,
@@ -23,13 +24,21 @@ export function StudentDashboardFeature() {
   const { data: submissions = [], isLoading: isSubmissionsLoading } =
     useMySubmissions();
 
+  // Fetch jadwal ujian real
+  const { data: mySessions = [], isLoading: isSessionsLoading } =
+    useMyExamSessions();
+
   const {
     data: assistants = [],
     isLoading: isAssistantsLoading,
     isError: isAssistantsError,
   } = usePublicAssistants();
 
-  const isLoading = isUserLoading || isModulesLoading || isSubmissionsLoading;
+  const isLoading =
+    isUserLoading ||
+    isModulesLoading ||
+    isSubmissionsLoading ||
+    isSessionsLoading;
 
   if (isLoading) {
     return (
@@ -44,7 +53,6 @@ export function StudentDashboardFeature() {
               <div className="mt-3 h-8 w-44 animate-pulse rounded-2xl bg-white/25" />
               <div className="mt-2 h-3 w-28 animate-pulse rounded-full bg-white/20" />
             </div>
-
             <div className="h-12 w-12 animate-pulse rounded-full bg-white/25" />
           </div>
         </section>
@@ -62,9 +70,12 @@ export function StudentDashboardFeature() {
   }
 
   const modules = modulesRes?.data || [];
-
   const activeModule =
     modules.find((module) => module.isActive) || modules[0] || null;
+
+  const activeSession = activeModule
+    ? mySessions.find((s) => s.moduleId === activeModule.id)
+    : null;
 
   const isTpSubmitted = activeModule
     ? submissions.some((sub) => sub.moduleId === activeModule.id)
@@ -80,9 +91,8 @@ export function StudentDashboardFeature() {
 
         <section className="mt-8 space-y-7 px-5">
           <DashboardProgressSummary
-            modules={modules}
-            submissions={submissions}
             userName={user?.name}
+            activeSession={activeSession}
           />
 
           <DashboardQuickAccess />

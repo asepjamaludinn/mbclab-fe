@@ -76,19 +76,21 @@ export function QuestionsFeature() {
 
   const columns: DataTableColumn<AdminQuestion>[] = [
     {
-      key: "content",
-      header: "Pertanyaan",
-      cellClassName: "px-6 py-4 max-w-md",
-      render: (q) => (
-        <div>
-          <p className="line-clamp-2 text-sm font-semibold text-grey-900">
-            {q.content}
-          </p>
-          <p className="mt-1 font-secondary text-xs text-grey-500">
-            Modul {q.module?.order} — {q.module?.title}
-          </p>
-        </div>
-      ),
+      key: "module",
+      header: "Modul",
+      cellClassName: "px-6 py-4 max-w-[200px]",
+      render: (q) => {
+        const mod = q.module || modules.find((m) => m.id === q.moduleId);
+
+        return (
+          <span
+            className="block truncate font-secondary text-sm font-semibold text-grey-900"
+            title={`Modul ${mod?.order ?? "-"} — ${mod?.title ?? "Tidak diketahui"}`}
+          >
+            Modul {mod?.order ?? "-"} — {mod?.title ?? "Tidak diketahui"}
+          </span>
+        );
+      },
     },
     {
       key: "type",
@@ -101,13 +103,23 @@ export function QuestionsFeature() {
               : "bg-info/10 text-info-700"
           }`}
         >
-          {q.type === "TA" ? "Tes Awal" : "Tugas Pendahuluan"}
+          {q.type}
         </span>
       ),
     },
     {
+      key: "content",
+      header: "Pertanyaan",
+      cellClassName: "px-6 py-4 max-w-sm lg:max-w-md", // Membatasi lebar agar tabel tidak melebar berantakan
+      render: (q) => (
+        <p className="line-clamp-2 text-sm text-grey-900" title={q.content}>
+          {q.content}
+        </p>
+      ),
+    },
+    {
       key: "answer",
-      header: "Jawaban Benar",
+      header: "Answer",
       render: (q) =>
         q.type === "TA" ? (
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-success/10 font-secondary text-xs font-bold text-success">

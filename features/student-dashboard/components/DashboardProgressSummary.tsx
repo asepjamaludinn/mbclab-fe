@@ -9,19 +9,58 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import { PracticumModule } from "@/features/student-modules";
-import { Submission } from "@/features/student-submissions";
+import { MyExamSession } from "@/features/student-exam";
 
 type DashboardProgressSummaryProps = {
-  modules: PracticumModule[];
-  submissions: Submission[];
   userName?: string;
+  activeSession?: MyExamSession | null;
 };
 
+// 1. Helper untuk mendapatkan ISO Week Number
+function getISOWeekNumber(d: Date) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+// 2. Helper untuk format tanggal "Minggu X, [Hari] [Tanggal] [Bulan] [Tahun]"
+function formatBiweeklyDate(dateString: string) {
+  const date = new Date(dateString);
+  const weekNumber = getISOWeekNumber(date);
+
+  // Asumsi: Minggu Ganjil = Minggu 1, Minggu Genap = Minggu 2
+  // Jika urutannya terbalik di kampus, tinggal ubah ke `weekNumber % 2 === 0`
+  const weekType = weekNumber % 2 !== 0 ? "Minggu 1" : "Minggu 2";
+
+  const dayName = date.toLocaleDateString("id-ID", { weekday: "long" });
+  const dateNum = date.getDate();
+  const monthName = date.toLocaleDateString("id-ID", { month: "long" });
+  const year = date.getFullYear();
+
+  return `${weekType}, ${dayName} ${dateNum} ${monthName} ${year}`;
+}
+
+// 3. Helper untuk mapping jam berdasarkan Shift
+function getShiftTimeRange(shift?: string) {
+  switch (shift) {
+    case "SHIFT_1":
+      return "06:30 - 09:30 WIB";
+    case "SHIFT_2":
+      return "09:30 - 12:30 WIB";
+    case "SHIFT_3":
+      return "12:30 - 15:30 WIB";
+    case "SHIFT_4":
+      return "15:30 - 18:30 WIB";
+    default:
+      return "-";
+  }
+}
+
 export function DashboardProgressSummary({
-  modules,
-  submissions,
   userName = "Praktikan",
+  activeSession,
 }: DashboardProgressSummaryProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +73,19 @@ export function DashboardProgressSummary({
       router.push("/student/modules");
     }
   };
+
+  // Terapkan formatter yang baru dibuat
+  const scheduleDate = activeSession
+    ? formatBiweeklyDate(activeSession.date)
+    : "Belum Ada Jadwal";
+
+  const scheduleShift = activeSession
+    ? activeSession.shift.replace("_", " ")
+    : "-";
+
+  const scheduleTime = activeSession
+    ? getShiftTimeRange(activeSession.shift)
+    : "-";
 
   return (
     <section className="space-y-4">
@@ -87,16 +139,16 @@ export function DashboardProgressSummary({
 
           <div className="space-y-3">
             <div className="flex items-center gap-2 font-secondary text-sm font-semibold text-white">
-              <CalendarDays className="h-4 w-4" strokeWidth={1.8} />
-              <span>Hari Praktikum</span>
+              <CalendarDays className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+              <span>{scheduleDate}</span>
             </div>
             <div className="flex items-center gap-2 font-secondary text-sm font-semibold text-white">
-              <Layers3 className="h-4 w-4" strokeWidth={1.8} />
-              <span>Shift Praktikum</span>
+              <Layers3 className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+              <span>{scheduleShift}</span>
             </div>
             <div className="flex items-center gap-2 font-secondary text-sm font-semibold text-white">
-              <Clock3 className="h-4 w-4" strokeWidth={1.8} />
-              <span>Jam Praktikum</span>
+              <Clock3 className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+              <span>{scheduleTime}</span>
             </div>
           </div>
         </div>

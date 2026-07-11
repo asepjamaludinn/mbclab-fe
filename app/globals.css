@@ -65,3 +65,236 @@ input::-ms-reveal,
 input::-ms-clear {
   display: none;
 }
+
+[data-sonner-toaster] {
+  --width: 380px;
+  font-family: var(--font-secondary), "Poppins", sans-serif;
+}
+
+.app-toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 40px 16px 22px;
+  border-radius: 24px;
+  overflow: hidden;
+  isolation: isolate;
+
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.72) 45%,
+    rgba(255, 255, 255, 0.82) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  /* Variabel default (dipakai kalau toast tidak punya tipe khusus) */
+  --toast-accent-from: var(--color-primary);
+  --toast-accent-to: var(--color-secondary);
+  --toast-shadow: rgba(0, 101, 176, 0.28);
+  --toast-tint: rgba(0, 101, 176, 0.12);
+
+  box-shadow:
+    0 24px 48px -20px var(--toast-shadow),
+    0 3px 10px -4px rgba(15, 23, 42, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.85),
+    inset 0 -12px 20px -14px var(--toast-tint);
+
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Rona warna lembut sesuai tipe toast, menyatu di balik kaca */
+.app-toast::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(
+    120% 100% at 0% 0%,
+    var(--toast-tint) 0%,
+    transparent 60%
+  );
+}
+
+.app-toast::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    transparent 100%
+  );
+}
+
+.app-toast:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 30px 60px -18px var(--toast-shadow),
+    0 4px 12px -4px rgba(15, 23, 42, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -12px 22px -14px var(--toast-tint);
+}
+
+.app-toast--success {
+  --toast-accent-from: var(--color-success);
+  --toast-accent-to: var(--color-success-700);
+  --toast-shadow: rgba(22, 163, 74, 0.32);
+  --toast-tint: rgba(22, 163, 74, 0.14);
+}
+
+.app-toast--error {
+  --toast-accent-from: var(--color-error);
+  --toast-accent-to: var(--color-error-700);
+  --toast-shadow: rgba(220, 38, 38, 0.3);
+  --toast-tint: rgba(220, 38, 38, 0.14);
+}
+
+.app-toast--warning {
+  --toast-accent-from: var(--color-warning);
+  --toast-accent-to: var(--color-warning-700);
+  --toast-shadow: rgba(217, 119, 6, 0.28);
+  --toast-tint: rgba(217, 119, 6, 0.14);
+}
+
+.app-toast--info {
+  --toast-accent-from: var(--color-info);
+  --toast-accent-to: var(--color-info-700);
+  --toast-shadow: rgba(37, 99, 235, 0.28);
+  --toast-tint: rgba(37, 99, 235, 0.14);
+}
+
+.app-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  margin-top: 1px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(
+    145deg,
+    var(--toast-accent-from),
+    var(--toast-accent-to)
+  );
+  box-shadow:
+    0 8px 18px -6px var(--toast-shadow),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.app-toast-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Konten teks */
+.app-toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.app-toast-title {
+  font-family: var(--font-primary), "Montserrat", sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--color-grey-900);
+}
+
+.app-toast-description {
+  font-family: var(--font-secondary), "Poppins", sans-serif;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--color-black-dark);
+}
+.app-toast-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--color-grey-500);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.app-toast:hover .app-toast-close {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.app-toast-close:hover {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--color-grey-700);
+}
+
+.app-toast-close svg {
+  width: 11px;
+  height: 11px;
+}
+
+.app-toast-action,
+.app-toast-cancel {
+  margin-top: 10px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-secondary), "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+
+.app-toast-action {
+  background: var(--color-grey-900);
+  color: #ffffff;
+}
+
+.app-toast-action:hover {
+  opacity: 0.9;
+}
+
+.app-toast-cancel {
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--color-grey-700);
+}
+
+.app-toast-cancel:hover {
+  background: rgba(255, 255, 255, 0.65);
+}

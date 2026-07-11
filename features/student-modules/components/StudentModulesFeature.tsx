@@ -134,7 +134,7 @@ function StudentModulesContent() {
                 : "text-white/80"
             }`}
           >
-            Selesai TP
+            Selesai
           </button>
         </div>
       </section>

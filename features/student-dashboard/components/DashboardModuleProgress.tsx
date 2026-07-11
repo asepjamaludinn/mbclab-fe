@@ -160,12 +160,14 @@ export function DashboardModuleProgress({
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/student/modules"
+              <a
+                href={activeModule.fileUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex h-[52px] flex-1 items-center justify-center rounded-full border border-white/45 bg-white/25 font-secondary text-sm font-extrabold text-grey-900 shadow-sm backdrop-blur-xl transition hover:border-primary hover:bg-primary hover:text-white active:scale-[0.98]"
               >
                 Lihat Detail Modul
-              </Link>
+              </a>
 
               <Link
                 href="/student/submissions"
