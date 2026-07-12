@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil } from "lucide-react";
 import axios from "axios";
@@ -14,6 +14,7 @@ import { AdminStudent } from "../types/admin-student.type";
 import { AdminGroup } from "@/features/admin-groups";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { Switch } from "@/shared/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ export function EditStudentDialog({
     register,
     handleSubmit,
     reset,
+    control,
     setError,
     formState: { errors },
   } = useForm<EditStudentFormData>({
@@ -49,7 +51,11 @@ export function EditStudentDialog({
 
   useEffect(() => {
     if (student) {
-      reset({ name: student.name, groupId: student.group?.id ?? "" });
+      reset({
+        name: student.name,
+        groupId: student.group?.id ?? "",
+        isInternational: student.isInternational,
+      });
     }
   }, [student, reset]);
 
@@ -58,7 +64,11 @@ export function EditStudentDialog({
     try {
       await updateStudent({
         id: student.id,
-        payload: { name: data.name, groupId: data.groupId || null },
+        payload: {
+          name: data.name,
+          groupId: data.groupId || null,
+          isInternational: data.isInternational,
+        },
       });
       onOpenChange(false);
     } catch (error: unknown) {
@@ -116,6 +126,27 @@ export function EditStudentDialog({
               </select>
             </div>
 
+            <div className="flex items-center justify-between rounded-2xl border border-grey-100 bg-grey-50/60 px-4 py-3">
+              <div>
+                <p className="text-sm font-bold text-grey-900">
+                  Kelas Internasional
+                </p>
+                <p className="mt-0.5 font-secondary text-[11px] leading-relaxed text-grey-500">
+                  Praktikan menerima soal ujian (TA/TP) dalam bahasa Inggris.
+                </p>
+              </div>
+              <Controller
+                control={control}
+                name="isInternational"
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+            </div>
+
             {errors.root?.serverError && (
               <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
                 {errors.root.serverError.message}
@@ -144,5 +175,5 @@ export function EditStudentDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );    
+  );
 }

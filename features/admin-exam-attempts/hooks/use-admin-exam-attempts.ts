@@ -16,7 +16,21 @@ export const useForceSubmitAttempt = () => {
   return useMutation({
     mutationFn: (attemptId: string) =>
       adminExamAttemptService.forceSubmit(attemptId),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["stuck-exam-attempts"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["stuck-exam-attempts"] });
+      qc.invalidateQueries({ queryKey: ["admin-dashboard-summary"] });
+    },
+  });
+};
+
+export const useRegenerateUnblockCode = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (attemptId: string) =>
+      adminExamAttemptService.regenerateUnblockCode(attemptId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-dashboard-summary"] });
+      qc.invalidateQueries({ queryKey: ["stuck-exam-attempts"] });
+    },
   });
 };

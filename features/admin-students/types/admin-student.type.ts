@@ -11,6 +11,12 @@ export type AdminStudent = {
   mustChangePassword: boolean;
   createdAt: string;
   group: StudentGroup | null;
+  isInternational: boolean;
+  _count?: {
+    examAttempts: number;
+    submissions: number;
+    grades: number;
+  };
 };
 
 export type AdminStudentsResponse = {

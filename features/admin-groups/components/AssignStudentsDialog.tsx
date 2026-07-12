@@ -54,25 +54,12 @@ type PendingConfirmation = {
   conflicts: AssignStudentsConflict[];
 };
 
-// Total anggota (yang sudah ada + slot kosong) yang ditampilkan secara default.
 const DEFAULT_TOTAL_SLOTS = 4;
-// Batas maksimal total anggota per kelompok (sudah ada + baru).
 const MAX_TOTAL_SLOTS = 5;
 
 const emptySlots = (count: number) =>
   Array.from({ length: Math.max(count, 0) }, () => ({ value: "" }));
 
-/**
- * Menghitung berapa slot kosong yang perlu ditampilkan saat dialog dibuka,
- * berdasarkan jumlah anggota yang sudah ada di kelompok.
- *
- * Contoh:
- * - existingCount = 0 -> 4 slot kosong (Anggota 1-4)
- * - existingCount = 2 -> 2 slot kosong (Anggota 3-4)
- * - existingCount = 4 -> 1 slot kosong (Anggota 5), karena default (4) sudah
- *   terpenuhi oleh anggota yang ada, tapi tetap sediakan 1 slot untuk diisi
- * - existingCount = 5 (atau lebih) -> 0 slot kosong, kelompok sudah penuh
- */
 const computeInitialEditableSlots = (existingCount: number) => {
   const remainingCapacity = Math.max(MAX_TOTAL_SLOTS - existingCount, 0);
   if (remainingCapacity === 0) return 0;
@@ -136,10 +123,6 @@ export function AssignStudentsDialog({
       setPendingConfirmation(null);
       setStudentSearch("");
     }
-    // existingStudents.length sengaja dijadikan dependency: saat dialog
-    // dibuka kembali setelah anggota bertambah, jumlah slot kosong ikut
-    // menyesuaikan (bukan selalu 4).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, existingStudents.length, reset]);
 
   const totalMembers = existingStudents.length + fields.length;
@@ -174,10 +157,6 @@ export function AssignStudentsDialog({
         assignedCount: res.assignedCount,
         failedNims: res.failedNims ?? [],
       });
-      // Tidak reset field di sini — biarkan NIM yang baru dimasukkan tetap
-      // terlihat sebagai konfirmasi. Field akan menyesuaikan ulang saat
-      // dialog ditutup lalu dibuka lagi (lihat useEffect di atas), karena
-      // `existingStudents` akan bertambah setelah query di-invalidate.
     } catch (error: unknown) {
       const message = axios.isAxiosError(error)
         ? error.response?.data?.message || "Gagal menambahkan anggota."

@@ -17,9 +17,9 @@ import {
 } from "@/shared/components/ui/dialog";
 import { BulkImportQuestionsResult } from "../types/admin-question.type";
 
-const CSV_TEMPLATE = `type,content,optionA,optionB,optionC,optionD,optionE,correctAnswer
-TA,Apa kepanjangan dari CPU?,Central Processing Unit,Central Program Unit,Computer Personal Unit,Central Peripheral Unit,Central Process Utility,A
-TP,Jelaskan prinsip kerja transistor.,,,,,,`;
+const CSV_TEMPLATE = `type,content,contentEn,optionA,optionAEn,optionB,optionBEn,optionC,optionCEn,optionD,optionDEn,optionE,optionEEn,correctAnswer
+TA,Apa kepanjangan dari CPU?,What does CPU stand for?,Central Processing Unit,Central Processing Unit,Central Program Unit,Central Program Unit,Computer Personal Unit,Computer Personal Unit,Central Peripheral Unit,Central Peripheral Unit,Central Process Utility,Central Process Utility,A
+TP,Jelaskan prinsip kerja transistor.,Explain the working principle of a transistor.,,,,,,,,,,,`;
 
 type Props = { open: boolean; onOpenChange: (open: boolean) => void };
 

@@ -1,11 +1,17 @@
 export type Question = {
   id: string;
   content: string;
+  contentEn: string | null;
   optionA: string | null;
+  optionAEn: string | null;
   optionB: string | null;
+  optionBEn: string | null;
   optionC: string | null;
+  optionCEn: string | null;
   optionD: string | null;
+  optionDEn: string | null;
   optionE: string | null;
+  optionEEn: string | null;
 };
 
 export type ExamAttempt = {
@@ -74,4 +80,10 @@ export type MyExamAttemptHistory = {
       order: number;
     };
   };
+};
+
+export type UnblockResponse = {
+  message: string;
+  attempt: ExamAttempt;
+  questions: Question[];
 };

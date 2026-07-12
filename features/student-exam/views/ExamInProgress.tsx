@@ -19,6 +19,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Question } from "../types/student-exam.type";
 import { AnswerOption, SaveStatus } from "../hooks/use-exam-session";
+import { useProfile } from "@/features/auth"; // <-- IMPORT USE PROFILE
 
 function hashString(str: string) {
   let hash = 0;
@@ -43,7 +44,7 @@ function getSeededRandom(seed: number) {
 const DISPLAY_LABELS = ["A", "B", "C", "D", "E"];
 
 type Props = {
-  attemptId: string; // <-- Terima attemptId
+  attemptId: string;
   questions: Question[];
   currentIdx: number;
   answers: Record<string, AnswerOption>;
@@ -67,6 +68,9 @@ export function ExamInProgress({
   onSelectAnswer,
   onManualSubmit,
 }: Props) {
+  const { data: user } = useProfile("STUDENT"); // <-- CEK STATUS MAHASISWA
+  const isInter = user?.isInternational === true;
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
 
@@ -97,6 +101,20 @@ export function ExamInProgress({
 
     return options;
   }, [attemptId, currentQuestion]);
+
+  const displayContent =
+    isInter && currentQuestion?.contentEn
+      ? currentQuestion.contentEn
+      : currentQuestion?.content;
+  if (!questions.length || !currentQuestion) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="font-secondary text-sm font-semibold text-slate-500">
+          Memuat soal ujian...
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 pb-36 font-primary selection:bg-primary/20 relative">
@@ -226,17 +244,22 @@ export function ExamInProgress({
           Soal {currentIdx + 1} dari {questions.length}
         </div>
 
+        {/* LOGIKA KONTEN BILINGUAL SOAL */}
         <h2 className="text-[19px] font-extrabold leading-relaxed text-slate-900 selection:bg-primary/20">
-          {currentQuestion?.content}
+          {displayContent}
         </h2>
 
         <div className="mt-8 space-y-3">
-          {/* Loop melalui Opsi yang Telah Diacak */}
           {shuffledOptions.map((originalOpt, index) => {
-            // Label yang ditampilkan (A, B, C, D, E) tetap berurutan agar rapi secara visual
             const displayLabel = DISPLAY_LABELS[index];
-            const optionText =
+
+            const optionIdText =
               currentQuestion?.[`option${originalOpt}` as keyof Question];
+            const optionEnText =
+              currentQuestion?.[`option${originalOpt}En` as keyof Question];
+            const optionText =
+              isInter && optionEnText ? optionEnText : optionIdText;
+
             if (!optionText) return null;
 
             const isSelected = answers[currentQuestion.id] === originalOpt;
@@ -267,7 +290,7 @@ export function ExamInProgress({
                       : "text-slate-700"
                   }`}
                 >
-                  {optionText}
+                  {optionText as string}
                 </p>
               </button>
             );
@@ -280,7 +303,7 @@ export function ExamInProgress({
           <Button
             variant="outline"
             disabled={currentIdx === 0}
-            onClick={() => setCurrentIdx((p) => p - 1)}
+            onClick={() => setCurrentIdx((p) => Math.max(p - 1, 0))}
             className="h-11 rounded-[16px] border-slate-300 px-5 font-bold text-slate-700 hover:bg-slate-100"
           >
             <ArrowLeft className="mr-1.5 h-4 w-4" /> Prev
@@ -296,7 +319,9 @@ export function ExamInProgress({
             </Button>
           ) : (
             <Button
-              onClick={() => setCurrentIdx((p) => p + 1)}
+              onClick={() =>
+                setCurrentIdx((p) => Math.min(p + 1, questions.length - 1))
+              }
               className="h-11 rounded-[16px] px-6 font-bold shadow-md shadow-primary/20"
             >
               Next <ArrowRight className="ml-1.5 h-4 w-4" />

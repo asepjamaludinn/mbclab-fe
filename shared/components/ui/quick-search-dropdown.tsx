@@ -31,8 +31,6 @@ export function QuickSearchDropdown({
               <li key={result.id}>
                 <button
                   type="button"
-                  // pointerdown (not click) so this fires before the input's
-                  // blur/outside-click handler would close the dropdown first
                   onPointerDown={(e) => {
                     e.preventDefault();
                     onSelect(result);

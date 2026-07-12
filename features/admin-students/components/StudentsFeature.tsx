@@ -142,6 +142,21 @@ export function StudentsFeature() {
         ),
     },
     {
+      key: "class",
+      header: "Kelas",
+      render: (student) => (
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-bold ${
+            student.isInternational
+              ? "bg-primary/10 text-primary"
+              : "bg-grey-100 text-grey-500"
+          }`}
+        >
+          {student.isInternational ? "Internasional" : "Reguler"}
+        </span>
+      ),
+    },
+    {
       key: "status",
       header: "Status",
       render: (student) => (

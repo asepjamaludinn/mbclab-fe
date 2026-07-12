@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HelpCircle } from "lucide-react";
@@ -44,6 +44,7 @@ export function QuestionFormDialog({
   defaultModuleId,
 }: QuestionFormDialogProps) {
   const isEditing = !!question;
+  const [langTab, setLangTab] = useState<"ID" | "EN">("ID");
 
   const { data: modulesRes } = useStudentModules(1, 50);
   const modules = modulesRes?.data ?? [];
@@ -70,17 +71,24 @@ export function QuestionFormDialog({
 
   useEffect(() => {
     if (!open) return;
+    setLangTab("ID");
 
     if (question) {
       reset({
         moduleId: question.moduleId,
         type: question.type,
         content: question.content,
+        contentEn: question.contentEn ?? "",
         optionA: question.optionA ?? "",
         optionB: question.optionB ?? "",
         optionC: question.optionC ?? "",
         optionD: question.optionD ?? "",
         optionE: question.optionE ?? "",
+        optionAEn: question.optionAEn ?? "",
+        optionBEn: question.optionBEn ?? "",
+        optionCEn: question.optionCEn ?? "",
+        optionDEn: question.optionDEn ?? "",
+        optionEEn: question.optionEEn ?? "",
         correctAnswer: question.correctAnswer ?? undefined,
       });
     } else {
@@ -88,11 +96,17 @@ export function QuestionFormDialog({
         moduleId: defaultModuleId ?? "",
         type: "TA",
         content: "",
+        contentEn: "",
         optionA: "",
         optionB: "",
         optionC: "",
         optionD: "",
         optionE: "",
+        optionAEn: "",
+        optionBEn: "",
+        optionCEn: "",
+        optionDEn: "",
+        optionEEn: "",
         correctAnswer: undefined,
       });
     }
@@ -106,6 +120,7 @@ export function QuestionFormDialog({
             moduleId: data.moduleId,
             type: data.type,
             content: data.content,
+            contentEn: data.contentEn,
           };
 
     try {
@@ -128,7 +143,7 @@ export function QuestionFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-xl w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_12px_28px_-14px_rgba(0,101,176,0.65)]">
@@ -142,97 +157,165 @@ export function QuestionFormDialog({
           </DialogHeader>
 
           <div className="mt-6 max-h-[60vh] space-y-4 overflow-y-auto pr-1">
-            <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                Modul Praktikum
-              </label>
-              <select
-                {...register("moduleId")}
-                className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Modul Praktikum
+                </label>
+                <select
+                  {...register("moduleId")}
+                  className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
+                >
+                  <option value="">Pilih modul...</option>
+                  {modules.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      Modul {m.order} — {m.title}
+                    </option>
+                  ))}
+                </select>
+                {errors.moduleId && (
+                  <p className="mt-1 text-xs font-medium text-error">
+                    {errors.moduleId.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Jenis Soal
+                </label>
+                <select
+                  {...register("type")}
+                  className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
+                >
+                  <option value="TA">Tes Awal (TA)</option>
+                  <option value="TP">Tugas Pendahuluan (TP)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex w-full rounded-xl bg-grey-100 p-1 mb-2">
+              <button
+                type="button"
+                onClick={() => setLangTab("ID")}
+                className={`flex-1 rounded-lg py-1.5 font-secondary text-xs font-bold transition ${
+                  langTab === "ID"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-grey-500 hover:text-grey-700"
+                }`}
               >
-                <option value="">Pilih modul...</option>
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    Modul {m.order} — {m.title}
-                  </option>
-                ))}
-              </select>
-              {errors.moduleId && (
-                <p className="mt-1 text-xs font-medium text-error">
-                  {errors.moduleId.message}
-                </p>
+                🇮🇩 Indonesia
+              </button>
+              <button
+                type="button"
+                onClick={() => setLangTab("EN")}
+                className={`flex-1 rounded-lg py-1.5 font-secondary text-xs font-bold transition ${
+                  langTab === "EN"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-grey-500 hover:text-grey-700"
+                }`}
+              >
+                🇬🇧 English (Opsional)
+              </button>
+            </div>
+
+            {/* TAB BAHASA INDONESIA */}
+            <div className={langTab === "ID" ? "block space-y-4" : "hidden"}>
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Pertanyaan (ID)
+                </label>
+                <Textarea
+                  {...register("content")}
+                  rows={3}
+                  placeholder="Tuliskan pertanyaan dalam bahasa Indonesia..."
+                />
+                {errors.content && (
+                  <p className="mt-1 text-xs font-medium text-error">
+                    {errors.content.message}
+                  </p>
+                )}
+              </div>
+
+              {selectedType === "TA" && (
+                <div className="space-y-3 rounded-2xl border border-grey-100 bg-grey-50/60 p-4">
+                  {ANSWER_OPTIONS.map((opt) => (
+                    <div key={opt}>
+                      <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                        Pilihan {opt} (ID)
+                      </label>
+                      <Input
+                        {...register(`option${opt}` as const)}
+                        placeholder={`Teks pilihan ${opt} (ID)`}
+                      />
+                      {errors[`option${opt}` as keyof QuestionFormData] && (
+                        <p className="mt-1 text-xs font-medium text-error">
+                          {
+                            (
+                              errors[
+                                `option${opt}` as keyof QuestionFormData
+                              ] as any
+                            )?.message
+                          }
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                Jenis Soal
-              </label>
-              <select
-                {...register("type")}
-                className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
-              >
-                <option value="TA">Tes Awal (TA) — Pilihan Ganda</option>
-                <option value="TP">Tugas Pendahuluan (TP) — Esai</option>
-              </select>
-            </div>
+            {/* TAB ENGLISH */}
+            <div className={langTab === "EN" ? "block space-y-4" : "hidden"}>
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Pertanyaan (EN)
+                </label>
+                <Textarea
+                  {...register("contentEn")}
+                  rows={3}
+                  placeholder="Write the question in English..."
+                />
+              </div>
 
-            <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                Pertanyaan
-              </label>
-              <Textarea
-                {...register("content")}
-                rows={3}
-                placeholder="Tuliskan pertanyaan di sini..."
-              />
-              {errors.content && (
-                <p className="mt-1 text-xs font-medium text-error">
-                  {errors.content.message}
-                </p>
+              {selectedType === "TA" && (
+                <div className="space-y-3 rounded-2xl border border-grey-100 bg-grey-50/60 p-4">
+                  {ANSWER_OPTIONS.map((opt) => (
+                    <div key={`${opt}En`}>
+                      <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                        Pilihan {opt} (EN)
+                      </label>
+                      <Input
+                        {...register(`option${opt}En` as const)}
+                        placeholder={`Teks pilihan ${opt} (EN)`}
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
             {selectedType === "TA" && (
-              <div className="space-y-3 rounded-2xl border border-grey-100 bg-grey-50/60 p-4">
-                {ANSWER_OPTIONS.map((opt) => (
-                  <div key={opt}>
-                    <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                      Pilihan {opt}
-                    </label>
-                    <Input
-                      {...register(`option${opt}` as const)}
-                      placeholder={`Teks pilihan ${opt}`}
-                    />
-                    {errors[`option${opt}` as const] && (
-                      <p className="mt-1 text-xs font-medium text-error">
-                        {errors[`option${opt}` as const]?.message}
-                      </p>
-                    )}
-                  </div>
-                ))}
-
-                <div>
-                  <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                    Jawaban Benar
-                  </label>
-                  <select
-                    {...register("correctAnswer")}
-                    className="h-11 w-full rounded-xl border border-grey-200 bg-white px-3.5 text-sm text-grey-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
-                  >
-                    <option value="">Pilih jawaban benar...</option>
-                    {ANSWER_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.correctAnswer && (
-                    <p className="mt-1 text-xs font-medium text-error">
-                      {errors.correctAnswer.message}
-                    </p>
-                  )}
-                </div>
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Jawaban Benar
+                </label>
+                <select
+                  {...register("correctAnswer")}
+                  className="h-11 w-full rounded-xl border border-grey-200 bg-white px-3.5 text-sm text-grey-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
+                >
+                  <option value="">Pilih jawaban benar...</option>
+                  {ANSWER_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+                {errors.correctAnswer && (
+                  <p className="mt-1 text-xs font-medium text-error">
+                    {errors.correctAnswer.message}
+                  </p>
+                )}
               </div>
             )}
 

@@ -6,11 +6,17 @@ export type AdminQuestion = {
   moduleId: string;
   type: QuestionType;
   content: string;
+  contentEn: string | null;
   optionA: string | null;
   optionB: string | null;
   optionC: string | null;
   optionD: string | null;
   optionE: string | null;
+  optionAEn: string | null;
+  optionBEn: string | null;
+  optionCEn: string | null;
+  optionDEn: string | null;
+  optionEEn: string | null;
   correctAnswer: AnswerOption | null;
   createdAt: string;
   updatedAt: string;
@@ -18,6 +24,24 @@ export type AdminQuestion = {
     title: string;
     order: number;
   };
+};
+
+export type CreateQuestionPayload = {
+  moduleId: string;
+  type: QuestionType;
+  content: string;
+  contentEn?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  optionE?: string;
+  optionAEn?: string;
+  optionBEn?: string;
+  optionCEn?: string;
+  optionDEn?: string;
+  optionEEn?: string;
+  correctAnswer?: AnswerOption;
 };
 
 export type AdminQuestionsResponse = {
@@ -28,18 +52,6 @@ export type AdminQuestionsResponse = {
     limit: number;
     totalPages: number;
   };
-};
-
-export type CreateQuestionPayload = {
-  moduleId: string;
-  type: QuestionType;
-  content: string;
-  optionA?: string;
-  optionB?: string;
-  optionC?: string;
-  optionD?: string;
-  optionE?: string;
-  correctAnswer?: AnswerOption;
 };
 
 export type BulkImportQuestionsResult = {
