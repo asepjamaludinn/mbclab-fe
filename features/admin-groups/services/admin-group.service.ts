@@ -6,6 +6,8 @@ import {
   AssignStudentsResult,
   UnassignedStudent,
   BulkDeleteGroupsResult,
+  CreateGroupPayload,
+  UpdateGroupPayload,
 } from "../types/admin-group.type";
 
 export type GroupsQueryParams = {
@@ -38,12 +40,15 @@ export const adminGroupService = {
     const res = await api.get<AdminGroupDetail>(`/groups/${id}`);
     return res.data;
   },
-  createGroup: async (name: string): Promise<AdminGroup> => {
-    const res = await api.post<AdminGroup>("/groups", { name });
+  createGroup: async (payload: CreateGroupPayload): Promise<AdminGroup> => {
+    const res = await api.post<AdminGroup>("/groups", payload);
     return res.data;
   },
-  updateGroup: async (id: string, name: string): Promise<AdminGroup> => {
-    const res = await api.patch<AdminGroup>(`/groups/${id}`, { name });
+  updateGroup: async (
+    id: string,
+    payload: UpdateGroupPayload,
+  ): Promise<AdminGroup> => {
+    const res = await api.patch<AdminGroup>(`/groups/${id}`, payload);
     return res.data;
   },
   deleteGroup: async (id: string) => {

@@ -1,6 +1,4 @@
-// features\student-exam\views\ExamInProgress.tsx
-
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,7 +20,30 @@ import {
 import { Question } from "../types/student-exam.type";
 import { AnswerOption, SaveStatus } from "../hooks/use-exam-session";
 
+function hashString(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
+function getSeededRandom(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x9e3779b9) | 0;
+    let t = seed ^ (seed >>> 16);
+    t = Math.imul(t, 0x21f0aaad);
+    t = t ^ (t >>> 15);
+    t = Math.imul(t, 0x735a2d97);
+    return ((t = t ^ (t >>> 15)) >>> 0) / 4294967296;
+  };
+}
+
+const DISPLAY_LABELS = ["A", "B", "C", "D", "E"];
+
 type Props = {
+  attemptId: string; // <-- Terima attemptId
   questions: Question[];
   currentIdx: number;
   answers: Record<string, AnswerOption>;
@@ -35,6 +56,7 @@ type Props = {
 };
 
 export function ExamInProgress({
+  attemptId,
   questions,
   currentIdx,
   answers,
@@ -46,7 +68,7 @@ export function ExamInProgress({
   onManualSubmit,
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [showPalette, setShowPalette] = useState(false); // Default tertutup
+  const [showPalette, setShowPalette] = useState(false);
 
   const currentQuestion = questions[currentIdx];
   const isLastQuestion = currentIdx === questions.length - 1;
@@ -60,9 +82,24 @@ export function ExamInProgress({
 
   const answeredCount = Object.keys(answers).length;
 
+  const shuffledOptions = useMemo(() => {
+    if (!currentQuestion || !attemptId)
+      return ["A", "B", "C", "D", "E"] as AnswerOption[];
+
+    const seed = hashString(attemptId + currentQuestion.id);
+    const random = getSeededRandom(seed);
+    const options: AnswerOption[] = ["A", "B", "C", "D", "E"];
+
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+
+    return options;
+  }, [attemptId, currentQuestion]);
+
   return (
     <main className="min-h-screen bg-slate-50 pb-36 font-primary selection:bg-primary/20 relative">
-      {/* Toast Alert Auto-Save */}
       <div className="pointer-events-none fixed left-0 right-0 top-20 z-50 flex justify-center">
         {saveStatus === "saving" && (
           <div className="flex animate-pulse items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 font-secondary text-[11px] font-bold text-primary shadow-sm backdrop-blur-md">
@@ -79,7 +116,6 @@ export function ExamInProgress({
 
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 px-5 py-4 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-md items-center justify-between">
-          {/* Timer */}
           <div
             className={`flex items-center gap-2 rounded-full px-4 py-2 transition-colors ${isTimeCritical ? "bg-error/10 text-error" : "bg-primary/10 text-primary"}`}
           >
@@ -93,7 +129,6 @@ export function ExamInProgress({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Tombol & Wrapper Floating Palette */}
             <div className="relative">
               <Button
                 variant="outline"
@@ -109,16 +144,13 @@ export function ExamInProgress({
                 <LayoutGrid className="h-4 w-4" />
               </Button>
 
-              {/* FLOATING PALETTE */}
               {showPalette && (
                 <>
-                  {/* Backdrop tak terlihat untuk menutup popover ketika area luar diklik */}
                   <div
                     className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[1px]"
                     onClick={() => setShowPalette(false)}
                   />
 
-                  {/* Kontainer Grid Nomor (Absolute) */}
                   <div className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-[280px] origin-top-right rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 sm:w-[320px]">
                     <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
                       <p className="font-secondary text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -139,7 +171,7 @@ export function ExamInProgress({
                             type="button"
                             onClick={() => {
                               setCurrentIdx(i);
-                              setShowPalette(false); // Tutup otomatis setelah loncat soal
+                              setShowPalette(false);
                             }}
                             className={`flex h-10 w-10 items-center justify-center rounded-xl font-secondary text-sm font-bold transition-all duration-150 active:scale-95 ${
                               isCurrent
@@ -199,17 +231,20 @@ export function ExamInProgress({
         </h2>
 
         <div className="mt-8 space-y-3">
-          {(["A", "B", "C", "D", "E"] as AnswerOption[]).map((opt) => {
+          {/* Loop melalui Opsi yang Telah Diacak */}
+          {shuffledOptions.map((originalOpt, index) => {
+            // Label yang ditampilkan (A, B, C, D, E) tetap berurutan agar rapi secara visual
+            const displayLabel = DISPLAY_LABELS[index];
             const optionText =
-              currentQuestion?.[`option${opt}` as keyof Question];
+              currentQuestion?.[`option${originalOpt}` as keyof Question];
             if (!optionText) return null;
 
-            const isSelected = answers[currentQuestion.id] === opt;
+            const isSelected = answers[currentQuestion.id] === originalOpt;
 
             return (
               <button
-                key={opt}
-                onClick={() => onSelectAnswer(currentQuestion.id, opt)}
+                key={originalOpt}
+                onClick={() => onSelectAnswer(currentQuestion.id, originalOpt)}
                 className={`group flex w-full items-start gap-4 rounded-[20px] border-2 p-4 text-left transition-all duration-200 ${
                   isSelected
                     ? "border-primary bg-primary/5 shadow-sm shadow-primary/5"
@@ -223,7 +258,7 @@ export function ExamInProgress({
                       : "border-slate-300 text-slate-500 group-hover:border-primary/40 group-hover:text-primary"
                   }`}
                 >
-                  {opt}
+                  {displayLabel}
                 </div>
                 <p
                   className={`pt-0.5 font-secondary text-[15px] leading-relaxed ${
@@ -240,13 +275,12 @@ export function ExamInProgress({
         </div>
       </section>
 
-      {/* Navigasi Bawah */}
       <div className="pb-safe fixed bottom-0 left-1/2 z-30 w-full max-w-md -translate-x-1/2 border-t border-slate-200 bg-white/90 p-4 backdrop-blur-lg">
         <div className="flex w-full items-center justify-between px-1">
           <Button
             variant="outline"
             disabled={currentIdx === 0}
-            onClick={() => setCurrentIdx((p) => (p as number) - 1)}
+            onClick={() => setCurrentIdx((p) => p - 1)}
             className="h-11 rounded-[16px] border-slate-300 px-5 font-bold text-slate-700 hover:bg-slate-100"
           >
             <ArrowLeft className="mr-1.5 h-4 w-4" /> Prev
@@ -262,7 +296,7 @@ export function ExamInProgress({
             </Button>
           ) : (
             <Button
-              onClick={() => setCurrentIdx((p) => (p as number) + 1)}
+              onClick={() => setCurrentIdx((p) => p + 1)}
               className="h-11 rounded-[16px] px-6 font-bold shadow-md shadow-primary/20"
             >
               Next <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -271,7 +305,6 @@ export function ExamInProgress({
         </div>
       </div>
 
-      {/* Dialog Konfirmasi Submit */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
           <DialogHeader className="text-left">

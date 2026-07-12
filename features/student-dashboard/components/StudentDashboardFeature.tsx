@@ -97,10 +97,7 @@ export function StudentDashboardFeature() {
         <DashboardHeader userName={user?.name} nim={user?.nim} />
 
         <section className="mt-8 space-y-7 px-5">
-          <DashboardProgressSummary
-            userName={user?.name}
-            activeSession={activeSession}
-          />
+          <DashboardProgressSummary userName={user?.name} group={user?.group} />
 
           <DashboardQuickAccess />
 

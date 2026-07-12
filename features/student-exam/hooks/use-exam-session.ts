@@ -275,6 +275,7 @@ export function useExamSession() {
   return {
     state: {
       examState,
+      attemptId: attempt?.id,
       selectedSessionId,
       accessCode,
       joinError,

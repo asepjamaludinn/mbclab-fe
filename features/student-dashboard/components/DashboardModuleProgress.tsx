@@ -9,6 +9,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { PracticumModule } from "@/features/student-modules";
+import { isDeadlineStrictlyPassed } from "@/shared/utils/deadline";
 
 type DashboardModuleProgressProps = {
   activeModule: PracticumModule | null;
@@ -54,6 +55,9 @@ export function DashboardModuleProgress({
 
   const Icon = config?.icon;
   const canDownload = !!activeModule?.fileUrl && activeModule.fileUrl !== "#";
+  const isTpCompletelyClosed =
+    activeModule?.tpDeadline &&
+    isDeadlineStrictlyPassed(activeModule.tpDeadline);
 
   return (
     <section>
@@ -172,13 +176,22 @@ export function DashboardModuleProgress({
                 Lihat Detail Modul
               </a>
 
-              <Link
-                href="/student/submissions"
-                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
-                aria-label="Upload TP"
-              >
-                <FileCheck2 className="h-5 w-5" strokeWidth={1.8} />
-              </Link>
+              {isTpCompletelyClosed ? (
+                <div
+                  className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-grey-400 shadow-sm backdrop-blur-xl cursor-not-allowed"
+                  aria-label="Upload TP Ditutup"
+                >
+                  <LockKeyhole className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+              ) : (
+                <Link
+                  href="/student/submissions"
+                  className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
+                  aria-label="Upload TP"
+                >
+                  <FileCheck2 className="h-5 w-5" strokeWidth={1.8} />
+                </Link>
+              )}
             </div>
           </div>
         </article>

@@ -3,6 +3,27 @@ export function isDeadlinePassed(deadline: string | null | undefined): boolean {
   return new Date() > new Date(deadline);
 }
 
+export function isDeadlineStrictlyPassed(
+  deadline: string | null | undefined,
+  graceMinutes = 15,
+): boolean {
+  if (!deadline) return false;
+  const deadlineTime = new Date(deadline).getTime();
+  const graceTime = deadlineTime + graceMinutes * 60 * 1000;
+  return Date.now() > graceTime;
+}
+
+export function isInGracePeriod(
+  deadline: string | null | undefined,
+  graceMinutes = 15,
+): boolean {
+  if (!deadline) return false;
+  const now = Date.now();
+  const deadlineTime = new Date(deadline).getTime();
+  const graceTime = deadlineTime + graceMinutes * 60 * 1000;
+  return now > deadlineTime && now <= graceTime;
+}
+
 export function getDeadlineCountdownLabel(deadline: string): string {
   const diffMs = new Date(deadline).getTime() - Date.now();
   if (diffMs <= 0) return "Sudah lewat";

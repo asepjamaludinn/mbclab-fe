@@ -50,6 +50,9 @@ export function StudentAccountFeature() {
           currentUserNim={user?.nim}
           groupName={group?.name}
           groupMembers={group?.members || []}
+          groupDay={group?.day}
+          groupWeekType={group?.weekType}
+          groupShift={group?.shift}
         />
       </div>
 

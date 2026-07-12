@@ -5,6 +5,10 @@ import {
   adminGroupService,
   GroupsQueryParams,
 } from "../services/admin-group.service";
+import {
+  CreateGroupPayload,
+  UpdateGroupPayload,
+} from "../types/admin-group.type";
 
 export const useAdminGroups = (params: GroupsQueryParams = {}) => {
   return useQuery({
@@ -24,7 +28,8 @@ export const useAdminGroup = (id: string) => {
 export const useCreateGroup = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) => adminGroupService.createGroup(name),
+    mutationFn: (payload: CreateGroupPayload) =>
+      adminGroupService.createGroup(payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-groups"] }),
   });
 };
@@ -32,8 +37,13 @@ export const useCreateGroup = () => {
 export const useUpdateGroup = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) =>
-      adminGroupService.updateGroup(id, name),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateGroupPayload;
+    }) => adminGroupService.updateGroup(id, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-groups"] }),
   });
 };
@@ -46,7 +56,6 @@ export const useDeleteGroup = () => {
   });
 };
 
-// Hook baru untuk Bulk Delete
 export const useBulkDeleteGroups = () => {
   const qc = useQueryClient();
   return useMutation({

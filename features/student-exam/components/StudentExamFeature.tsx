@@ -67,6 +67,7 @@ export function StudentExamFeature() {
     case "IN_PROGRESS":
       return (
         <ExamInProgress
+          attemptId={state.attemptId!}
           questions={state.questions}
           currentIdx={state.currentIdx}
           answers={state.answers}

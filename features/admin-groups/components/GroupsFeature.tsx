@@ -289,6 +289,7 @@ export function GroupsFeature() {
       />
 
       <GroupFormDialog
+        group={editingGroup}
         open={formOpen}
         onOpenChange={(o) => {
           setFormOpen(o);

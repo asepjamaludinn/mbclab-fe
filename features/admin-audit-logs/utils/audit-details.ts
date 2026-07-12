@@ -43,6 +43,8 @@ const FIELD_LABELS: Record<string, string> = {
   updatedFields: "Kolom yang Diubah",
   type: "Jenis",
   sessionId: "Sesi Ujian",
+  day: "Hari Praktikum",
+  weekType: "Minggu Praktikum",
 };
 
 function humanizeKey(key: string): string {

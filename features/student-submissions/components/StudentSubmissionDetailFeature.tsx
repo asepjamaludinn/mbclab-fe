@@ -1,3 +1,4 @@
+// features/student-submissions/components/StudentSubmissionDetailFeature.tsx
 "use client";
 
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
@@ -10,6 +11,7 @@ import {
   UploadCloud,
   Trash2,
   XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { usePublicModules } from "@/features/public-home";
@@ -19,7 +21,11 @@ import {
   tpSubmissionSchema,
   MAX_FILE_SIZE_MB,
 } from "../schemas/student-submission.schema";
-import { isDeadlinePassed, formatDeadline } from "@/shared/utils/deadline";
+import {
+  isDeadlineStrictlyPassed,
+  isInGracePeriod,
+  formatDeadline,
+} from "@/shared/utils/deadline";
 
 type StudentSubmissionDetailFeatureProps = {
   moduleId: string;
@@ -43,7 +49,8 @@ export function StudentSubmissionDetailFeature({
   const moduleTitle = moduleInfo ? moduleInfo.title : `Modul ${moduleId}`;
 
   const tpDeadline = (moduleInfo as { tpDeadline?: string | null })?.tpDeadline;
-  const deadlineClosed = isDeadlinePassed(tpDeadline ?? null);
+  const deadlineClosed = isDeadlineStrictlyPassed(tpDeadline ?? null);
+  const inGracePeriod = isInGracePeriod(tpDeadline ?? null);
 
   const { mutateAsync: uploadFile, isPending: isUploadingFile } =
     useUploadFile();
@@ -159,7 +166,6 @@ export function StudentSubmissionDetailFeature({
           {isLoadingModules ? (
             <div className="h-64 w-full animate-pulse rounded-[32px] bg-white/40 backdrop-blur-xl" />
           ) : deadlineClosed ? (
-            // --- Layar terkunci: deadline sudah lewat ---
             <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/80 px-6 py-10 text-center shadow-[0_24px_60px_-38px_rgba(0,101,176,0.3)] backdrop-blur-2xl">
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[22px] bg-error/10 text-error">
                 <LockKeyhole className="h-8 w-8" strokeWidth={1.8} />
@@ -170,13 +176,20 @@ export function StudentSubmissionDetailFeature({
               </h2>
 
               <p className="mx-auto mt-3 max-w-sm font-secondary text-sm leading-relaxed text-slate-600">
-                Batas waktu pengumpulan Tugas Pendahuluan untuk modul ini telah
+                Batas waktu pengumpulan (termasuk masa tenggang 15 menit) telah
                 berakhir pada{" "}
                 <strong>
-                  {tpDeadline ? formatDeadline(tpDeadline) : "-"} WIB
+                  {tpDeadline
+                    ? new Date(
+                        new Date(tpDeadline).getTime() + 15 * 60000,
+                      ).toLocaleString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "-"}{" "}
+                  WIB
                 </strong>
-                . Anda tidak dapat mengunggah file lagi. Silakan hubungi asisten
-                praktikum jika ada kendala.
+                . Anda tidak dapat mengunggah file lagi.
               </p>
 
               <Link
@@ -187,9 +200,19 @@ export function StudentSubmissionDetailFeature({
               </Link>
             </div>
           ) : (
-            // --- Form upload normal ---
             <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/40 px-5 pb-6 pt-5 text-slate-900 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
               <div className="relative z-10">
+                {inGracePeriod && (
+                  <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-sm font-semibold text-warning-700">
+                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
+                    <span>
+                      Waktu reguler pengumpulan telah habis. Anda berada dalam
+                      masa tenggang 15 menit. TP yang diunggah sekarang akan
+                      ditandai "Terlambat".
+                    </span>
+                  </div>
+                )}
+
                 <div
                   onClick={() => !selectedFile && inputRef.current?.click()}
                   onDragOver={(event) => {
@@ -251,7 +274,8 @@ export function StudentSubmissionDetailFeature({
                         <strong className="font-bold text-slate-900">
                           Klik untuk memilih
                         </strong>{" "}
-                        atau drag & drop file PDF ke sini.
+                        atau drag & drop file PDF ke sini. Jika Anda telah
+                        mengunggah TP, file sebelumnya akan digantikan.
                       </p>
 
                       <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">

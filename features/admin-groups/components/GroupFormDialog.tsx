@@ -8,6 +8,11 @@ import axios from "axios";
 import { groupFormSchema, GroupFormData } from "../schemas/admin-group.schema";
 import { useCreateGroup, useUpdateGroup } from "../hooks/use-admin-groups";
 import { AdminGroup } from "../types/admin-group.type";
+import {
+  DAY_OF_WEEK_OPTIONS,
+  WEEK_TYPE_OPTIONS,
+  SHIFT_SCHEDULE_OPTIONS,
+} from "@/shared/utils/schedule";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import {
@@ -21,17 +26,17 @@ import {
 } from "@/shared/components/ui/dialog";
 
 type GroupFormDialogProps = {
+  group?: AdminGroup | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  group?: AdminGroup | null;
 };
 
 export function GroupFormDialog({
+  group,
   open,
   onOpenChange,
-  group = null,
 }: GroupFormDialogProps) {
-  const isEditMode = !!group;
+  const isEditing = !!group;
 
   const { mutateAsync: createGroup, isPending: isCreating } = useCreateGroup();
   const { mutateAsync: updateGroup, isPending: isUpdating } = useUpdateGroup();
@@ -46,26 +51,36 @@ export function GroupFormDialog({
   } = useForm<GroupFormData>({ resolver: zodResolver(groupFormSchema) });
 
   useEffect(() => {
-    if (open) reset({ name: group?.name ?? "" });
+    if (!open) return;
+
+    reset({
+      name: group?.name ?? "",
+      day: group?.day ?? "",
+      weekType: group?.weekType ?? "",
+      shift: group?.shift ?? "",
+    });
   }, [open, group, reset]);
 
   const onSubmit = async (data: GroupFormData) => {
+    const payload = {
+      name: data.name,
+      day: data.day === "" ? undefined : data.day,
+      weekType: data.weekType === "" ? undefined : data.weekType,
+      shift: data.shift === "" ? undefined : data.shift,
+    };
+
     try {
-      if (isEditMode && group) {
-        await updateGroup({ id: group.id, name: data.name });
+      if (isEditing && group) {
+        await updateGroup({ id: group.id, payload });
       } else {
-        await createGroup(data.name);
+        await createGroup(payload);
       }
       onOpenChange(false);
     } catch (error: unknown) {
       const message = axios.isAxiosError(error)
         ? error.response?.data?.message ||
-          (isEditMode
-            ? "Gagal mengubah nama kelompok."
-            : "Gagal membuat kelompok.")
-        : isEditMode
-          ? "Gagal mengubah nama kelompok."
-          : "Gagal membuat kelompok.";
+          `Gagal ${isEditing ? "menyimpan perubahan" : "membuat"} kelompok.`
+        : `Gagal ${isEditing ? "menyimpan perubahan" : "membuat"} kelompok.`;
       setError("root.serverError", {
         type: "server",
         message: Array.isArray(message) ? message[0] : message,
@@ -82,28 +97,94 @@ export function GroupFormDialog({
               <UsersRound className="h-7 w-7" strokeWidth={1.8} />
             </div>
             <DialogTitle>
-              {isEditMode ? "Ubah Nama Kelompok" : "Buat Kelompok"}
+              {isEditing ? "Ubah Kelompok" : "Buat Kelompok"}
             </DialogTitle>
             <DialogDescription>
-              {isEditMode
-                ? "Perbarui nama kelompok ini. Anggota yang sudah terdaftar tidak akan berubah."
-                : "Kelompok baru dapat langsung diisi anggota setelah dibuat."}
+              Jadwal praktikum (Hari, Minggu, Shift) jadwal akan otomatis tampil
+              di Dashboard tiap anggota kelompok
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-6">
-            <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-              Nama Kelompok
-            </label>
-            <Input {...register("name")} placeholder="cth. Kelompok 1" />
-            {errors.name && (
-              <p className="mt-1 text-xs font-medium text-error">
-                {errors.name.message}
+          <div className="mt-6 space-y-4">
+            <div>
+              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                Nama Kelompok
+              </label>
+              <Input {...register("name")} placeholder="cth. Kelompok 1" />
+              {errors.name && (
+                <p className="mt-1 text-xs font-medium text-error">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-grey-100 bg-grey-50/60 p-4">
+              <p className="mb-3 font-secondary text-xs font-bold text-grey-700">
+                Jadwal Praktikum Rutin
               </p>
-            )}
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1.5 block font-secondary text-[11px] font-bold text-grey-500">
+                    Hari
+                  </label>
+                  <select
+                    {...register("day")}
+                    className="h-11 w-full rounded-xl border border-grey-200 bg-white px-3 text-sm text-grey-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
+                  >
+                    <option value="">Tidak diatur</option>
+                    {DAY_OF_WEEK_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block font-secondary text-[11px] font-bold text-grey-500">
+                    Minggu
+                  </label>
+                  <select
+                    {...register("weekType")}
+                    className="h-11 w-full rounded-xl border border-grey-200 bg-white px-3 text-sm text-grey-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
+                  >
+                    <option value="">Tidak diatur</option>
+                    {WEEK_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block font-secondary text-[11px] font-bold text-grey-500">
+                    Shift
+                  </label>
+                  <select
+                    {...register("shift")}
+                    className="h-11 w-full rounded-xl border border-grey-200 bg-white px-3 text-sm text-grey-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
+                  >
+                    <option value="">Tidak diatur</option>
+                    {SHIFT_SCHEDULE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {errors.shift && (
+                <p className="mt-2 text-xs font-medium text-error">
+                  {errors.shift.message}
+                </p>
+              )}
+            </div>
 
             {errors.root?.serverError && (
-              <div className="mt-3 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
                 {errors.root.serverError.message}
               </div>
             )}
@@ -126,7 +207,7 @@ export function GroupFormDialog({
             >
               {isPending
                 ? "Menyimpan..."
-                : isEditMode
+                : isEditing
                   ? "Simpan Perubahan"
                   : "Buat Kelompok"}
             </Button>

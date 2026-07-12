@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { ChevronRight, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { GroupMember } from "../types/student-account.type";
+import {
+  DayOfWeekValue,
+  ShiftValue,
+  WeekTypeValue,
+} from "@/shared/utils/schedule";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { GroupInfoCard } from "./GroupInfoCard";
 import { LogoutDialog } from "./LogoutDialog";
@@ -12,6 +17,9 @@ type AccountActionsProps = {
   currentUserNim?: string;
   groupName?: string;
   groupMembers?: GroupMember[];
+  groupDay?: DayOfWeekValue | null;
+  groupWeekType?: WeekTypeValue | null;
+  groupShift?: ShiftValue | null;
 };
 
 export function AccountActions({
@@ -19,6 +27,9 @@ export function AccountActions({
   currentUserNim,
   groupName,
   groupMembers = [],
+  groupDay,
+  groupWeekType,
+  groupShift,
 }: AccountActionsProps) {
   const dashboardHref =
     role === "ADMIN" ? "/admin/dashboard" : "/student/dashboard";
@@ -46,7 +57,6 @@ export function AccountActions({
         </div>
 
         <div className={compactCardClassName}>
-          {/* Dashboard Link */}
           <Link href={dashboardHref} className={itemClassName}>
             <div className="flex min-w-0 items-center gap-3">
               <div className={iconClassName}>
@@ -66,7 +76,6 @@ export function AccountActions({
 
           <div className={dividerClassName} />
 
-          {/* Change Password Dialog */}
           <ChangePasswordDialog
             itemClassName={itemClassName}
             iconClassName={iconClassName}
@@ -75,7 +84,6 @@ export function AccountActions({
 
           <div className={dividerClassName} />
 
-          {/* Account Status */}
           <div className="flex items-center justify-between gap-3 px-4 py-3.5">
             <div className="flex min-w-0 items-center gap-3">
               <div className={iconClassName}>
@@ -97,17 +105,18 @@ export function AccountActions({
         </div>
       </div>
 
-      {/* Group Info Card */}
       <GroupInfoCard
         groupName={groupName}
         groupMembers={groupMembers}
         currentUserNim={currentUserNim}
+        day={groupDay}
+        weekType={groupWeekType}
+        shift={groupShift}
         compactCardClassName={compactCardClassName}
         iconClassName={iconClassName}
         dividerClassName={dividerClassName}
       />
 
-      {/* Logout Dialog */}
       <LogoutDialog />
     </section>
   );
