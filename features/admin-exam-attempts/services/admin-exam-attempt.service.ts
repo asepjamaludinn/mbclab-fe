@@ -10,4 +10,10 @@ export const adminExamAttemptService = {
     const res = await api.patch(`/exam-attempts/${attemptId}/force-submit`);
     return res.data;
   },
+  regenerateUnblockCode: async (attemptId: string) => {
+    const res = await api.patch(
+      `/exam-attempts/${attemptId}/regenerate-unblock-code`,
+    );
+    return res.data;
+  },
 };

@@ -20,12 +20,14 @@ export interface User {
   role: "STUDENT" | "ADMIN";
   division: "COORDINATOR" | "ACADEMIC" | "PRACTICUM" | null;
   mustChangePassword: boolean;
+  isInternational: boolean;
   group?: UserGroup | null;
 }
 
 export interface LoginResponse {
   user: User;
 }
+
 export interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;

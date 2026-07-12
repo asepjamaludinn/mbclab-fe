@@ -253,6 +253,7 @@ export function useExamSession() {
         code: unblockCode,
       });
       setAttempt(res.attempt);
+      setQuestions(res.questions);
       setExamState("IN_PROGRESS");
       setUnblockCode("");
       setStatusMessage("");

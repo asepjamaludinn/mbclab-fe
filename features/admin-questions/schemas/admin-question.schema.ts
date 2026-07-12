@@ -5,11 +5,17 @@ export const questionFormSchema = z
     moduleId: z.string().min(1, "Modul wajib dipilih"),
     type: z.enum(["TP", "TA"]),
     content: z.string().min(1, "Pertanyaan wajib diisi"),
+    contentEn: z.string().optional(),
     optionA: z.string().optional(),
     optionB: z.string().optional(),
     optionC: z.string().optional(),
     optionD: z.string().optional(),
     optionE: z.string().optional(),
+    optionAEn: z.string().optional(),
+    optionBEn: z.string().optional(),
+    optionCEn: z.string().optional(),
+    optionDEn: z.string().optional(),
+    optionEEn: z.string().optional(),
     correctAnswer: z.enum(["A", "B", "C", "D", "E"]).optional(),
   })
   .superRefine((data, ctx) => {

@@ -106,6 +106,11 @@ export const AUDIT_ACTION_CATEGORIES: AuditActionCategory[] = [
         label: "Gunakan Kode Unblock",
         tone: "info",
       },
+      {
+        value: "REGENERATE_UNBLOCK_CODE",
+        label: "Buat Ulang Kode Unblock",
+        tone: "info",
+      },
     ],
   },
   {

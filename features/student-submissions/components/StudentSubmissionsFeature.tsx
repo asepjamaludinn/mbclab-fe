@@ -1,4 +1,3 @@
-// features/student-submissions/components/StudentSubmissionsFeature.tsx
 "use client";
 
 import Link from "next/link";

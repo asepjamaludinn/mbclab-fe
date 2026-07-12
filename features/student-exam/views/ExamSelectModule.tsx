@@ -32,6 +32,18 @@ export function ExamSelectModule({
 }: Props) {
   const activeModules = modules.filter((m) => m.isActive);
 
+  // Modul yang TA-nya sudah selesai dikerjakan (status SUBMITTED) tidak
+  // boleh lagi muncul di section "Ujian Tersedia" — cukup tampil di
+  // "Riwayat Ujian" di bawahnya. Section ini hanya untuk modul yang
+  // memang belum dikerjakan sama sekali.
+  const availableModules = activeModules.filter((mod) => {
+    const session = mySessions.find((s) => s.moduleId === mod.id);
+    const hasSubmitted = session?.attempts?.some(
+      (a) => a.status === "SUBMITTED",
+    );
+    return !hasSubmitted;
+  });
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
@@ -70,29 +82,24 @@ export function ExamSelectModule({
                 />
               ))}
             </div>
-          ) : activeModules.length === 0 ? (
+          ) : availableModules.length === 0 ? (
             <div className="rounded-[30px] border border-white/50 bg-white/40 p-6 text-center shadow-sm backdrop-blur-xl">
               <p className="font-secondary text-sm font-semibold text-slate-600">
-                Belum ada modul praktikum aktif.
+                {activeModules.length === 0
+                  ? "Belum ada modul praktikum aktif."
+                  : "Semua ujian pada modul aktif sudah Anda kerjakan."}
               </p>
             </div>
           ) : (
-            activeModules.map((mod) => {
+            availableModules.map((mod) => {
               const session = mySessions.find((s) => s.moduleId === mod.id);
-              const hasSubmitted = session?.attempts?.some(
-                (a) => a.status === "SUBMITTED",
-              );
 
               let statusLabel = "Belum Ada Jadwal";
               let statusClass =
                 "bg-slate-100 text-slate-500 border border-slate-200";
               let actionButton = null;
 
-              if (hasSubmitted) {
-                statusLabel = "Sudah Dikerjakan";
-                statusClass =
-                  "bg-success/15 text-success-700 border border-success/20";
-              } else if (session) {
+              if (session) {
                 const now = new Date();
                 const sessionDate = new Date(session.date);
                 const start = new Date(session.startTime);
@@ -152,16 +159,12 @@ export function ExamSelectModule({
                   <div className="flex items-start gap-4">
                     <div
                       className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] shadow-sm ${
-                        hasSubmitted
-                          ? "bg-success text-white shadow-success/30"
-                          : actionButton
-                            ? "bg-primary text-white shadow-primary/30"
-                            : "bg-white text-slate-400"
+                        actionButton
+                          ? "bg-primary text-white shadow-primary/30"
+                          : "bg-white text-slate-400"
                       }`}
                     >
-                      {hasSubmitted ? (
-                        <CheckCircle2 className="h-7 w-7" strokeWidth={2} />
-                      ) : actionButton ? (
+                      {actionButton ? (
                         <ClipboardList className="h-7 w-7" strokeWidth={1.8} />
                       ) : (
                         <LockKeyhole className="h-6 w-6" strokeWidth={1.8} />
@@ -182,7 +185,7 @@ export function ExamSelectModule({
                     </div>
                   </div>
 
-                  {actionButton && !hasSubmitted && (
+                  {actionButton && (
                     <div className="mt-5 border-t border-white/40 pt-4">
                       {actionButton}
                     </div>

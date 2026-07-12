@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, AlertCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
@@ -23,64 +23,128 @@ export function ExamBlocked({
   cheatCount,
 }: ExamBlockedProps) {
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#1e293b_0%,#0f172a_100%)] px-5 text-center font-primary">
-      <div className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-error/20 blur-[100px]" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#1e293b_0%,#0f172a_100%)] px-5 font-primary">
+      <div className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-red-500/20 blur-[120px]" />
 
-      <div className="relative z-10 w-full max-w-sm">
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[28px] bg-error/20 text-error shadow-[0_0_40px_-10px_rgba(220,38,38,0.4)] backdrop-blur-xl border border-error/20">
-          <ShieldAlert className="h-12 w-12" strokeWidth={1.8} />
-        </div>
+      <div className="relative z-10 w-full max-w-md">
+        <div className="rounded-[34px] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
+          {/* Header */}
 
-        <h1 className="mt-8 text-3xl font-extrabold tracking-tight text-white">
-          Ujian Terblokir!
-        </h1>
+          <div className="text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-red-400/20 bg-red-500/15 text-red-400 shadow-lg shadow-red-500/10">
+              <ShieldAlert className="h-10 w-10" />
+            </div>
 
-        <p className="mt-3 font-secondary text-[15px] leading-relaxed text-slate-300">
-          {statusMessage ||
-            "Sistem mendeteksi Anda meninggalkan atau menutup tab ujian."}{" "}
-          Silakan minta{" "}
-          <strong className="font-bold text-white">Kode Unblock</strong> kepada
-          Asisten Praktikum yang bertugas.
-        </p>
+            <h1 className="mt-6 text-3xl font-extrabold text-white">
+              Ujian Terblokir
+            </h1>
 
-        {typeof cheatCount === "number" && cheatCount > 0 && (
-          <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-4 py-1.5 font-secondary text-xs font-bold text-warning-700">
-            Pelanggaran ke-{cheatCount} dari maksimal 5
+            <p className="mt-3 text-sm leading-7 text-slate-300">
+              {statusMessage ??
+                "Sistem mendeteksi Anda meninggalkan halaman ujian."}
+              <br />
+              Hubungi Asisten Praktikum untuk mendapatkan
+              <span className="font-bold text-white"> Kode Unblock</span>.
+            </p>
+
+            {typeof cheatCount === "number" && cheatCount > 0 && (
+              <div className="mt-5 inline-flex rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-semibold text-yellow-300">
+                Pelanggaran ke-{cheatCount} dari maksimal 5
+              </div>
+            )}
           </div>
-        )}
 
-        <form
-          onSubmit={onUnblock}
-          className="mt-8 overflow-hidden rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl"
-        >
-          <div className="space-y-5">
-            <Input
-              value={unblockCode}
-              onChange={(e) =>
-                setUnblockCode(e.target.value.replace(/[^0-9]/g, ""))
-              }
-              placeholder="000000"
-              className="h-16 rounded-2xl border-white/20 bg-slate-900/50 text-center font-secondary text-2xl font-bold tracking-[0.3em] text-white shadow-inner placeholder:text-slate-500 focus:border-error focus:bg-slate-950 focus:text-white focus:ring-error/20"
-              maxLength={6}
-              autoComplete="off"
-            />
+          <form
+            onSubmit={onUnblock}
+            className="mt-8 border-t border-white/10 pt-6"
+          >
+            <div className="space-y-2">
+              <label
+                htmlFor="unblock-code"
+                className="text-sm font-semibold text-slate-200"
+              >
+                Kode Unblock
+              </label>
+              <Input
+                value={unblockCode}
+                onChange={(e) => setUnblockCode(e.target.value)}
+                placeholder="000000"
+                maxLength={6}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                className="
+                h-16
+                rounded-2xl
+                border-2
+                border-slate-600
+
+                bg-slate-800
+
+                text-center
+
+                text-2xl
+                font-bold
+                tracking-[0.3em]
+
+                text-black
+
+                caret-red-400
+
+                placeholder:text-slate-500
+
+                transition-all
+
+                focus:border-red-400
+                focus:ring-4
+                focus:ring-red-500/20
+                "
+              />
+
+              <p className="text-center text-xs text-slate-400">
+                Masukkan kode yang diberikan oleh Asisten Praktikum.
+              </p>
+            </div>
 
             {unblockError && (
-              <p className="rounded-xl border border-error/20 bg-error/10 p-3 font-secondary text-sm font-semibold text-error-400">
-                {unblockError}
-              </p>
+              <div className="mt-5 flex gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
+
+                <p className="text-sm font-medium text-red-200">
+                  {unblockError}
+                </p>
+              </div>
             )}
 
             <Button
               type="submit"
               disabled={isUnblocking || unblockCode.length < 6}
               variant="danger"
-              className="h-[52px] w-full rounded-2xl text-[15px] shadow-error/25 disabled:opacity-50"
+              className="
+                mt-6
+                h-14
+                w-full
+                rounded-2xl
+
+                text-[15px]
+                font-bold
+
+                transition-all
+
+                hover:-translate-y-0.5
+                hover:shadow-xl
+
+                active:translate-y-0
+
+                disabled:pointer-events-none
+                disabled:opacity-50
+              "
             >
               {isUnblocking ? "Memverifikasi..." : "Buka Blokir Sesi"}
             </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </main>
   );

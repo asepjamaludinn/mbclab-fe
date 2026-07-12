@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import axios from "axios";
@@ -12,6 +12,7 @@ import {
 import { useCreateStudent } from "../hooks/use-admin-students";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { Switch } from "@/shared/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -37,14 +38,16 @@ export function StudentFormDialog({
     register,
     handleSubmit,
     reset,
+    control,
     setError,
     formState: { errors },
   } = useForm<CreateStudentFormData>({
     resolver: zodResolver(createStudentSchema),
+    defaultValues: { isInternational: false },
   });
 
   useEffect(() => {
-    if (open) reset({ nim: "", name: "" });
+    if (open) reset({ nim: "", name: "", isInternational: false });
   }, [open, reset]);
 
   const onSubmit = async (data: CreateStudentFormData) => {
@@ -72,8 +75,8 @@ export function StudentFormDialog({
             </div>
             <DialogTitle>Tambah Praktikan</DialogTitle>
             <DialogDescription>
-              Password awal akun akan sama dengan NIM, dan praktikan akan
-              diminta mengganti password saat login pertama.
+              Password awal akun akan sama dengan NIM. Praktikan wajib mengganti
+              password saat login pertama.
             </DialogDescription>
           </DialogHeader>
 
@@ -100,6 +103,28 @@ export function StudentFormDialog({
                   {errors.name.message}
                 </p>
               )}
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl border border-grey-100 bg-grey-50/60 px-4 py-3">
+              <div>
+                <p className="text-sm font-bold text-grey-900">
+                  Kelas Internasional
+                </p>
+                <p className="mt-0.5 font-secondary text-[11px] leading-relaxed text-grey-500">
+                  Praktikan akan menerima soal ujian (TA/TP) dalam bahasa
+                  Inggris.
+                </p>
+              </div>
+              <Controller
+                control={control}
+                name="isInternational"
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {errors.root?.serverError && (

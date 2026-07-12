@@ -6,6 +6,7 @@ import {
   SaveAnswerPayload,
   UnblockPayload,
   MyExamAttemptHistory,
+  UnblockResponse,
 } from "../types/student-exam.type";
 
 export const examService = {
@@ -65,7 +66,7 @@ export const examService = {
   },
 
   unblockAttempt: async ({ sessionId, code }: UnblockPayload) => {
-    const response = await api.patch<{ message: string; attempt: any }>(
+    const response = await api.patch<UnblockResponse>(
       `/exam-attempts/${sessionId}/unblock`,
       { code },
     );

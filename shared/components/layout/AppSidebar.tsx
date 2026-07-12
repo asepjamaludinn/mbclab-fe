@@ -17,6 +17,7 @@ import {
   UserRoundCheck,
   History,
   FileCheck2,
+  ShieldCheck,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -85,6 +86,11 @@ const MENU_GROUPS: SidebarMenuGroup[] = [
         href: "/admin/assistants",
         icon: UserRoundCheck,
       },
+      {
+        label: "Akun Login Asisten",
+        href: "/admin/accounts",
+        icon: ShieldCheck,
+      },
     ],
   },
   {
@@ -105,10 +111,52 @@ export function AppSidebar() {
       console.error("Gagal memanggil endpoint logout:", err);
     } finally {
       queryClient.clear();
-
       window.location.href = "/login/admin";
     }
   };
+
+  const hasAccess = (href: string) => {
+    const division = user?.division;
+
+    if (division === "COORDINATOR") return true;
+
+    if (division === "ACADEMIC") {
+      const allowed = [
+        "/admin/dashboard",
+        "/admin/modules",
+        "/admin/questions",
+        "/admin/sessions",
+        "/admin/submissions",
+        "/admin/grades",
+      ];
+      return allowed.includes(href);
+    }
+
+    if (division === "PRACTICUM") {
+      const allowed = [
+        "/admin/dashboard",
+        "/admin/sessions",
+        "/admin/groups",
+        "/admin/students",
+        "/admin/submissions",
+        "/admin/grades",
+      ];
+      return allowed.includes(href);
+    }
+
+    const allowedGeneral = [
+      "/admin/dashboard",
+      "/admin/sessions",
+      "/admin/submissions",
+      "/admin/grades",
+    ];
+    return allowedGeneral.includes(href);
+  };
+
+  const filteredMenuGroups = MENU_GROUPS.map((group) => ({
+    ...group,
+    menus: group.menus.filter((menu) => hasAccess(menu.href)),
+  })).filter((group) => group.menus.length > 0);
 
   return (
     <Sidebar collapsible="icon">
@@ -135,7 +183,7 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       <SidebarContent>
-        {MENU_GROUPS.map((group) => (
+        {filteredMenuGroups.map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -209,9 +257,12 @@ export function AppSidebar() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem>
-              <Settings strokeWidth={2} />
-              Settings
+            {/* ---> UPDATE BAGIAN INI <--- */}
+            <DropdownMenuItem asChild>
+              <Link href="/admin/settings" className="cursor-pointer">
+                <Settings strokeWidth={2} />
+                Settings
+              </Link>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

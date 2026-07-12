@@ -40,7 +40,7 @@ export function BulkDeleteGroupsDialog({
         reason: string;
       }[]
     | null
-  >(null); // Fixed the useState typing and initialization here
+  >(null);
 
   const previewNames = groups.slice(0, PREVIEW_LIMIT).map((g) => g.name);
   const remainingCount = groups.length - previewNames.length;

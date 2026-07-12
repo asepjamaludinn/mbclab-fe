@@ -1,4 +1,3 @@
-// features/student-submissions/components/StudentSubmissionDetailFeature.tsx
 "use client";
 
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
