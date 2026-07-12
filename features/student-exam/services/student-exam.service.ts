@@ -5,6 +5,7 @@ import {
   ReportCheatResponse,
   SaveAnswerPayload,
   UnblockPayload,
+  MyExamAttemptHistory,
 } from "../types/student-exam.type";
 
 export const examService = {
@@ -56,6 +57,11 @@ export const examService = {
       keepalive: true,
       credentials: "include",
     }).catch(() => {});
+  },
+
+  getMyAttempts: async (): Promise<MyExamAttemptHistory[]> => {
+    const response = await api.get<MyExamAttemptHistory[]>("/exam-attempts/me");
+    return response.data;
   },
 
   unblockAttempt: async ({ sessionId, code }: UnblockPayload) => {

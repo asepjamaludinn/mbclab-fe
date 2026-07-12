@@ -9,10 +9,12 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { PracticumModule } from "@/features/student-modules";
+import { isDeadlineStrictlyPassed } from "@/shared/utils/deadline";
 
 type DashboardModuleProgressProps = {
   activeModule: PracticumModule | null;
   isTpSubmitted: boolean;
+  isTaSubmitted?: boolean;
 };
 
 function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
@@ -45,14 +47,17 @@ function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
 export function DashboardModuleProgress({
   activeModule,
   isTpSubmitted,
+  isTaSubmitted = false,
 }: DashboardModuleProgressProps) {
   const config = activeModule
     ? getStatusConfig(activeModule.isActive, isTpSubmitted)
     : null;
 
   const Icon = config?.icon;
-
   const canDownload = !!activeModule?.fileUrl && activeModule.fileUrl !== "#";
+  const isTpCompletelyClosed =
+    activeModule?.tpDeadline &&
+    isDeadlineStrictlyPassed(activeModule.tpDeadline);
 
   return (
     <section>
@@ -74,7 +79,6 @@ export function DashboardModuleProgress({
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl">
             <FileText className="h-6 w-6" strokeWidth={1.7} />
           </div>
-
           <p className="font-secondary text-sm font-semibold text-white/80">
             Belum ada modul aktif.
           </p>
@@ -127,7 +131,6 @@ export function DashboardModuleProgress({
               >
                 {config.label}
               </span>
-
               <span className="rounded-full border border-white/45 bg-white/25 px-3 py-1 font-secondary text-[11px] font-bold text-grey-700 shadow-sm backdrop-blur-xl">
                 Praktikum
               </span>
@@ -141,7 +144,6 @@ export function DashboardModuleProgress({
                     {isTpSubmitted ? "Selesai" : "Belum"}
                   </p>
                 </div>
-
                 <p className="font-secondary text-xs font-medium text-grey-500">
                   Status TP
                 </p>
@@ -149,10 +151,15 @@ export function DashboardModuleProgress({
 
               <div className="text-center">
                 <div className="mb-2 flex items-center justify-center gap-1.5">
-                  <Clock3 className="h-4 w-4 text-warning" />
-                  <p className="text-lg font-extrabold text-grey-900">Belum</p>
+                  {isTaSubmitted ? (
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Clock3 className="h-4 w-4 text-warning" />
+                  )}
+                  <p className="text-lg font-extrabold text-grey-900">
+                    {isTaSubmitted ? "Selesai" : "Belum"}
+                  </p>
                 </div>
-
                 <p className="font-secondary text-xs font-medium text-grey-500">
                   Status TA
                 </p>
@@ -160,20 +167,31 @@ export function DashboardModuleProgress({
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/student/modules"
+              <a
+                href={activeModule.fileUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex h-[52px] flex-1 items-center justify-center rounded-full border border-white/45 bg-white/25 font-secondary text-sm font-extrabold text-grey-900 shadow-sm backdrop-blur-xl transition hover:border-primary hover:bg-primary hover:text-white active:scale-[0.98]"
               >
                 Lihat Detail Modul
-              </Link>
+              </a>
 
-              <Link
-                href="/student/submissions"
-                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
-                aria-label="Upload TP"
-              >
-                <FileCheck2 className="h-5 w-5" strokeWidth={1.8} />
-              </Link>
+              {isTpCompletelyClosed ? (
+                <div
+                  className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-grey-400 shadow-sm backdrop-blur-xl cursor-not-allowed"
+                  aria-label="Upload TP Ditutup"
+                >
+                  <LockKeyhole className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+              ) : (
+                <Link
+                  href="/student/submissions"
+                  className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
+                  aria-label="Upload TP"
+                >
+                  <FileCheck2 className="h-5 w-5" strokeWidth={1.8} />
+                </Link>
+              )}
             </div>
           </div>
         </article>

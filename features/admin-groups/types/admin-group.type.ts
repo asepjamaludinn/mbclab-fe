@@ -1,3 +1,9 @@
+import type {
+  DayOfWeekValue,
+  WeekTypeValue,
+  ShiftValue,
+} from "@/shared/utils/schedule";
+
 export type GroupStudent = {
   id: string;
   nim: string;
@@ -8,6 +14,9 @@ export type GroupStudent = {
 export type AdminGroup = {
   id: string;
   name: string;
+  day: DayOfWeekValue | null;
+  weekType: WeekTypeValue | null;
+  shift: ShiftValue | null;
   createdAt: string;
   updatedAt: string;
   _count?: { students: number };
@@ -49,3 +58,12 @@ export type BulkDeleteGroupsResult = {
   failedCount: number;
   failedGroups: { id: string; name: string; reason: string }[];
 };
+
+export type GroupSchedulePayload = {
+  day?: DayOfWeekValue;
+  weekType?: WeekTypeValue;
+  shift?: ShiftValue;
+};
+
+export type CreateGroupPayload = { name: string } & GroupSchedulePayload;
+export type UpdateGroupPayload = { name: string } & GroupSchedulePayload;

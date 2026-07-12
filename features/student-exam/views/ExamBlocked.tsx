@@ -56,9 +56,11 @@ export function ExamBlocked({
           <div className="space-y-5">
             <Input
               value={unblockCode}
-              onChange={(e) => setUnblockCode(e.target.value)}
+              onChange={(e) =>
+                setUnblockCode(e.target.value.replace(/[^0-9]/g, ""))
+              }
               placeholder="000000"
-              className="h-16 rounded-2xl border-white/20 bg-slate-900/50 text-center font-secondary text-2xl font-bold tracking-[0.3em] text-white shadow-inner placeholder:text-slate-600 focus:border-error focus:ring-error/20"
+              className="h-16 rounded-2xl border-white/20 bg-slate-900/50 text-center font-secondary text-2xl font-bold tracking-[0.3em] text-white shadow-inner placeholder:text-slate-500 focus:border-error focus:bg-slate-950 focus:text-white focus:ring-error/20"
               maxLength={6}
               autoComplete="off"
             />

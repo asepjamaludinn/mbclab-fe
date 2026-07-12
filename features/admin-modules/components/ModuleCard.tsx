@@ -1,5 +1,11 @@
-import { CalendarClock, Download, Pencil, Trash2 } from "lucide-react";
+import { CalendarClock, Download, Pencil, Trash2, Lock, Clock } from "lucide-react";
 import { AdminModule } from "../types/admin-module.type";
+import {
+  isDeadlinePassed,
+  isDeadlineNear,
+  getDeadlineCountdownLabel,
+  formatDeadline,
+} from "@/shared/utils/deadline";
 
 type ModuleCardProps = {
   module: AdminModule;
@@ -8,23 +14,65 @@ type ModuleCardProps = {
 };
 
 export function ModuleCard({ module, onEdit, onDelete }: ModuleCardProps) {
+  const deadlinePassed = isDeadlinePassed(module.tpDeadline);
+  const deadlineNear = module.tpDeadline
+    ? isDeadlineNear(module.tpDeadline)
+    : false;
+
   return (
     <article className="group relative overflow-hidden rounded-[28px] border border-grey-200/70 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      {/* Aksen warna kiri sesuai status */}
+      <div
+        className={`absolute inset-y-0 left-0 w-1 ${
+          !module.isActive
+            ? "bg-grey-300"
+            : deadlinePassed
+              ? "bg-error"
+              : "bg-primary"
+        }`}
+      />
+
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-primary text-xl font-extrabold text-primary">
             {module.order}
           </div>
           <div>
-            <span
-              className={`inline-flex rounded-full px-2.5 py-0.5 font-secondary text-[10px] font-bold ${
-                module.isActive
-                  ? "bg-success/10 text-success"
-                  : "bg-grey-100 text-grey-500"
-              }`}
-            >
-              {module.isActive ? "Aktif" : "Nonaktif"}
-            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-secondary text-[10px] font-bold ${
+                  module.isActive
+                    ? "bg-success/10 text-success"
+                    : "bg-grey-100 text-grey-500"
+                }`}
+              >
+                {module.isActive ? "Aktif" : "Nonaktif"}
+              </span>
+
+              {module.tpDeadline && (
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-secondary text-[10px] font-bold ${
+                    deadlinePassed
+                      ? "bg-error/10 text-error"
+                      : deadlineNear
+                        ? "bg-warning/10 text-warning-700"
+                        : "bg-info/10 text-info-700"
+                  }`}
+                >
+                  {deadlinePassed ? (
+                    <>
+                      <Lock className="h-2.5 w-2.5" strokeWidth={2.5} />
+                      TP Ditutup
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="h-2.5 w-2.5" strokeWidth={2.5} />
+                      TP Terbuka
+                    </>
+                  )}
+                </span>
+              )}
+            </div>
             <h3 className="mt-1.5 text-lg font-extrabold tracking-tight text-grey-900">
               {module.title}
             </h3>
@@ -57,19 +105,26 @@ export function ModuleCard({ module, onEdit, onDelete }: ModuleCardProps) {
 
       <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-grey-100 pt-4">
         {module.tpDeadline ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-grey-50 px-3 py-1.5 font-secondary text-xs font-semibold text-grey-600">
-            <CalendarClock className="h-3.5 w-3.5" />
-            {new Date(module.tpDeadline).toLocaleString("id-ID", {
-              day: "numeric",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}{" "}
-            WIB
-          </span>
+          <div
+            className={`flex items-center gap-2 rounded-2xl px-3.5 py-2 font-secondary text-xs font-semibold ${
+              deadlinePassed
+                ? "bg-error/5 text-error"
+                : deadlineNear
+                  ? "bg-warning/5 text-warning-700"
+                  : "bg-grey-50 text-grey-600"
+            }`}
+          >
+            <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+            <div className="flex flex-col leading-tight">
+              <span>{formatDeadline(module.tpDeadline)} WIB</span>
+              <span className="font-bold">
+                {getDeadlineCountdownLabel(module.tpDeadline)}
+              </span>
+            </div>
+          </div>
         ) : (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-grey-50 px-3 py-1.5 font-secondary text-xs font-medium text-grey-400">
-            Tanpa deadline TP
+            Tanpa deadline TP — selalu terbuka
           </span>
         )}
 

@@ -15,6 +15,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { useResetStudentPassword } from "../hooks/use-admin-students";
 import { AdminStudent } from "../types/admin-student.type";
+import { showToast } from "@/shared/lib/toast";
 
 type ResetPasswordDialogProps = {
   student: AdminStudent | null;
@@ -33,13 +34,20 @@ export function ResetPasswordDialog({
     setError("");
     try {
       await resetPassword(student.nim);
+
+      showToast.success(
+        "Password berhasil direset",
+        `Password ${student.name} (${student.nim}) telah dikembalikan ke NIM.`,
+      );
+
       onOpenChange(false);
     } catch (err: unknown) {
-      setError(
-        axios.isAxiosError(err)
-          ? err.response?.data?.message || "Gagal mereset password."
-          : "Gagal mereset password.",
-      );
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message || "Gagal mereset password."
+        : "Gagal mereset password.";
+
+      setError(message);
+      showToast.error("Gagal mereset password", message);
     }
   };
 

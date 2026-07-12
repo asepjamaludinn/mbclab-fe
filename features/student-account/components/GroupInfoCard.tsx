@@ -1,12 +1,24 @@
 "use client";
 
-import { UsersRound } from "lucide-react";
+import { CalendarDays, UsersRound } from "lucide-react";
 import { GroupMember } from "../types/student-account.type";
+import {
+  DayOfWeekValue,
+  ShiftValue,
+  WeekTypeValue,
+  getDayLabel,
+  getShiftLabel,
+  getShiftTimeRangeLabel,
+  getWeekTypeLabel,
+} from "@/shared/utils/schedule";
 
 type GroupInfoCardProps = {
   groupName?: string;
   groupMembers?: GroupMember[];
   currentUserNim?: string;
+  day?: DayOfWeekValue | null;
+  weekType?: WeekTypeValue | null;
+  shift?: ShiftValue | null;
   compactCardClassName: string;
   iconClassName: string;
   dividerClassName: string;
@@ -16,10 +28,15 @@ export function GroupInfoCard({
   groupName,
   groupMembers = [],
   currentUserNim,
+  day,
+  weekType,
+  shift,
   compactCardClassName,
   iconClassName,
   dividerClassName,
 }: GroupInfoCardProps) {
+  const hasSchedule = !!(day && weekType && shift);
+
   return (
     <div className={compactCardClassName}>
       <div className="flex items-center gap-3 px-4 py-3.5">
@@ -37,6 +54,25 @@ export function GroupInfoCard({
         </div>
       </div>
 
+      {hasSchedule && (
+        <>
+          <div className={dividerClassName} />
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className={iconClassName}>
+              <CalendarDays className="h-4.5 w-4.5" strokeWidth={1.8} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-extrabold text-grey-900">
+                {getWeekTypeLabel(weekType)}, {getDayLabel(day)}
+              </h3>
+              <p className="mt-0.5 font-secondary text-[11px] text-grey-500">
+                {getShiftLabel(shift)} • {getShiftTimeRangeLabel(shift)}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
       {groupMembers.length > 0 ? (
         <div>
           {groupMembers.map((member, index) => {
@@ -45,6 +81,7 @@ export function GroupInfoCard({
 
             return (
               <div key={member.id || `${member.name}-${index}`}>
+                <div className={dividerClassName} />
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
                     <p className="truncate font-secondary text-xs font-bold text-grey-900">
@@ -65,8 +102,7 @@ export function GroupInfoCard({
                     {isCurrentUser ? "Kamu" : "Anggota"}
                   </span>
                 </div>
-
-                {!isLastItem && <div className={dividerClassName} />}
+                {isLastItem && null}
               </div>
             );
           })}

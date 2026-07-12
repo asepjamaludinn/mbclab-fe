@@ -63,7 +63,7 @@ export function ModulesHero({
           onClick={() => onFilterChange && onFilterChange("archived")}
           className={`flex flex-1 items-center justify-center rounded-full px-4 py-3 font-secondary text-xs font-semibold transition ${activeFilter === "archived" ? "bg-white text-primary shadow-sm font-bold" : "text-white/80"}`}
         >
-          Terkunci
+          Selesai
         </button>
       </div>
     </section>

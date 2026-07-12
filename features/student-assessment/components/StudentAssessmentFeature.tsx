@@ -127,7 +127,6 @@ export function StudentAssessmentFeature() {
         {/* Panduan & Aturan Section */}
         <section className="mt-8 space-y-4 px-5">
           <div className="mb-4 flex items-center justify-between">
-            {/* Judul tetap putih dengan sedikit drop-shadow agar menonjol dari bg cerah */}
             <h2 className="text-xl font-extrabold tracking-tight text-white drop-shadow-md">
               Panduan Penting
             </h2>

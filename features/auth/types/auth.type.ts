@@ -1,6 +1,16 @@
+import type {
+  DayOfWeekValue,
+  WeekTypeValue,
+  ShiftValue,
+} from "@/shared/utils/schedule";
+
 export interface UserGroup {
   id?: string;
   name: string;
+  day?: DayOfWeekValue | null;
+  weekType?: WeekTypeValue | null;
+  shift?: ShiftValue | null;
+  nextScheduleAt?: string | null;
 }
 
 export interface User {

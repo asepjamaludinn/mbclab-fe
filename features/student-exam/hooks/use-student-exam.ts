@@ -29,3 +29,10 @@ export const useMyExamSessions = () => {
     queryFn: examService.getMySessions,
   });
 };
+
+export const useMyExamAttempts = () => {
+  return useQuery({
+    queryKey: ["my-exam-attempts"],
+    queryFn: examService.getMyAttempts,
+  });
+};

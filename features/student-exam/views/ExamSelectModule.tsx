@@ -4,14 +4,21 @@ import {
   ArrowRight,
   ClipboardList,
   LockKeyhole,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { MyExamSession } from "../types/student-exam.type";
+import {
+  MyExamSession,
+  MyExamAttemptHistory,
+} from "../types/student-exam.type";
 import { PracticumModule } from "@/features/student-modules";
+import { getShiftLabel } from "@/features/admin-exam-sessions/constants/admin-exam-session.constant";
 
 type Props = {
   modules: PracticumModule[];
   mySessions: MyExamSession[];
+  myAttempts: MyExamAttemptHistory[];
   isLoadingData: boolean;
   onSelectSession: (sessionId: string) => void;
 };
@@ -19,9 +26,12 @@ type Props = {
 export function ExamSelectModule({
   modules,
   mySessions,
+  myAttempts,
   isLoadingData,
   onSelectSession,
 }: Props) {
+  const activeModules = modules.filter((m) => m.isActive);
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
       <div className="pointer-events-none absolute -right-20 top-8 h-60 w-60 rounded-full bg-white/15 blur-[75px]" />
@@ -47,30 +57,42 @@ export function ExamSelectModule({
         </section>
 
         <section className="mt-8 space-y-4 px-5">
+          <h2 className="text-xl font-extrabold text-white drop-shadow-sm">
+            Ujian Tersedia
+          </h2>
+
           {isLoadingData ? (
             <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2].map((i) => (
                 <div
                   key={i}
                   className="h-28 w-full animate-pulse rounded-[30px] bg-white/40 backdrop-blur-xl"
                 />
               ))}
             </div>
-          ) : modules.length === 0 ? (
+          ) : activeModules.length === 0 ? (
             <div className="rounded-[30px] border border-white/50 bg-white/40 p-6 text-center shadow-sm backdrop-blur-xl">
               <p className="font-secondary text-sm font-semibold text-slate-600">
                 Belum ada modul praktikum aktif.
               </p>
             </div>
           ) : (
-            modules.map((mod) => {
+            activeModules.map((mod) => {
               const session = mySessions.find((s) => s.moduleId === mod.id);
+              const hasSubmitted = session?.attempts?.some(
+                (a) => a.status === "SUBMITTED",
+              );
+
               let statusLabel = "Belum Ada Jadwal";
               let statusClass =
                 "bg-slate-100 text-slate-500 border border-slate-200";
               let actionButton = null;
 
-              if (session) {
+              if (hasSubmitted) {
+                statusLabel = "Sudah Dikerjakan";
+                statusClass =
+                  "bg-success/15 text-success-700 border border-success/20";
+              } else if (session) {
                 const now = new Date();
                 const sessionDate = new Date(session.date);
                 const start = new Date(session.startTime);
@@ -129,9 +151,17 @@ export function ExamSelectModule({
                 >
                   <div className="flex items-start gap-4">
                     <div
-                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] shadow-sm ${actionButton ? "bg-primary text-white shadow-primary/30" : "bg-white text-slate-400"}`}
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] shadow-sm ${
+                        hasSubmitted
+                          ? "bg-success text-white shadow-success/30"
+                          : actionButton
+                            ? "bg-primary text-white shadow-primary/30"
+                            : "bg-white text-slate-400"
+                      }`}
                     >
-                      {actionButton ? (
+                      {hasSubmitted ? (
+                        <CheckCircle2 className="h-7 w-7" strokeWidth={2} />
+                      ) : actionButton ? (
                         <ClipboardList className="h-7 w-7" strokeWidth={1.8} />
                       ) : (
                         <LockKeyhole className="h-6 w-6" strokeWidth={1.8} />
@@ -152,7 +182,7 @@ export function ExamSelectModule({
                     </div>
                   </div>
 
-                  {actionButton && (
+                  {actionButton && !hasSubmitted && (
                     <div className="mt-5 border-t border-white/40 pt-4">
                       {actionButton}
                     </div>
@@ -162,6 +192,69 @@ export function ExamSelectModule({
             })
           )}
         </section>
+
+        {!isLoadingData && myAttempts.length > 0 && (
+          <section className="mt-10 space-y-4 px-5">
+            <h2 className="text-xl font-extrabold text-white drop-shadow-sm">
+              Riwayat Ujian
+            </h2>
+
+            {myAttempts.map((attempt) => {
+              const isDisqualified = attempt.cheatCount >= 5;
+              const statusLabel = isDisqualified
+                ? "Didiskualifikasi"
+                : "Selesai";
+              const statusColor = isDisqualified
+                ? "text-error"
+                : "text-success-700";
+              const bgColor = isDisqualified ? "bg-error/15" : "bg-success/15";
+              const IconComponent = isDisqualified
+                ? AlertTriangle
+                : CheckCircle2;
+
+              return (
+                <article
+                  key={attempt.id}
+                  className="relative overflow-hidden rounded-[30px] border border-white/60 bg-white/40 p-5 shadow-sm backdrop-blur-xl"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white text-slate-400 shadow-sm">
+                      <IconComponent
+                        className={`h-6 w-6 ${isDisqualified ? "text-error" : "text-success"}`}
+                        strokeWidth={2}
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-[15px] font-extrabold text-slate-900 tracking-tight">
+                        {attempt.session.module.title}
+                      </h2>
+                      <p className="mt-0.5 font-secondary text-xs text-slate-600">
+                        {new Date(attempt.session.date).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}{" "}
+                        • {getShiftLabel(attempt.session.shift as any)}
+                      </p>
+
+                      <div className="mt-3">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-secondary text-[10px] font-bold ${bgColor} ${statusColor}`}
+                        >
+                          {statusLabel}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
       </div>
     </main>
   );

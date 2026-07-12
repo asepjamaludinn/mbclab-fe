@@ -1,9 +1,12 @@
+// features/student-dashboard/components/StudentDashboardFeature.tsx
+
 "use client";
 
 import { useProfile } from "@/features/auth";
 import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "@/features/student-submissions";
 import { StudentBottomNavigation } from "@/features/student-navigation";
+import { useMyExamSessions } from "@/features/student-exam";
 
 import {
   HomeGroupInfo,
@@ -23,13 +26,20 @@ export function StudentDashboardFeature() {
   const { data: submissions = [], isLoading: isSubmissionsLoading } =
     useMySubmissions();
 
+  const { data: mySessions = [], isLoading: isSessionsLoading } =
+    useMyExamSessions();
+
   const {
     data: assistants = [],
     isLoading: isAssistantsLoading,
     isError: isAssistantsError,
   } = usePublicAssistants();
 
-  const isLoading = isUserLoading || isModulesLoading || isSubmissionsLoading;
+  const isLoading =
+    isUserLoading ||
+    isModulesLoading ||
+    isSubmissionsLoading ||
+    isSessionsLoading;
 
   if (isLoading) {
     return (
@@ -44,7 +54,6 @@ export function StudentDashboardFeature() {
               <div className="mt-3 h-8 w-44 animate-pulse rounded-2xl bg-white/25" />
               <div className="mt-2 h-3 w-28 animate-pulse rounded-full bg-white/20" />
             </div>
-
             <div className="h-12 w-12 animate-pulse rounded-full bg-white/25" />
           </div>
         </section>
@@ -62,13 +71,22 @@ export function StudentDashboardFeature() {
   }
 
   const modules = modulesRes?.data || [];
-
   const activeModule =
     modules.find((module) => module.isActive) || modules[0] || null;
+
+  const activeSession = activeModule
+    ? mySessions.find((s) => s.moduleId === activeModule.id)
+    : null;
 
   const isTpSubmitted = activeModule
     ? submissions.some((sub) => sub.moduleId === activeModule.id)
     : false;
+
+  // Cek apakah TA sudah disubmit (status === 'SUBMITTED')
+  const isTaSubmitted =
+    activeSession?.attempts?.some(
+      (attempt) => attempt.status === "SUBMITTED",
+    ) || false;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-28 font-primary selection:bg-primary/20">
@@ -79,17 +97,14 @@ export function StudentDashboardFeature() {
         <DashboardHeader userName={user?.name} nim={user?.nim} />
 
         <section className="mt-8 space-y-7 px-5">
-          <DashboardProgressSummary
-            modules={modules}
-            submissions={submissions}
-            userName={user?.name}
-          />
+          <DashboardProgressSummary userName={user?.name} group={user?.group} />
 
           <DashboardQuickAccess />
 
           <DashboardModuleProgress
             activeModule={activeModule}
             isTpSubmitted={isTpSubmitted}
+            isTaSubmitted={isTaSubmitted}
           />
 
           <DashboardInfo />

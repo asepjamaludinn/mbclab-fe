@@ -16,6 +16,7 @@ import {
   ChevronsUpDown,
   UserRoundCheck,
   History,
+  FileCheck2,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -42,16 +43,54 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 
-const MAIN_MENUS = [
-  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Modul", href: "/admin/modules", icon: BookOpen },
-  { label: "Bank Soal", href: "/admin/questions", icon: HelpCircle },
-  { label: "Kelompok", href: "/admin/groups", icon: Layers },
-  { label: "Praktikan", href: "/admin/students", icon: Users },
-  { label: "Sesi Ujian", href: "/admin/sessions", icon: ClipboardCheck },
-  { label: "Nilai & TP", href: "/admin/grades", icon: FileText },
-  { label: "Asisten Lab", href: "/admin/assistants", icon: UserRoundCheck },
-  { label: "Audit Log", href: "/admin/audit-logs", icon: History },
+type SidebarMenuDefinition = {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+};
+
+type SidebarMenuGroup = {
+  label: string;
+  menus: SidebarMenuDefinition[];
+};
+
+const MENU_GROUPS: SidebarMenuGroup[] = [
+  {
+    label: "Utama",
+    menus: [
+      { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Akademik",
+    menus: [
+      { label: "Modul", href: "/admin/modules", icon: BookOpen },
+      { label: "Bank Soal", href: "/admin/questions", icon: HelpCircle },
+      { label: "Sesi Ujian", href: "/admin/sessions", icon: ClipboardCheck },
+      {
+        label: "Pengumpulan TP",
+        href: "/admin/submissions",
+        icon: FileCheck2,
+      },
+      { label: "Nilai & TP", href: "/admin/grades", icon: FileText },
+    ],
+  },
+  {
+    label: "Manajemen Pengguna",
+    menus: [
+      { label: "Kelompok", href: "/admin/groups", icon: Layers },
+      { label: "Praktikan", href: "/admin/students", icon: Users },
+      {
+        label: "Asisten Lab",
+        href: "/admin/assistants",
+        icon: UserRoundCheck,
+      },
+    ],
+  },
+  {
+    label: "Sistem",
+    menus: [{ label: "Audit Log", href: "/admin/audit-logs", icon: History }],
+  },
 ];
 
 export function AppSidebar() {
@@ -96,32 +135,34 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {MAIN_MENUS.map((menu) => {
-                const Icon = menu.icon;
-                const isActive = pathname.startsWith(menu.href);
+        {MENU_GROUPS.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.menus.map((menu) => {
+                  const Icon = menu.icon;
+                  const isActive = pathname.startsWith(menu.href);
 
-                return (
-                  <SidebarMenuItem key={menu.label}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={menu.label}
-                    >
-                      <Link href={menu.href}>
-                        <Icon strokeWidth={2} />
-                        <span>{menu.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  return (
+                    <SidebarMenuItem key={menu.label}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={menu.label}
+                      >
+                        <Link href={menu.href}>
+                          <Icon strokeWidth={2} />
+                          <span>{menu.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarSeparator />

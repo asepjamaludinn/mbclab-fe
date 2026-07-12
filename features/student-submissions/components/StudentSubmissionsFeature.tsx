@@ -1,9 +1,11 @@
+// features/student-submissions/components/StudentSubmissionsFeature.tsx
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, LockKeyhole } from "lucide-react";
 import { useStudentModules } from "@/features/student-modules";
 import { useMySubmissions } from "../hooks/use-student-submissions";
+import { isDeadlineStrictlyPassed } from "@/shared/utils/deadline";
 
 export function StudentSubmissionsFeature() {
   const { data: modulesRes, isLoading: isLoadingModules } = useStudentModules();
@@ -15,10 +17,25 @@ export function StudentSubmissionsFeature() {
 
   const combinedModules = modules.map((module) => {
     const submission = submissions.find((sub) => sub.moduleId === module.id);
+    const isCompletelyClosed = module.tpDeadline
+      ? isDeadlineStrictlyPassed(module.tpDeadline)
+      : false;
+
+    let statusText = "Belum dikumpulkan";
+    if (submission) {
+      statusText = submission.isLate
+        ? "Dikumpulkan Terlambat"
+        : "Sudah dikumpulkan";
+    } else if (isCompletelyClosed) {
+      statusText = "Waktu Habis";
+    }
+
     return {
       ...module,
-      status: submission ? "Sudah dikumpulkan" : "Belum dikumpulkan",
+      status: statusText,
       isSubmitted: !!submission,
+      isLate: submission?.isLate || false,
+      isCompletelyClosed,
     };
   });
 
@@ -65,16 +82,18 @@ export function StudentSubmissionsFeature() {
               </p>
             </div>
           ) : (
-            combinedModules.map((module) => (
-              <Link
-                key={module.id}
-                href={`/student/submissions/${module.id}`}
-                className="group block"
-              >
-                <article className="relative overflow-hidden rounded-[30px] border border-white/60 bg-white/60 p-5 shadow-[0_16px_45px_-28px_rgba(0,101,176,0.15)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/80 active:scale-[0.98]">
+            combinedModules.map((module) => {
+              const content = (
+                <article
+                  className={`relative overflow-hidden rounded-[30px] border border-white/60 bg-white/60 p-5 shadow-[0_16px_45px_-28px_rgba(0,101,176,0.15)] backdrop-blur-2xl transition-all duration-300 ${!module.isCompletelyClosed ? "hover:-translate-y-1 hover:bg-white/80 active:scale-[0.98]" : "opacity-85"}`}
+                >
                   <div
                     className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${
-                      module.isSubmitted ? "bg-success/20" : "bg-info/20"
+                      module.isLate
+                        ? "bg-warning/20"
+                        : module.isSubmitted
+                          ? "bg-success/20"
+                          : "bg-info/20"
                     }`}
                   />
 
@@ -82,9 +101,11 @@ export function StudentSubmissionsFeature() {
                     <div className="flex min-w-0 items-center gap-4">
                       <div
                         className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] text-white shadow-md ${
-                          module.isSubmitted
-                            ? "bg-success shadow-success/20"
-                            : "bg-info shadow-info/20"
+                          module.isLate
+                            ? "bg-warning shadow-warning/20"
+                            : module.isSubmitted
+                              ? "bg-success shadow-success/20"
+                              : "bg-info shadow-info/20"
                         }`}
                       >
                         <FileText className="h-7 w-7" strokeWidth={1.8} />
@@ -114,9 +135,13 @@ export function StudentSubmissionsFeature() {
                         <div className="mt-2 flex items-center">
                           <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-secondary text-[11px] font-bold ${
-                              module.isSubmitted
-                                ? "bg-success/15 text-success-700"
-                                : "bg-warning/15 text-warning-700"
+                              module.isLate
+                                ? "bg-warning/15 text-warning-700"
+                                : module.isSubmitted
+                                  ? "bg-success/15 text-success-700"
+                                  : module.isCompletelyClosed
+                                    ? "bg-grey-200 text-grey-600"
+                                    : "bg-info/15 text-info-700"
                             }`}
                           >
                             {module.status}
@@ -127,17 +152,39 @@ export function StudentSubmissionsFeature() {
 
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
-                        module.isSubmitted
-                          ? "bg-success/10 text-success group-hover:bg-success group-hover:text-white"
-                          : "bg-info/10 text-info group-hover:bg-info group-hover:text-white"
+                        module.isCompletelyClosed
+                          ? "bg-grey-200 text-grey-500"
+                          : module.isLate
+                            ? "bg-warning/10 text-warning-700 group-hover:bg-warning group-hover:text-white"
+                            : module.isSubmitted
+                              ? "bg-success/10 text-success group-hover:bg-success group-hover:text-white"
+                              : "bg-info/10 text-info group-hover:bg-info group-hover:text-white"
                       }`}
                     >
-                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                      {module.isCompletelyClosed ? (
+                        <LockKeyhole className="h-5 w-5" strokeWidth={1.8} />
+                      ) : (
+                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                      )}
                     </div>
                   </div>
                 </article>
-              </Link>
-            ))
+              );
+
+              return module.isCompletelyClosed ? (
+                <div key={module.id} className="group block cursor-not-allowed">
+                  {content}
+                </div>
+              ) : (
+                <Link
+                  key={module.id}
+                  href={`/student/submissions/${module.id}`}
+                  className="group block"
+                >
+                  {content}
+                </Link>
+              );
+            })
           )}
         </section>
       </div>

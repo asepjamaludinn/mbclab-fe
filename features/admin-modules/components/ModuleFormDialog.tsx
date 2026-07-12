@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpenCheck } from "lucide-react";
+import { BookOpenCheck, X } from "lucide-react";
 import axios from "axios";
 import {
   moduleFormSchema,
@@ -34,6 +34,13 @@ function toDatetimeLocal(value?: string | null) {
   )}:${pad(d.getMinutes())}`;
 }
 
+const DEADLINE_PRESETS = [
+  { label: "Tutup Sekarang", hours: 0 },
+  { label: "+1 Hari", hours: 24 },
+  { label: "+3 Hari", hours: 72 },
+  { label: "+1 Minggu", hours: 168 },
+];
+
 type ModuleFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -56,6 +63,8 @@ export function ModuleFormDialog({
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     reset,
     setError,
     formState: { errors },
@@ -71,6 +80,8 @@ export function ModuleFormDialog({
     },
   });
 
+  const tpDeadline = watch("tpDeadline");
+
   useEffect(() => {
     if (open) {
       reset({
@@ -83,6 +94,18 @@ export function ModuleFormDialog({
       });
     }
   }, [open, module, reset]);
+
+  const applyPreset = (hours: number) => {
+    const target = new Date(Date.now() + hours * 60 * 60 * 1000);
+
+    if (hours === 0) {
+      target.setMinutes(target.getMinutes() - 1);
+    }
+
+    setValue("tpDeadline", toDatetimeLocal(target.toISOString()), {
+      shouldDirty: true,
+    });
+  };
 
   const onSubmit = async (data: ModuleFormData) => {
     const payload = {
@@ -132,7 +155,7 @@ export function ModuleFormDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 max-h-[65vh] space-y-4 overflow-y-auto pr-1">
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
                 <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
@@ -154,7 +177,6 @@ export function ModuleFormDialog({
                   Urutan
                 </label>
                 <select
-                  // Added valueAsNumber to ensure HTML select parses as a number, not a string
                   {...register("order", { valueAsNumber: true })}
                   className="w-full rounded-2xl border border-grey-200 bg-grey-50 px-3 py-3 font-secondary text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
                 >
@@ -176,25 +198,64 @@ export function ModuleFormDialog({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                  Deadline TP
+            {/* --- Bagian Deadline TP --- */}
+            <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+              <div className="flex items-center justify-between">
+                <label className="block font-secondary text-xs font-bold text-grey-700">
+                  Deadline Pengumpulan TP
                 </label>
+                {tpDeadline && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setValue("tpDeadline", "", { shouldDirty: true })
+                    }
+                    className="inline-flex items-center gap-1 font-secondary text-[11px] font-bold text-error hover:underline"
+                  >
+                    <X className="h-3 w-3" strokeWidth={2.5} />
+                    Hapus deadline
+                  </button>
+                )}
+              </div>
+
+              <p className="mt-1 font-secondary text-[11px] leading-relaxed text-grey-500">
+                Setelah waktu ini terlewati, praktikan{" "}
+                <strong>otomatis tidak bisa lagi mengunggah</strong> TP untuk
+                modul ini. Kosongkan jika TP tidak memiliki batas waktu.
+              </p>
+
+              <div className="mt-3">
                 <Input type="datetime-local" {...register("tpDeadline")} />
               </div>
 
-              <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                  Tautan File Modul
-                </label>
-                <Input {...register("fileUrl")} placeholder="https://..." />
-                {errors.fileUrl && (
-                  <p className="mt-1 text-xs font-medium text-error">
-                    {errors.fileUrl.message}
-                  </p>
-                )}
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {DEADLINE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => applyPreset(preset.hours)}
+                    className={`rounded-full border px-3 py-1 font-secondary text-[11px] font-bold transition ${
+                      preset.hours === 0
+                        ? "border-error/20 bg-error/10 text-error hover:bg-error hover:text-white"
+                        : "border-primary/20 bg-white text-primary hover:bg-primary hover:text-white"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                Tautan File Modul
+              </label>
+              <Input {...register("fileUrl")} placeholder="https://..." />
+              {errors.fileUrl && (
+                <p className="mt-1 text-xs font-medium text-error">
+                  {errors.fileUrl.message}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between rounded-2xl border border-grey-100 bg-grey-50/60 px-4 py-3">
