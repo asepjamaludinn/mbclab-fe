@@ -6,6 +6,7 @@ import {
   SaveAnswerPayload,
   UnblockPayload,
   MyExamAttemptHistory,
+  UnblockResponse,
 } from "../types/student-exam.type";
 
 export const examService = {

@@ -37,6 +37,7 @@ export type CreateStudentPayload = {
 export type UpdateStudentPayload = {
   name?: string;
   groupId?: string | null;
+  isInternational?: boolean;
 };
 
 export type FailedStudentAction = {

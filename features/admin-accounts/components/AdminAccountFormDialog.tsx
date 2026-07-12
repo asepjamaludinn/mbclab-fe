@@ -10,6 +10,7 @@ import {
   CreateAdminFormData,
 } from "../schemas/admin-account.schema";
 import { useCreateAdminAccount } from "../hooks/use-admin-accounts";
+import { CreateAdminPayload } from "../types/admin-account.type";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import {
@@ -41,8 +42,23 @@ export function AdminAccountFormDialog({ open, onOpenChange }: Props) {
   }, [open, reset]);
 
   const onSubmit = async (data: CreateAdminFormData) => {
+    // CreateAdminPayload mewajibkan division (backend juga mewajibkan
+    // ADMIN selalu punya division). Bangun payload secara eksplisit di
+    // sini supaya TypeScript tidak menganggap division bisa undefined,
+    // dan beri fallback "PRACTICUM" untuk jaga-jaga kalau form entah
+    // bagaimana mengirim nilai kosong.
+    const division = (data.division ||
+      "PRACTICUM") as CreateAdminPayload["division"];
+
+    const payload: CreateAdminPayload = {
+      nim: data.nim,
+      name: data.name,
+      role: "ADMIN",
+      division,
+    };
+
     try {
-      await createAdmin({ ...data, role: "ADMIN" });
+      await createAdmin(payload);
       onOpenChange(false);
     } catch (error: unknown) {
       const message = axios.isAxiosError(error)
@@ -100,7 +116,6 @@ export function AdminAccountFormDialog({ open, onOpenChange }: Props) {
                 {...register("division")}
                 className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
               >
-                <option value="">Asisten</option>
                 <option value="PRACTICUM">Praktikum</option>
                 <option value="ACADEMIC">Akademik</option>
                 <option value="COORDINATOR">Koordinator</option>
