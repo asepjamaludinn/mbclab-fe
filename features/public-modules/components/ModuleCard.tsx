@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Download, Info, LockKeyhole } from "lucide-react";
 import { PublicModule } from "@/features/public-home";

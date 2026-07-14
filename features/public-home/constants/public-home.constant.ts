@@ -15,7 +15,7 @@ import {
 } from "../types/public-home.type";
 
 export const WHATSAPP_COMMUNITY_URL =
-  "https://chat.whatsapp.com/ISI_LINK_COMMUNITY_KAMU";
+  "https://whatsapp.com/channel/0029VarRUTBCBtxCncujA53v";
 
 export const OA_LINE_MBC_LAB_URL = "https://line.me/R/ti/p/@mbclab";
 export const SPS_URL = "https://igracias.telkomuniversity.ac.id/";
