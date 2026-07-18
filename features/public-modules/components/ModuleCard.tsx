@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import { Download, Info, LockKeyhole } from "lucide-react";
 import { PublicModule } from "@/features/public-home";
@@ -18,7 +16,8 @@ const getModuleCoverUrl = (coverUrl: string | undefined, index: number) => {
 };
 
 export function ModuleCard({ module, index }: ModuleCardProps) {
-  const canDownload = module.isActive && module.fileUrl !== "#";
+  const fileUrl = module.fileUrlRegular || module.fileUrlInternational;
+  const canDownload = module.isActive && !!fileUrl;
   const coverUrl = getModuleCoverUrl(module.coverUrl, index);
 
   return (
@@ -56,7 +55,7 @@ export function ModuleCard({ module, index }: ModuleCardProps) {
       <div className="absolute bottom-4 left-4 right-4">
         {canDownload ? (
           <a
-            href={module.fileUrl}
+            href={fileUrl!}
             target="_blank"
             rel="noopener noreferrer"
             className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 font-secondary text-xs font-bold text-primary shadow-sm transition hover:bg-primary hover:text-white"

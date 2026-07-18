@@ -73,7 +73,7 @@ const MENU_GROUPS: SidebarMenuGroup[] = [
         href: "/admin/submissions",
         icon: FileCheck2,
       },
-      { label: "Nilai & TP", href: "/admin/grades", icon: FileText },
+      { label: "Nilai TA & TP", href: "/admin/grades", icon: FileText },
     ],
   },
   {

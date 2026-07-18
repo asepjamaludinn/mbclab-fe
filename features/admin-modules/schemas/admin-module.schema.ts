@@ -6,7 +6,14 @@ export const moduleFormSchema = z.object({
   description: z.string().optional(),
   isActive: z.boolean(),
   tpDeadline: z.string().optional(),
-  fileUrl: z
+  fileUrlRegular: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || /^https?:\/\//.test(v),
+      "URL harus valid (https://...)",
+    ),
+  fileUrlInternational: z
     .string()
     .optional()
     .refine(

@@ -13,7 +13,6 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Di sini Anda bisa menyambungkan ke layanan reporting error seperti Sentry
     console.error("Aplikasi menangkap error:", error);
   }, [error]);
 
@@ -39,8 +38,6 @@ export default function ErrorBoundary({
           telah merekam log error untuk ditinjau lebih lanjut.
         </p>
 
-        {/* Tampilkan pesan error teknis hanya dalam mode development jika diperlukan, 
-            namun umumnya disembunyikan di production agar UI bersih */}
         {process.env.NODE_ENV === "development" && (
           <div className="mt-4 max-h-32 overflow-y-auto rounded-xl border border-error/20 bg-error/5 p-3 text-left">
             <p className="font-mono text-[10px] text-error">

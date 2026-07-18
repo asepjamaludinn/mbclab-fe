@@ -1,5 +1,3 @@
-// features/student-dashboard/components/StudentDashboardFeature.tsx
-
 "use client";
 
 import { useProfile } from "@/features/auth";
@@ -82,7 +80,6 @@ export function StudentDashboardFeature() {
     ? submissions.some((sub) => sub.moduleId === activeModule.id)
     : false;
 
-  // Cek apakah TA sudah disubmit (status === 'SUBMITTED')
   const isTaSubmitted =
     activeSession?.attempts?.some(
       (attempt) => attempt.status === "SUBMITTED",
@@ -105,6 +102,7 @@ export function StudentDashboardFeature() {
             activeModule={activeModule}
             isTpSubmitted={isTpSubmitted}
             isTaSubmitted={isTaSubmitted}
+            isInternational={user?.isInternational}
           />
 
           <DashboardInfo />

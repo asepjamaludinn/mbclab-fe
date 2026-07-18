@@ -15,6 +15,7 @@ type DashboardModuleProgressProps = {
   activeModule: PracticumModule | null;
   isTpSubmitted: boolean;
   isTaSubmitted?: boolean;
+  isInternational?: boolean;
 };
 
 function getStatusConfig(isActive: boolean, isTpSubmitted: boolean) {
@@ -48,13 +49,18 @@ export function DashboardModuleProgress({
   activeModule,
   isTpSubmitted,
   isTaSubmitted = false,
+  isInternational = false,
 }: DashboardModuleProgressProps) {
   const config = activeModule
     ? getStatusConfig(activeModule.isActive, isTpSubmitted)
     : null;
 
   const Icon = config?.icon;
-  const canDownload = !!activeModule?.fileUrl && activeModule.fileUrl !== "#";
+  const fileUrl = isInternational
+    ? activeModule?.fileUrlInternational
+    : activeModule?.fileUrlRegular;
+  const canDownload = !!fileUrl;
+
   const isTpCompletelyClosed =
     activeModule?.tpDeadline &&
     isDeadlineStrictlyPassed(activeModule.tpDeadline);
@@ -99,7 +105,7 @@ export function DashboardModuleProgress({
 
               {canDownload ? (
                 <a
-                  href={activeModule.fileUrl as string}
+                  href={fileUrl!}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/25 text-primary shadow-sm backdrop-blur-xl transition hover:bg-primary hover:text-white active:scale-[0.96]"
@@ -168,9 +174,9 @@ export function DashboardModuleProgress({
 
             <div className="flex items-center gap-3">
               <a
-                href={activeModule.fileUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={fileUrl || "#"}
+                target={fileUrl ? "_blank" : undefined}
+                rel={fileUrl ? "noopener noreferrer" : undefined}
                 className="flex h-[52px] flex-1 items-center justify-center rounded-full border border-white/45 bg-white/25 font-secondary text-sm font-extrabold text-grey-900 shadow-sm backdrop-blur-xl transition hover:border-primary hover:bg-primary hover:text-white active:scale-[0.98]"
               >
                 Lihat Detail Modul

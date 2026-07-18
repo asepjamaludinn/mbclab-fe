@@ -14,6 +14,7 @@ import {
 import { StudentBottomNavigation } from "@/features/student-navigation";
 import { useMySubmissions } from "@/features/student-submissions";
 import { useStudentModules } from "../hooks/use-student-modules";
+import { useProfile } from "@/features/auth";
 
 const FALLBACK_MODULE_COVERS = [
   "/images/module-cover-1.jpg",
@@ -26,6 +27,9 @@ function StudentModulesContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("q") || "";
   const initialFilter = searchParams.get("filter") || "all";
+
+  const { data: userProfile } = useProfile("STUDENT");
+  const isInter = userProfile?.isInternational === true;
 
   const {
     data: modulesRes,
@@ -185,8 +189,10 @@ function StudentModulesContent() {
         ) : (
           <div className="space-y-4">
             {filteredModules.map((module, index) => {
-              const canDownload =
-                module.isActive && module.fileUrl && module.fileUrl !== "#";
+              const fileUrl = isInter
+                ? module.fileUrlInternational
+                : module.fileUrlRegular;
+              const canDownload = module.isActive && !!fileUrl;
               const coverUrl =
                 FALLBACK_MODULE_COVERS[index % FALLBACK_MODULE_COVERS.length];
 
@@ -247,7 +253,7 @@ function StudentModulesContent() {
                   <div className="absolute bottom-4 left-4 right-4">
                     {canDownload ? (
                       <a
-                        href={module.fileUrl || "#"}
+                        href={fileUrl!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 font-secondary text-xs font-bold text-primary shadow-sm transition hover:bg-primary hover:text-white"

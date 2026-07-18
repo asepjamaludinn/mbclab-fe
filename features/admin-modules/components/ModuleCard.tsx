@@ -1,4 +1,11 @@
-import { CalendarClock, Download, Pencil, Trash2, Lock, Clock } from "lucide-react";
+import {
+  CalendarClock,
+  Download,
+  Pencil,
+  Trash2,
+  Lock,
+  Clock,
+} from "lucide-react";
 import { AdminModule } from "../types/admin-module.type";
 import {
   isDeadlinePassed,
@@ -21,7 +28,6 @@ export function ModuleCard({ module, onEdit, onDelete }: ModuleCardProps) {
 
   return (
     <article className="group relative overflow-hidden rounded-[28px] border border-grey-200/70 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      {/* Aksen warna kiri sesuai status */}
       <div
         className={`absolute inset-y-0 left-0 w-1 ${
           !module.isActive
@@ -128,17 +134,30 @@ export function ModuleCard({ module, onEdit, onDelete }: ModuleCardProps) {
           </span>
         )}
 
-        {module.fileUrl && (
-          <a
-            href={module.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-grey-200 px-3 py-1.5 font-secondary text-xs font-bold text-grey-700 transition hover:border-primary hover:text-primary"
-          >
-            <Download className="h-3.5 w-3.5" />
-            File Modul
-          </a>
-        )}
+        <div className="ml-auto flex gap-2">
+          {module.fileUrlRegular && (
+            <a
+              href={module.fileUrlRegular}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-grey-200 px-3 py-1.5 font-secondary text-[11px] font-bold text-grey-700 transition hover:border-primary hover:text-primary"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Reguler
+            </a>
+          )}
+          {module.fileUrlInternational && (
+            <a
+              href={module.fileUrlInternational}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-grey-200 px-3 py-1.5 font-secondary text-[11px] font-bold text-grey-700 transition hover:border-primary hover:text-primary"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Intl
+            </a>
+          )}
+        </div>
       </div>
     </article>
   );

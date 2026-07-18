@@ -35,7 +35,6 @@ function toDatetimeLocal(value?: string | null) {
 }
 
 const DEADLINE_PRESETS = [
-  { label: "Tutup Sekarang", hours: 0 },
   { label: "+1 Hari", hours: 24 },
   { label: "+3 Hari", hours: 72 },
   { label: "+1 Minggu", hours: 168 },
@@ -76,7 +75,8 @@ export function ModuleFormDialog({
       description: "",
       isActive: true,
       tpDeadline: "",
-      fileUrl: "",
+      fileUrlRegular: "",
+      fileUrlInternational: "",
     },
   });
 
@@ -90,18 +90,14 @@ export function ModuleFormDialog({
         description: module?.description ?? "",
         isActive: module?.isActive ?? true,
         tpDeadline: toDatetimeLocal(module?.tpDeadline),
-        fileUrl: module?.fileUrl ?? "",
+        fileUrlRegular: module?.fileUrlRegular ?? "",
+        fileUrlInternational: module?.fileUrlInternational ?? "",
       });
     }
   }, [open, module, reset]);
 
   const applyPreset = (hours: number) => {
     const target = new Date(Date.now() + hours * 60 * 60 * 1000);
-
-    if (hours === 0) {
-      target.setMinutes(target.getMinutes() - 1);
-    }
-
     setValue("tpDeadline", toDatetimeLocal(target.toISOString()), {
       shouldDirty: true,
     });
@@ -116,7 +112,8 @@ export function ModuleFormDialog({
       tpDeadline: data.tpDeadline
         ? new Date(data.tpDeadline).toISOString()
         : undefined,
-      fileUrl: data.fileUrl || undefined,
+      fileUrlRegular: data.fileUrlRegular || undefined,
+      fileUrlInternational: data.fileUrlInternational || undefined,
     };
 
     try {
@@ -198,7 +195,7 @@ export function ModuleFormDialog({
               />
             </div>
 
-            {/* --- Bagian Deadline TP --- */}
+            {/* --- Bagian Deadline TP (auto closed) --- */}
             <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
               <div className="flex items-center justify-between">
                 <label className="block font-secondary text-xs font-bold text-grey-700">
@@ -234,11 +231,7 @@ export function ModuleFormDialog({
                     key={preset.label}
                     type="button"
                     onClick={() => applyPreset(preset.hours)}
-                    className={`rounded-full border px-3 py-1 font-secondary text-[11px] font-bold transition ${
-                      preset.hours === 0
-                        ? "border-error/20 bg-error/10 text-error hover:bg-error hover:text-white"
-                        : "border-primary/20 bg-white text-primary hover:bg-primary hover:text-white"
-                    }`}
+                    className="rounded-full border border-primary/20 bg-white px-3 py-1 font-secondary text-[11px] font-bold text-primary transition hover:bg-primary hover:text-white"
                   >
                     {preset.label}
                   </button>
@@ -246,16 +239,35 @@ export function ModuleFormDialog({
               </div>
             </div>
 
-            <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
-                Tautan File Modul
-              </label>
-              <Input {...register("fileUrl")} placeholder="https://..." />
-              {errors.fileUrl && (
-                <p className="mt-1 text-xs font-medium text-error">
-                  {errors.fileUrl.message}
-                </p>
-              )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Link Modul (Reguler)
+                </label>
+                <Input
+                  {...register("fileUrlRegular")}
+                  placeholder="https://..."
+                />
+                {errors.fileUrlRegular && (
+                  <p className="mt-1 text-xs font-medium text-error">
+                    {errors.fileUrlRegular.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                  Link Modul (Internasional)
+                </label>
+                <Input
+                  {...register("fileUrlInternational")}
+                  placeholder="https://..."
+                />
+                {errors.fileUrlInternational && (
+                  <p className="mt-1 text-xs font-medium text-error">
+                    {errors.fileUrlInternational.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between rounded-2xl border border-grey-100 bg-grey-50/60 px-4 py-3">

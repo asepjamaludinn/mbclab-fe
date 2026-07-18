@@ -12,7 +12,8 @@ export type PublicModule = {
   title: string;
   description: string;
   isActive: boolean;
-  fileUrl: string;
+  fileUrlRegular: string | null;
+  fileUrlInternational: string | null;
 };
 
 export type PublicQuickMenu = {
@@ -46,7 +47,8 @@ export type PublicModuleApiResponse = {
   title: string;
   description: string | null;
   isActive: boolean;
-  fileUrl: string | null;
+  fileUrlRegular: string | null;
+  fileUrlInternational: string | null;
   order: number;
   tpDeadline: string | null;
 };

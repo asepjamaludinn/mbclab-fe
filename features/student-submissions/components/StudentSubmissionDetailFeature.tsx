@@ -11,10 +11,12 @@ import {
   Trash2,
   XCircle,
   AlertTriangle,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { usePublicModules } from "@/features/public-home";
 import { useUploadFile, useSubmitTp } from "../hooks/use-student-submissions";
+import { useStudentModuleDetail } from "@/features/student-modules";
+import { useProfile } from "@/features/auth";
 import axios from "axios";
 import {
   tpSubmissionSchema,
@@ -42,12 +44,16 @@ export function StudentSubmissionDetailFeature({
   const [validationError, setValidationError] = useState("");
   const [apiError, setApiError] = useState("");
 
-  const { data: modules = [], isLoading: isLoadingModules } =
-    usePublicModules();
-  const moduleInfo = modules.find((m) => m.id === moduleId);
-  const moduleTitle = moduleInfo ? moduleInfo.title : `Modul ${moduleId}`;
+  const { data: userProfile } = useProfile("STUDENT");
+  const isInter = userProfile?.isInternational === true;
 
-  const tpDeadline = (moduleInfo as { tpDeadline?: string | null })?.tpDeadline;
+  // Gunakan useStudentModuleDetail agar kita juga mendapatkan `questions` bertipe TP
+  const { data: moduleDetail, isLoading: isLoadingModule } =
+    useStudentModuleDetail(moduleId);
+
+  const moduleTitle = moduleDetail ? moduleDetail.title : `Memuat Modul...`;
+
+  const tpDeadline = moduleDetail?.tpDeadline;
   const deadlineClosed = isDeadlineStrictlyPassed(tpDeadline ?? null);
   const inGracePeriod = isInGracePeriod(tpDeadline ?? null);
 
@@ -162,7 +168,7 @@ export function StudentSubmissionDetailFeature({
         </section>
 
         <section className="mt-8 px-5">
-          {isLoadingModules ? (
+          {isLoadingModule ? (
             <div className="h-64 w-full animate-pulse rounded-[32px] bg-white/40 backdrop-blur-xl" />
           ) : deadlineClosed ? (
             <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/80 px-6 py-10 text-center shadow-[0_24px_60px_-38px_rgba(0,101,176,0.3)] backdrop-blur-2xl">
@@ -199,121 +205,155 @@ export function StudentSubmissionDetailFeature({
               </Link>
             </div>
           ) : (
-            <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/40 px-5 pb-6 pt-5 text-slate-900 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
-              <div className="relative z-10">
-                {inGracePeriod && (
-                  <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-sm font-semibold text-warning-700">
-                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
-                    <span>
-                      Waktu reguler pengumpulan telah habis. Anda berada dalam
-                      masa tenggang 15 menit. TP yang diunggah sekarang akan
-                      ditandai "Terlambat".
-                    </span>
-                  </div>
-                )}
-
-                <div
-                  onClick={() => !selectedFile && inputRef.current?.click()}
-                  onDragOver={(event) => {
-                    event.preventDefault();
-                    if (!selectedFile) setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={(event) => {
-                    if (!selectedFile) handleDrop(event);
-                  }}
-                  className={`relative rounded-[24px] border-2 p-6 transition-all duration-300 backdrop-blur-xl ${
-                    selectedFile
-                      ? "border-primary/20 bg-white/80 shadow-sm"
-                      : isDragging
-                        ? "cursor-pointer border-dashed border-primary bg-primary/10"
-                        : "cursor-pointer border-dashed border-slate-300 bg-white/50 text-center hover:border-primary/40 hover:bg-white/80"
-                  }`}
-                >
-                  <input
-                    ref={inputRef}
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-
-                  {selectedFile ? (
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex min-w-0 items-center gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/10 text-info">
-                          <FileText className="h-6 w-6" strokeWidth={1.8} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-extrabold text-slate-900">
-                            {selectedFile.name}
-                          </p>
-                          <p className="font-secondary text-xs font-medium text-slate-500">
-                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={handleRemoveFile}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
-                        aria-label="Hapus file"
-                      >
-                        <Trash2 className="h-5 w-5" strokeWidth={1.8} />
-                      </button>
+            <>
+              {/* === TAMPILAN DAFTAR SOAL TP === */}
+              {moduleDetail?.questions && moduleDetail.questions.length > 0 && (
+                <div className="mb-6 rounded-[32px] border border-white/50 bg-white/80 p-6 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <ClipboardList className="h-5 w-5" strokeWidth={2} />
                     </div>
-                  ) : (
-                    <div className="text-center py-2">
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-white text-primary shadow-sm backdrop-blur-xl transition-transform group-hover:-translate-y-1">
-                        <UploadCloud className="h-8 w-8" strokeWidth={1.8} />
-                      </div>
+                    <h2 className="text-lg font-extrabold text-slate-900">
+                      Soal Tugas Pendahuluan
+                    </h2>
+                  </div>
 
-                      <p className="mx-auto max-w-[220px] font-secondary text-[13px] font-medium leading-relaxed text-slate-600">
-                        <strong className="font-bold text-slate-900">
-                          Klik untuk memilih
-                        </strong>{" "}
-                        atau drag & drop file PDF ke sini. Jika Anda telah
-                        mengunggah TP, file sebelumnya akan digantikan.
-                      </p>
+                  <ul className="space-y-4 font-secondary text-[13px] text-slate-700">
+                    {moduleDetail.questions.map((q, index) => {
+                      const questionText =
+                        isInter && q.contentEn ? q.contentEn : q.content;
+                      return (
+                        <li key={q.id} className="flex items-start gap-3">
+                          <span className="font-bold text-primary mt-0.5">
+                            {index + 1}.
+                          </span>
+                          <span className="leading-relaxed whitespace-pre-wrap">
+                            {questionText}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+              {/* === AKHIR TAMPILAN DAFTAR SOAL TP === */}
 
-                      <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
-                        Maksimal {MAX_FILE_SIZE_MB} MB
-                      </p>
+              <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/40 px-5 pb-6 pt-5 text-slate-900 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
+                <div className="relative z-10">
+                  {inGracePeriod && (
+                    <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-sm font-semibold text-warning-700">
+                      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
+                      <span>
+                        Waktu reguler pengumpulan telah habis. Anda berada dalam
+                        masa tenggang 15 menit. TP yang diunggah sekarang akan
+                        ditandai "Terlambat".
+                      </span>
                     </div>
                   )}
+
+                  <div
+                    onClick={() => !selectedFile && inputRef.current?.click()}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      if (!selectedFile) setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(event) => {
+                      if (!selectedFile) handleDrop(event);
+                    }}
+                    className={`relative rounded-[24px] border-2 p-6 transition-all duration-300 backdrop-blur-xl ${
+                      selectedFile
+                        ? "border-primary/20 bg-white/80 shadow-sm"
+                        : isDragging
+                          ? "cursor-pointer border-dashed border-primary bg-primary/10"
+                          : "cursor-pointer border-dashed border-slate-300 bg-white/50 text-center hover:border-primary/40 hover:bg-white/80"
+                    }`}
+                  >
+                    <input
+                      ref={inputRef}
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+
+                    {selectedFile ? (
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex min-w-0 items-center gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/10 text-info">
+                            <FileText className="h-6 w-6" strokeWidth={1.8} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-extrabold text-slate-900">
+                              {selectedFile.name}
+                            </p>
+                            <p className="font-secondary text-xs font-medium text-slate-500">
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleRemoveFile}
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
+                          aria-label="Hapus file"
+                        >
+                          <Trash2 className="h-5 w-5" strokeWidth={1.8} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-2">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-white text-primary shadow-sm backdrop-blur-xl transition-transform group-hover:-translate-y-1">
+                          <UploadCloud className="h-8 w-8" strokeWidth={1.8} />
+                        </div>
+
+                        <p className="mx-auto max-w-[220px] font-secondary text-[13px] font-medium leading-relaxed text-slate-600">
+                          <strong className="font-bold text-slate-900">
+                            Klik untuk memilih
+                          </strong>{" "}
+                          atau drag & drop file PDF ke sini. Jika Anda telah
+                          mengunggah TP, file sebelumnya akan digantikan.
+                        </p>
+
+                        <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
+                          Maksimal {MAX_FILE_SIZE_MB} MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {validationError && (
+                    <span className="mt-3 block font-secondary text-sm font-semibold text-error">
+                      {validationError}
+                    </span>
+                  )}
+
+                  {apiError && (
+                    <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error-700">
+                      <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-error" />
+                      <span>{apiError}</span>
+                    </div>
+                  )}
+
+                  {successMessage && (
+                    <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-success/10 bg-success/10 p-4 font-secondary text-sm font-semibold text-success-700">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
+                      <span>{successMessage}</span>
+                    </div>
+                  )}
+
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={!selectedFile || isProcessing}
+                    className="mt-6 h-[52px] w-full rounded-2xl text-[15px] shadow-primary/25 disabled:opacity-50 disabled:shadow-none"
+                  >
+                    {isProcessing ? "Mengunggah..." : "Kumpulkan TP"}
+                  </Button>
                 </div>
-
-                {validationError && (
-                  <span className="mt-3 block font-secondary text-sm font-semibold text-error">
-                    {validationError}
-                  </span>
-                )}
-
-                {apiError && (
-                  <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error-700">
-                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-error" />
-                    <span>{apiError}</span>
-                  </div>
-                )}
-
-                {successMessage && (
-                  <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-success/10 bg-success/10 p-4 font-secondary text-sm font-semibold text-success-700">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
-                    <span>{successMessage}</span>
-                  </div>
-                )}
-
-                <Button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!selectedFile || isProcessing}
-                  className="mt-6 h-[52px] w-full rounded-2xl text-[15px] shadow-primary/25 disabled:opacity-50 disabled:shadow-none"
-                >
-                  {isProcessing ? "Mengunggah..." : "Kumpulkan TP"}
-                </Button>
               </div>
-            </div>
+            </>
           )}
         </section>
       </div>

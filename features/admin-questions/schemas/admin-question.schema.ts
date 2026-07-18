@@ -16,7 +16,11 @@ export const questionFormSchema = z
     optionCEn: z.string().optional(),
     optionDEn: z.string().optional(),
     optionEEn: z.string().optional(),
-    correctAnswer: z.enum(["A", "B", "C", "D", "E"]).optional(),
+
+    correctAnswer: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.enum(["A", "B", "C", "D", "E"]).optional(),
+    ),
   })
   .superRefine((data, ctx) => {
     if (data.type !== "TA") return;
