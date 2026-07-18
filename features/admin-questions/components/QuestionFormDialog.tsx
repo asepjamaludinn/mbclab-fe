@@ -113,9 +113,12 @@ export function QuestionFormDialog({
   }, [open, question, defaultModuleId, reset]);
 
   const onSubmit = async (data: QuestionFormData) => {
+    const correctAnswer =
+      data.correctAnswer === "" ? undefined : data.correctAnswer;
+
     const payload =
       data.type === "TA"
-        ? data
+        ? { ...data, correctAnswer }
         : {
             moduleId: data.moduleId,
             type: data.type,

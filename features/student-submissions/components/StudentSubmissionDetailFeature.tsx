@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,7 +12,9 @@ import {
   XCircle,
   AlertTriangle,
   ClipboardList,
+  Download,
 } from "lucide-react";
+import { generateTpReceiptPdf } from "../utils/tp-receipt";
 import { Button } from "@/shared/components/ui/button";
 import { useUploadFile, useSubmitTp } from "../hooks/use-student-submissions";
 import { useStudentModuleDetail } from "@/features/student-modules";
@@ -47,7 +49,6 @@ export function StudentSubmissionDetailFeature({
   const { data: userProfile } = useProfile("STUDENT");
   const isInter = userProfile?.isInternational === true;
 
-  // Gunakan useStudentModuleDetail agar kita juga mendapatkan `questions` bertipe TP
   const { data: moduleDetail, isLoading: isLoadingModule } =
     useStudentModuleDetail(moduleId);
 
@@ -62,6 +63,13 @@ export function StudentSubmissionDetailFeature({
   const { mutateAsync: submitTp, isPending: isSubmitting } = useSubmitTp();
 
   const isProcessing = isUploadingFile || isSubmitting;
+
+  const missingEnglishQuestions = useMemo(() => {
+    if (!isInter || !moduleDetail?.questions) return false;
+    return moduleDetail.questions.some(
+      (q) => !q.contentEn || q.contentEn.trim() === "",
+    );
+  }, [isInter, moduleDetail?.questions]);
 
   const validateFile = (file: File | undefined | null) => {
     setSuccessMessage("");
@@ -122,7 +130,11 @@ export function StudentSubmissionDetailFeature({
       const fileUrl = await uploadFile(selectedFile as File);
       await submitTp({ moduleId, fileUrl });
 
-      setSuccessMessage("Tugas Pendahuluan berhasil dikumpulkan.");
+      setSuccessMessage(
+        isInter
+          ? "Preliminary assignment successfully submitted."
+          : "Tugas Pendahuluan berhasil dikumpulkan.",
+      );
       setSelectedFile(null);
 
       if (inputRef.current) {
@@ -132,10 +144,16 @@ export function StudentSubmissionDetailFeature({
       if (axios.isAxiosError(error)) {
         setApiError(
           error.response?.data?.message ||
-            "Gagal mengunggah TP. Silakan coba lagi.",
+            (isInter
+              ? "Failed to upload. Please try again."
+              : "Gagal mengunggah TP. Silakan coba lagi."),
         );
       } else {
-        setApiError("Gagal mengunggah TP. Silakan coba lagi.");
+        setApiError(
+          isInter
+            ? "Failed to upload. Please try again."
+            : "Gagal mengunggah TP. Silakan coba lagi.",
+        );
       }
     }
   };
@@ -153,7 +171,7 @@ export function StudentSubmissionDetailFeature({
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-secondary text-xs font-bold text-white shadow-sm backdrop-blur-md transition hover:bg-white/20 active:scale-[0.96]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Batal
+            {isInter ? "Back" : "Batal"}
           </Link>
 
           <h1 className="mt-1 text-[32px] font-extrabold leading-tight tracking-tight drop-shadow-sm">
@@ -162,7 +180,8 @@ export function StudentSubmissionDetailFeature({
 
           {tpDeadline && (
             <p className="mt-2 font-secondary text-sm text-white/80">
-              Batas pengumpulan: {formatDeadline(tpDeadline)} WIB
+              {isInter ? "Submission Deadline: " : "Batas pengumpulan: "}
+              {formatDeadline(tpDeadline)} {isInter ? "" : "WIB"}
             </p>
           )}
         </section>
@@ -177,66 +196,117 @@ export function StudentSubmissionDetailFeature({
               </div>
 
               <h2 className="text-xl font-extrabold text-slate-900">
-                Pengumpulan TP Sudah Ditutup
+                {isInter ? "Submission Closed" : "Pengumpulan TP Sudah Ditutup"}
               </h2>
 
               <p className="mx-auto mt-3 max-w-sm font-secondary text-sm leading-relaxed text-slate-600">
-                Batas waktu pengumpulan (termasuk masa tenggang 15 menit) telah
-                berakhir pada{" "}
+                {isInter
+                  ? "The submission deadline (including the 15-minute grace period) has ended on "
+                  : "Batas waktu pengumpulan (termasuk masa tenggang 15 menit) telah berakhir pada "}
                 <strong>
                   {tpDeadline
                     ? new Date(
                         new Date(tpDeadline).getTime() + 15 * 60000,
-                      ).toLocaleString("id-ID", {
+                      ).toLocaleString(isInter ? "en-GB" : "id-ID", {
                         hour: "2-digit",
                         minute: "2-digit",
+                        hour12: false,
                       })
                     : "-"}{" "}
-                  WIB
+                  {isInter ? "" : "WIB"}
                 </strong>
-                . Anda tidak dapat mengunggah file lagi.
+                .{" "}
+                {isInter
+                  ? "You can no longer upload files."
+                  : "Anda tidak dapat mengunggah file lagi."}
               </p>
 
               <Link
                 href="/student/submissions"
                 className="mt-6 inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-6 font-secondary text-sm font-bold text-white shadow-lg shadow-primary/25 transition hover:bg-secondary active:scale-[0.98]"
               >
-                Kembali ke Daftar TP
+                {isInter ? "Back to Assignments" : "Kembali ke Daftar TP"}
               </Link>
             </div>
           ) : (
             <>
-              {/* === TAMPILAN DAFTAR SOAL TP === */}
+              {/* === TAMPILAN DOWNLOAD SOAL TP === */}
               {moduleDetail?.questions && moduleDetail.questions.length > 0 && (
-                <div className="mb-6 rounded-[32px] border border-white/50 bg-white/80 p-6 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <ClipboardList className="h-5 w-5" strokeWidth={2} />
+                <div className="mb-6 overflow-hidden rounded-[32px] border border-white/50 bg-white/80 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
+                  <div className="p-6 sm:p-7">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-primary/10 text-primary">
+                        <ClipboardList className="h-7 w-7" strokeWidth={1.8} />
+                      </div>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <h2 className="text-[19px] font-extrabold tracking-tight text-slate-900">
+                          {isInter
+                            ? "Preliminary Assignment Questions"
+                            : "Soal Tugas Pendahuluan"}
+                        </h2>
+                        <p className="mt-1 font-secondary text-sm font-medium text-slate-500">
+                          {isInter
+                            ? `Total of ${moduleDetail.questions.length} questions`
+                            : `Terdiri dari ${moduleDetail.questions.length} soal`}
+                        </p>
+                      </div>
                     </div>
-                    <h2 className="text-lg font-extrabold text-slate-900">
-                      Soal Tugas Pendahuluan
-                    </h2>
-                  </div>
 
-                  <ul className="space-y-4 font-secondary text-[13px] text-slate-700">
-                    {moduleDetail.questions.map((q, index) => {
-                      const questionText =
-                        isInter && q.contentEn ? q.contentEn : q.content;
-                      return (
-                        <li key={q.id} className="flex items-start gap-3">
-                          <span className="font-bold text-primary mt-0.5">
-                            {index + 1}.
-                          </span>
-                          <span className="leading-relaxed whitespace-pre-wrap">
-                            {questionText}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                    {missingEnglishQuestions ? (
+                      <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-warning/10 bg-warning/5 px-5 py-4 text-warning-700">
+                        <AlertTriangle
+                          className="mt-0.5 h-5 w-5 shrink-0 text-warning"
+                          strokeWidth={2}
+                        />
+                        <p className="font-secondary text-[13px] leading-relaxed">
+                          The English version of the questions is not fully
+                          available yet. Please contact your practicum
+                          assistant.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-info/10 bg-info/5 px-5 py-4 text-info-700">
+                        <FileText
+                          className="mt-0.5 h-5 w-5 shrink-0 text-info"
+                          strokeWidth={2}
+                        />
+                        <p className="font-secondary text-[13px] leading-relaxed">
+                          {isInter
+                            ? "Please download the PDF document to view the detailed questions and guidelines for your Preliminary Assignment."
+                            : "Silakan unduh dokumen PDF untuk melihat detail pertanyaan dan panduan dalam mengerjakan Tugas Pendahuluan Anda."}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-6">
+                      <Button
+                        type="button"
+                        disabled={missingEnglishQuestions}
+                        onClick={() =>
+                          generateTpReceiptPdf(
+                            userProfile?.name || "Praktikan",
+                            userProfile?.nim || "-",
+                            moduleDetail.title,
+                            moduleDetail.tpDeadline,
+                            isInter,
+                            moduleDetail.questions,
+                          )
+                        }
+                        className="h-12 w-full rounded-[20px] font-secondary text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:bg-secondary active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
+                      >
+                        <Download
+                          className="mr-2 h-4.5 w-4.5"
+                          strokeWidth={2.5}
+                        />
+                        {isInter
+                          ? "Download Questions (PDF)"
+                          : "Unduh Dokumen Soal (PDF)"}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
-              {/* === AKHIR TAMPILAN DAFTAR SOAL TP === */}
+              {/* === AKHIR TAMPILAN DOWNLOAD SOAL TP === */}
 
               <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/40 px-5 pb-6 pt-5 text-slate-900 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
                 <div className="relative z-10">
@@ -244,9 +314,9 @@ export function StudentSubmissionDetailFeature({
                     <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-sm font-semibold text-warning-700">
                       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
                       <span>
-                        Waktu reguler pengumpulan telah habis. Anda berada dalam
-                        masa tenggang 15 menit. TP yang diunggah sekarang akan
-                        ditandai "Terlambat".
+                        {isInter
+                          ? 'The regular submission time has ended. You are in the 15-minute grace period. Submissions uploaded now will be marked as "Late".'
+                          : 'Waktu reguler pengumpulan telah habis. Anda berada dalam masa tenggang 15 menit. TP yang diunggah sekarang akan ditandai "Terlambat".'}
                       </span>
                     </div>
                   )}
@@ -297,7 +367,7 @@ export function StudentSubmissionDetailFeature({
                           type="button"
                           onClick={handleRemoveFile}
                           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
-                          aria-label="Hapus file"
+                          aria-label={isInter ? "Remove file" : "Hapus file"}
                         >
                           <Trash2 className="h-5 w-5" strokeWidth={1.8} />
                         </button>
@@ -310,14 +380,17 @@ export function StudentSubmissionDetailFeature({
 
                         <p className="mx-auto max-w-[220px] font-secondary text-[13px] font-medium leading-relaxed text-slate-600">
                           <strong className="font-bold text-slate-900">
-                            Klik untuk memilih
+                            {isInter ? "Click to select" : "Klik untuk memilih"}
                           </strong>{" "}
-                          atau drag & drop file PDF ke sini. Jika Anda telah
-                          mengunggah TP, file sebelumnya akan digantikan.
+                          {isInter
+                            ? "or drag & drop a PDF file here. If you have already uploaded an assignment, the previous file will be replaced."
+                            : "atau drag & drop file PDF ke sini. Jika Anda telah mengunggah TP, file sebelumnya akan digantikan."}
                         </p>
 
                         <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
-                          Maksimal {MAX_FILE_SIZE_MB} MB
+                          {isInter
+                            ? `Maximum ${MAX_FILE_SIZE_MB} MB`
+                            : `Maksimal ${MAX_FILE_SIZE_MB} MB`}
                         </p>
                       </div>
                     )}
@@ -349,7 +422,13 @@ export function StudentSubmissionDetailFeature({
                     disabled={!selectedFile || isProcessing}
                     className="mt-6 h-[52px] w-full rounded-2xl text-[15px] shadow-primary/25 disabled:opacity-50 disabled:shadow-none"
                   >
-                    {isProcessing ? "Mengunggah..." : "Kumpulkan TP"}
+                    {isProcessing
+                      ? isInter
+                        ? "Uploading..."
+                        : "Mengunggah..."
+                      : isInter
+                        ? "Submit Assignment"
+                        : "Kumpulkan TP"}
                   </Button>
                 </div>
               </div>

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const AnswerEnum = z.enum(["A", "B", "C", "D", "E"]);
+
 export const questionFormSchema = z
   .object({
     moduleId: z.string().min(1, "Modul wajib dipilih"),
@@ -17,10 +19,7 @@ export const questionFormSchema = z
     optionDEn: z.string().optional(),
     optionEEn: z.string().optional(),
 
-    correctAnswer: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.enum(["A", "B", "C", "D", "E"]).optional(),
-    ),
+    correctAnswer: z.union([AnswerEnum, z.literal("")]).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.type !== "TA") return;
