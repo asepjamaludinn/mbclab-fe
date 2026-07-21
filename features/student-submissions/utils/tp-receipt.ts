@@ -7,6 +7,7 @@ export function generateTpReceiptPdf(
   deadlineIso: string | null,
   isInter: boolean,
   questions: { id: string; content: string; contentEn: string | null }[],
+  studentVariantTarget: "ODD" | "EVEN",
 ) {
   const doc = new jsPDF({
     orientation: "portrait",
@@ -81,6 +82,15 @@ export function generateTpReceiptPdf(
   const lblType = isInter ? "Type" : "Tipe";
   const lblVersion = isInter ? "Version" : "Versi";
   const valVersion = isInter ? "International" : "Reguler";
+  const lblVariant = isInter ? "Variant" : "Variasi";
+  const valVariant =
+    studentVariantTarget === "EVEN"
+      ? isInter
+        ? "Even"
+        : "Genap"
+      : isInter
+        ? "Odd"
+        : "Ganjil";
   const lblRules = isInter ? "Rules" : "Ketentuan";
   const valRules = isInter
     ? "Must be handwritten and scanned/photographed"
@@ -123,6 +133,7 @@ export function generateTpReceiptPdf(
   printKeyValue(lblTime, timeStr);
   printKeyValue(lblType, "TP");
   printKeyValue(lblVersion, valVersion);
+  printKeyValue(lblVariant, valVariant);
   printKeyValue(lblRules, valRules);
   y += 2;
 

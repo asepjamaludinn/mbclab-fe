@@ -87,7 +87,7 @@ const MENU_GROUPS: SidebarMenuGroup[] = [
         icon: UserRoundCheck,
       },
       {
-        label: "Akun Login Asisten",
+        label: "Akun Asisten",
         href: "/admin/accounts",
         icon: ShieldCheck,
       },
@@ -159,9 +159,12 @@ export function AppSidebar() {
   })).filter((group) => group.menus.length > 0);
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-white/60 bg-white/40 backdrop-blur-2xl"
+    >
       <SidebarHeader>
-        <div className="flex items-center justify-center py-2">
+        <div className="flex items-center justify-center py-3">
           <Image
             src="/images/logo_utama.svg"
             alt="Logo"
@@ -180,14 +183,16 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarSeparator />
+      <SidebarSeparator className="bg-white/50" />
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-2">
         {filteredMenuGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroup key={group.label} className="py-2">
+            <SidebarGroupLabel className="font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-400 px-3 mb-1">
+              {group.label}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-1">
                 {group.menus.map((menu) => {
                   const Icon = menu.icon;
                   const isActive = pathname.startsWith(menu.href);
@@ -198,9 +203,20 @@ export function AppSidebar() {
                         asChild
                         isActive={isActive}
                         tooltip={menu.label}
+                        className={`h-11 rounded-2xl font-secondary text-sm font-medium tracking-tight transition-all duration-300 ${
+                          isActive
+                            ? "bg-primary text-white shadow-md shadow-primary/20"
+                            : "text-grey-600 hover:bg-white/60 hover:text-grey-900"
+                        }`}
                       >
-                        <Link href={menu.href}>
-                          <Icon strokeWidth={2} />
+                        <Link
+                          href={menu.href}
+                          className="flex items-center gap-3 px-3"
+                        >
+                          <Icon
+                            strokeWidth={1.5}
+                            className="h-4 w-4 shrink-0"
+                          />
                           <span>{menu.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -213,62 +229,74 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarSeparator />
+      <SidebarSeparator className="bg-white/50" />
 
-      <SidebarFooter>
+      <SidebarFooter className="p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-grey-100 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+            <button className="flex w-full items-center gap-3 rounded-2xl border border-white/60 bg-white/50 p-2.5 text-left shadow-sm backdrop-blur-md transition-all duration-300 hover:bg-white/80 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:bg-transparent">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/90 text-xs font-medium text-white shadow-sm backdrop-blur-md">
                 {getInitials(user?.name || "A")}
               </div>
 
               <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                <p className="truncate text-sm font-semibold leading-tight text-grey-900">
+                <p className="truncate text-sm font-medium tracking-tight leading-tight text-grey-900">
                   {user?.name || "Administrator"}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-grey-500">
+                <p className="mt-0.5 truncate font-secondary text-xs tracking-tight text-grey-500">
                   {user?.nim || "Asisten Laboratorium"}
                 </p>
               </div>
 
-              <ChevronsUpDown className="h-4 w-4 shrink-0 text-grey-400 group-data-[collapsible=icon]:hidden" />
+              <ChevronsUpDown
+                className="h-4 w-4 shrink-0 text-grey-400 group-data-[collapsible=icon]:hidden"
+                strokeWidth={1.5}
+              />
             </button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             side="top"
             align="end"
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-[220px]"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-[220px] rounded-2xl border border-white/60 bg-white/80 p-1.5 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl"
           >
             <div className="flex items-center gap-3 px-2.5 py-2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/90 text-xs font-medium text-white shadow-sm">
                 {getInitials(user?.name || "A")}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold leading-tight text-grey-900">
+                <p className="truncate text-sm font-medium tracking-tight leading-tight text-grey-900">
                   {user?.name || "..."}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-grey-500">
+                <p className="mt-0.5 truncate font-secondary text-xs tracking-tight text-grey-500">
                   {user?.nim || "..."}
                 </p>
               </div>
             </div>
 
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="my-1 bg-white/50" />
 
-            {/* ---> UPDATE BAGIAN INI <--- */}
-            <DropdownMenuItem asChild>
-              <Link href="/admin/settings" className="cursor-pointer">
-                <Settings strokeWidth={2} />
+            <DropdownMenuItem
+              asChild
+              className="rounded-xl font-medium tracking-tight text-grey-700 focus:bg-white/60 focus:text-primary"
+            >
+              <Link
+                href="/admin/settings"
+                className="cursor-pointer flex items-center gap-2 py-2 px-2.5"
+              >
+                <Settings strokeWidth={1.5} className="h-4 w-4" />
                 Settings
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="my-1 bg-white/50" />
 
-            <DropdownMenuItem variant="danger" onClick={handleLogout}>
-              <LogOut strokeWidth={2} />
+            <DropdownMenuItem
+              variant="danger"
+              onClick={handleLogout}
+              className="rounded-xl font-medium tracking-tight text-error focus:bg-error/10 focus:text-error flex items-center gap-2 py-2 px-2.5 cursor-pointer"
+            >
+              <LogOut strokeWidth={1.5} className="h-4 w-4" />
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>

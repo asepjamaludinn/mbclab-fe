@@ -53,21 +53,21 @@ export function ActivityChart({ data }: ActivityChartProps) {
   );
 
   return (
-    <div className="flex h-full min-h-[280px] w-full flex-col overflow-hidden rounded-[32px] border border-grey-200/60 bg-white p-6 shadow-sm">
+    <div className="flex h-full min-h-[280px] w-full flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white/60 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-2xl">
       {/* Header */}
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-extrabold tracking-tight text-grey-900">
+          <h2 className="text-lg font-medium tracking-tighter text-grey-900">
             Aktivitas Praktikum
           </h2>
-          <p className="mt-0.5 font-secondary text-[13px] font-medium text-grey-500">
+          <p className="mt-0.5 font-secondary text-[13px] tracking-tight text-grey-500">
             Total pengumpulan TP & pengerjaan TA — 7 hari terakhir
           </p>
         </div>
 
         {hasActivity && (
-          <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-[12px] font-bold text-success">
-            <TrendingUp className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-[12px] font-medium tracking-tight text-success">
+            <TrendingUp className="h-3.5 w-3.5" strokeWidth={1.5} />
             <span>
               Puncak {peak.day} ({peak.value})
             </span>
@@ -85,7 +85,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
           >
             <defs>
               <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0065B0" stopOpacity="0.25" />
+                <stop offset="0%" stopColor="#0065B0" stopOpacity="0.15" />
                 <stop offset="100%" stopColor="#0065B0" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">
@@ -104,6 +104,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
                 y2={PADDING + r * (HEIGHT - PADDING * 2)}
                 stroke="#F0F1F3"
                 strokeWidth={1}
+                strokeOpacity={0.5}
               />
             ))}
 
@@ -119,7 +120,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
               d={linePath}
               fill="none"
               stroke="url(#lineStroke)"
-              strokeWidth={3}
+              strokeWidth={2}
               strokeLinecap="round"
               className="transition-all duration-700 ease-out"
             />
@@ -130,10 +131,10 @@ export function ActivityChart({ data }: ActivityChartProps) {
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={hoverIndex === i ? 7 : 5}
+                  r={hoverIndex === i ? 6 : 4}
                   fill="#fff"
                   stroke="#0065B0"
-                  strokeWidth={2.5}
+                  strokeWidth={1.5}
                   className="cursor-pointer transition-all duration-200"
                   onMouseEnter={() => setHoverIndex(i)}
                   onMouseLeave={() => setHoverIndex(null)}
@@ -146,15 +147,18 @@ export function ActivityChart({ data }: ActivityChartProps) {
                       width={40}
                       height={24}
                       rx={8}
-                      fill="#0F172A"
+                      fill="rgba(255, 255, 255, 0.7)"
+                      stroke="rgba(255, 255, 255, 0.5)"
+                      style={{ backdropFilter: "blur(8px)" }}
                     />
                     <text
                       x={p.x}
                       y={p.y - 21}
                       textAnchor="middle"
                       fontSize={12}
-                      fontWeight={700}
-                      fill="#fff"
+                      fontWeight={500}
+                      fill="#0F172A"
+                      letterSpacing="-0.5px"
                     >
                       {p.value}
                     </text>
@@ -166,13 +170,13 @@ export function ActivityChart({ data }: ActivityChartProps) {
         </div>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-grey-100 text-grey-400">
-            <Inbox className="h-6 w-6" strokeWidth={2} />
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-grey-100/50 text-grey-400 backdrop-blur-md">
+            <Inbox className="h-6 w-6" strokeWidth={1.5} />
           </div>
-          <p className="font-secondary text-sm font-semibold text-grey-700">
+          <p className="font-secondary text-sm font-medium tracking-tighter text-grey-700">
             Belum ada aktivitas
           </p>
-          <p className="mt-1 font-secondary text-xs text-grey-500">
+          <p className="mt-1 font-secondary text-xs tracking-tight text-grey-500">
             Belum ada TP atau TA yang dikerjakan dalam 7 hari terakhir.
           </p>
         </div>
@@ -183,7 +187,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
         {data.map((d, i) => (
           <span
             key={i}
-            className={`font-secondary text-[12px] font-bold ${
+            className={`font-secondary text-[12px] font-medium tracking-tight transition-colors ${
               hoverIndex === i ? "text-primary" : "text-grey-400"
             }`}
           >

@@ -11,6 +11,7 @@ import { Button } from "@/shared/components/ui/button";
 import { getInitials } from "@/shared/utils/string";
 import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
+import { AdminPageLayout } from "@/shared/components/layout/AdminPageLayout";
 import { EditTpScoreDialog } from "./EditTpScoreDialog";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
@@ -29,7 +30,7 @@ function ScorePill({
 }) {
   if (score === null) {
     return (
-      <span className="inline-flex items-center rounded-full bg-grey-100 px-2.5 py-1 font-secondary text-xs font-bold text-grey-400">
+      <span className="inline-flex items-center rounded-full border border-grey-200/50 bg-grey-100/50 px-2.5 py-1 font-secondary text-xs font-medium tracking-tight text-grey-500 backdrop-blur-md">
         Belum ada
       </span>
     );
@@ -37,12 +38,12 @@ function ScorePill({
 
   const toneClass =
     tone === "info"
-      ? "bg-info/10 text-info-700"
-      : "bg-warning/10 text-warning-700";
+      ? "bg-info/10 text-info-700 border-info/10"
+      : "bg-warning/10 text-warning-700 border-warning/10";
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-xs font-bold ${toneClass}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-1 font-secondary text-xs font-medium tracking-tight backdrop-blur-md ${toneClass}`}
     >
       {formatScore(score)}
     </span>
@@ -110,14 +111,14 @@ export function GradesFeature() {
       header: "Praktikan",
       render: (grade) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-bold text-primary">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-medium text-primary">
             {getInitials(grade.student.name)}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-grey-900">
+            <p className="truncate text-sm font-medium tracking-tight text-grey-900">
               {grade.student.name}
             </p>
-            <p className="font-secondary text-xs text-grey-500">
+            <p className="font-secondary text-xs tracking-tight text-grey-500">
               {grade.student.nim}
             </p>
           </div>
@@ -129,11 +130,11 @@ export function GradesFeature() {
       header: "Kelompok",
       render: (grade) =>
         grade.student.group?.name ? (
-          <span className="font-secondary text-sm text-grey-600">
+          <span className="font-secondary text-sm font-medium tracking-tight text-grey-600">
             {grade.student.group.name}
           </span>
         ) : (
-          <span className="font-secondary text-sm text-grey-400">
+          <span className="font-secondary text-sm font-medium tracking-tight text-grey-400">
             Belum ada
           </span>
         ),
@@ -142,7 +143,7 @@ export function GradesFeature() {
       key: "module",
       header: "Modul",
       render: (grade) => (
-        <span className="font-secondary text-sm text-grey-700">
+        <span className="font-secondary text-sm font-medium tracking-tight text-grey-700">
           {grade.module.title}
         </span>
       ),
@@ -167,7 +168,7 @@ export function GradesFeature() {
           : null;
 
         return (
-          <span className="font-secondary text-sm font-bold text-grey-900">
+          <span className="font-secondary text-sm font-medium tracking-tighter text-grey-900">
             {average !== null ? formatScore(average) : "-"}
           </span>
         );
@@ -177,16 +178,16 @@ export function GradesFeature() {
       key: "actions",
       header: "Aksi",
       headerClassName:
-        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
       render: (grade) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => setEditingGrade(grade)}
             title="Ubah Nilai TP"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-primary/10 hover:text-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-primary hover:shadow-sm"
             aria-label="Ubah nilai TP"
           >
-            <Pencil className="h-4 w-4" strokeWidth={2} />
+            <Pencil className="h-4 w-4" strokeWidth={1.5} />
           </button>
         </div>
       ),
@@ -194,56 +195,58 @@ export function GradesFeature() {
   ];
 
   return (
-    <div className="flex w-full flex-col gap-6 font-primary">
-      <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
-            Nilai & TP
-          </h1>
-          <p className="mt-1 font-secondary text-sm text-grey-500">
-            Pantau nilai TP dan TA seluruh praktikan per modul praktikum.
-          </p>
-        </div>
-
+    <AdminPageLayout
+      title="Nilai & TP"
+      description="Pantau nilai TP dan TA seluruh praktikan per modul praktikum."
+      headerActions={
         <a
           href={adminGradeService.exportCsvUrl()}
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button variant="outline" className="h-10 rounded-lg px-4 shadow-sm">
-            <Download className="mr-2 h-4 w-4" strokeWidth={2} />
+          <Button
+            variant="outline"
+            className="h-10 rounded-xl px-4 shadow-sm border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80 font-medium tracking-tight"
+          >
+            <Download className="mr-2 h-4 w-4" strokeWidth={1.5} />
             Export CSV
           </Button>
         </a>
-      </div>
+      }
+      filters={
+        <>
+          <div className="flex h-11 flex-1 items-center rounded-xl border border-white/50 bg-white/50 backdrop-blur-md shadow-sm px-4 sm:max-w-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+            <Search
+              className="mr-2.5 h-4 w-4 text-grey-400"
+              strokeWidth={1.5}
+            />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Cari berdasarkan NIM..."
+              className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
+            />
+          </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
-          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Cari berdasarkan NIM..."
-            className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+          <FilterDropdown
+            value={moduleId}
+            options={moduleOptions}
+            onChange={setModuleId}
+            widthClassName="sm:w-64"
+            hideCheckIcon={true}
           />
-        </div>
 
-        <FilterDropdown
-          value={moduleId}
-          options={moduleOptions}
-          onChange={setModuleId}
-          widthClassName="sm:w-64"
-        />
-
-        <FilterDropdown
-          value={groupId}
-          options={groupOptions}
-          onChange={setGroupId}
-          widthClassName="sm:w-56"
-        />
-      </div>
-
+          <FilterDropdown
+            value={groupId}
+            options={groupOptions}
+            onChange={setGroupId}
+            widthClassName="sm:w-56"
+            hideCheckIcon={true}
+          />
+        </>
+      }
+    >
       <DataTable
         columns={columns}
         data={grades}
@@ -267,6 +270,6 @@ export function GradesFeature() {
         grade={editingGrade}
         onOpenChange={(open) => !open && setEditingGrade(null)}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

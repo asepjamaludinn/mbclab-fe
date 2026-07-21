@@ -30,21 +30,21 @@ export function LiveClockCard() {
     : "";
 
   return (
-    <div className="relative flex h-full min-h-[140px] w-full flex-col justify-between overflow-hidden rounded-2xl border border-primary bg-primary p-5 text-white shadow-md shadow-primary/20">
+    <div className="relative flex h-full min-h-[140px] w-full flex-col justify-between overflow-hidden rounded-[28px] border border-white/20 bg-primary p-5 text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-2xl">
       <div className="flex items-start justify-between">
-        <p className="font-secondary text-sm font-medium text-white/80">
+        <p className="font-secondary text-sm font-medium tracking-tight text-white/90">
           Waktu Saat Ini (WIB)
         </p>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/20 bg-white/10">
-          <Clock3 className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/20 bg-white/10 backdrop-blur-md">
+          <Clock3 className="h-4 w-4 text-white" strokeWidth={1.5} />
         </div>
       </div>
 
       <div className="mt-2">
-        <h2 className="font-primary text-3xl font-extrabold tracking-tight tabular-nums text-white">
+        <h2 className="font-primary text-3xl font-medium tracking-tighter tabular-nums text-white">
           {timeString}
         </h2>
-        <p className="mt-2 font-secondary text-[11px] font-semibold text-white/80">
+        <p className="mt-2 font-secondary text-[11px] font-medium tracking-tight text-white/80">
           {dateString}
         </p>
       </div>

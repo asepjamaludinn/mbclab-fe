@@ -7,7 +7,6 @@ import {
   Clock3,
   Layers3,
   Search,
-  SlidersHorizontal,
   BookOpenCheck,
   ClipboardCheck,
   UserRoundCheck,
@@ -16,8 +15,8 @@ import {
   User,
 } from "lucide-react";
 import { UserGroup } from "@/features/auth";
-import { usePublicAssistants } from "@/features/public-home";
-import { useStudentModules } from "@/features/student-modules";
+import { PublicAssistant } from "@/features/public-home";
+import { PracticumModule } from "@/features/student-modules";
 import {
   useQuickSearch,
   QuickSearchResult,
@@ -34,6 +33,8 @@ import { WHATSAPP_COMMUNITY_URL } from "../constants/student-dashboard.constant"
 type DashboardProgressSummaryProps = {
   userName?: string;
   group?: UserGroup | null;
+  modules?: PracticumModule[];
+  assistants?: PublicAssistant[];
 };
 
 function formatScheduleDate(group?: UserGroup | null) {
@@ -54,15 +55,13 @@ function formatScheduleDate(group?: UserGroup | null) {
 export function DashboardProgressSummary({
   userName = "Praktikan",
   group,
+  modules = [],
+  assistants = [],
 }: DashboardProgressSummaryProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  const { data: modulesRes } = useStudentModules();
-  const { data: assistants = [] } = usePublicAssistants();
-  const modules = modulesRes?.data ?? [];
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

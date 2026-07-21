@@ -27,7 +27,7 @@ export function AdminDashboardFeature() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-screen animate-pulse bg-grey-100 rounded-3xl" />
+      <div className="w-full h-screen animate-pulse bg-grey-100/50 rounded-3xl" />
     );
   }
 

@@ -202,14 +202,16 @@ export function AssignStudentsDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_12px_28px_-14px_rgba(0,101,176,0.65)]">
-              <UserPlus className="h-7 w-7" strokeWidth={1.8} />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
+              <UserPlus className="h-7 w-7" strokeWidth={1.5} />
             </div>
-            <DialogTitle>Tambah Anggota</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
+              Tambah Anggota
+            </DialogTitle>
+            <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
               Masukkan NIM setiap mahasiswa, atau cari mahasiswa yang belum
               berkelompok di bawah ini. Maksimal {MAX_TOTAL_SLOTS} anggota per
               kelompok.
@@ -219,18 +221,26 @@ export function AssignStudentsDialog({
           {/* Result summary */}
           {result && (
             <div className="mt-4 space-y-2">
-              <div className="flex items-start gap-2.5 rounded-2xl border border-success/15 bg-success/5 px-4 py-3 font-secondary text-sm text-success">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="flex items-start gap-2.5 rounded-2xl border border-success/15 bg-success/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-success backdrop-blur-md">
+                <CheckCircle2
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  strokeWidth={1.5}
+                />
                 <span>
                   {result.assignedCount} mahasiswa berhasil ditambahkan.
                 </span>
               </div>
               {result.failedNims.length > 0 && (
-                <div className="flex items-start gap-2.5 rounded-2xl border border-warning/15 bg-warning/5 px-4 py-3 font-secondary text-sm text-warning-700">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="flex items-start gap-2.5 rounded-2xl border border-warning/15 bg-warning/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-warning-700 backdrop-blur-md">
+                  <AlertTriangle
+                    className="mt-0.5 h-4 w-4 shrink-0"
+                    strokeWidth={1.5}
+                  />
                   <span>
                     NIM tidak ditemukan / tidak valid:{" "}
-                    <strong>{result.failedNims.join(", ")}</strong>
+                    <strong className="font-medium text-warning-800">
+                      {result.failedNims.join(", ")}
+                    </strong>
                   </span>
                 </div>
               )}
@@ -239,31 +249,34 @@ export function AssignStudentsDialog({
 
           {/* Conflict confirmation panel */}
           {pendingConfirmation && (
-            <div className="mt-4 rounded-2xl border border-warning/20 bg-warning/5 p-4">
+            <div className="mt-4 rounded-2xl border border-warning/20 bg-warning/5 p-4 backdrop-blur-md">
               <div className="flex items-start gap-2.5">
-                <ArrowRightLeft className="mt-0.5 h-4 w-4 shrink-0 text-warning-700" />
+                <ArrowRightLeft
+                  className="mt-0.5 h-4 w-4 shrink-0 text-warning-700"
+                  strokeWidth={1.5}
+                />
                 <div className="min-w-0 flex-1">
-                  <p className="font-secondary text-sm font-bold text-warning-700">
+                  <p className="font-secondary text-sm font-medium tracking-tight text-warning-700">
                     {pendingConfirmation.conflicts.length} mahasiswa sudah ada
                     di kelompok lain
                   </p>
-                  <p className="mt-1 font-secondary text-xs text-warning-700/90">
+                  <p className="mt-1 font-secondary text-xs tracking-tight text-warning-700/90">
                     Melanjutkan akan memindahkan mereka ke kelompok ini.
                   </p>
 
-                  <ul className="mt-3 space-y-1.5">
+                  <ul className="mt-3 space-y-1.5 custom-scrollbar max-h-32 overflow-y-auto">
                     {pendingConfirmation.conflicts.map((c) => (
                       <li
                         key={c.nim}
-                        className="flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2 font-secondary text-xs"
+                        className="flex items-center justify-between gap-2 rounded-xl bg-white/50 backdrop-blur-md border border-white/40 px-3 py-2 font-secondary text-xs"
                       >
-                        <span className="min-w-0 truncate font-semibold text-grey-900">
+                        <span className="min-w-0 truncate font-medium tracking-tight text-grey-900">
                           {c.name}{" "}
                           <span className="font-normal text-grey-500">
                             ({c.nim})
                           </span>
                         </span>
-                        <span className="shrink-0 rounded-full bg-warning/15 px-2 py-0.5 font-bold text-warning-700">
+                        <span className="shrink-0 rounded-full bg-warning/15 px-2 py-0.5 font-medium tracking-tight text-warning-700 border border-warning/10">
                           dari {c.currentGroupName}
                         </span>
                       </li>
@@ -274,7 +287,7 @@ export function AssignStudentsDialog({
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-9 text-xs"
+                      className="h-9 text-xs font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
                       onClick={() => setPendingConfirmation(null)}
                     >
                       Batal
@@ -282,7 +295,7 @@ export function AssignStudentsDialog({
                     <Button
                       type="button"
                       variant="danger"
-                      className="h-9 text-xs"
+                      className="h-9 text-xs font-medium tracking-tight rounded-xl shadow-lg"
                       disabled={isPending}
                       onClick={handleConfirmMove}
                     >
@@ -297,27 +310,27 @@ export function AssignStudentsDialog({
           {/* Student search */}
           {!isAtCapacity && (
             <div className="relative mt-5">
-              <div className="flex h-10 items-center rounded-xl border border-grey-200 bg-grey-50 px-3.5">
+              <div className="flex h-10 items-center rounded-xl border border-white/50 bg-white/40 backdrop-blur-md shadow-sm px-3.5 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
                 <Search
                   className="mr-2 h-4 w-4 text-grey-400"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                 />
                 <input
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
                   placeholder="Cari nama atau NIM mahasiswa belum berkelompok..."
-                  className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+                  className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
                 />
               </div>
 
               {debouncedSearch.length >= 2 && (
-                <div className="absolute z-10 mt-1.5 w-full overflow-hidden rounded-xl border border-grey-200 bg-white shadow-lg">
+                <div className="absolute z-10 mt-1.5 w-full overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)]">
                   {isSearching ? (
-                    <div className="px-4 py-3 font-secondary text-xs text-grey-400">
+                    <div className="px-4 py-3 font-secondary text-xs font-medium tracking-tight text-grey-400">
                       Mencari...
                     </div>
                   ) : suggestions.length === 0 ? (
-                    <div className="px-4 py-3 font-secondary text-xs text-grey-400">
+                    <div className="px-4 py-3 font-secondary text-xs font-medium tracking-tight text-grey-400">
                       Tidak ada mahasiswa yang cocok.
                     </div>
                   ) : (
@@ -326,17 +339,20 @@ export function AssignStudentsDialog({
                         type="button"
                         key={s.id}
                         onClick={() => handlePickStudent(s.nim)}
-                        className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition hover:bg-primary/5"
+                        className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition hover:bg-white/60"
                       >
                         <span className="min-w-0">
-                          <span className="block truncate text-xs font-semibold text-grey-900">
+                          <span className="block truncate text-xs font-medium tracking-tight text-grey-900">
                             {s.name}
                           </span>
-                          <span className="block font-secondary text-[11px] text-grey-500">
+                          <span className="block font-secondary text-[11px] tracking-tight text-grey-500">
                             {s.nim}
                           </span>
                         </span>
-                        <Plus className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        <Plus
+                          className="h-3.5 w-3.5 shrink-0 text-primary"
+                          strokeWidth={1.5}
+                        />
                       </button>
                     ))
                   )}
@@ -345,18 +361,14 @@ export function AssignStudentsDialog({
             </div>
           )}
 
-          <div className="mt-4 max-h-[260px] space-y-2.5 overflow-y-auto pr-1">
-            {/* Anggota yang sudah tergabung di kelompok ini — terkunci,
-                tidak bisa dihapus/diubah dari dialog ini. Ditampilkan lebih
-                dulu supaya penomoran "Anggota N" konsisten dengan slot
-                input baru di bawahnya. */}
+          <div className="mt-4 max-h-[260px] space-y-2.5 overflow-y-auto pr-1 custom-scrollbar">
             {existingStudents.map((student, idx) => (
               <div key={student.id} className="flex items-center gap-2">
-                <span className="w-[74px] shrink-0 font-secondary text-xs font-bold text-grey-500">
+                <span className="w-[74px] shrink-0 font-secondary text-xs font-medium tracking-tight text-grey-500">
                   Anggota {idx + 1}
                 </span>
-                <div className="flex h-9 flex-1 items-center rounded-lg border border-grey-200 bg-grey-50 px-3">
-                  <span className="truncate text-sm text-grey-500">
+                <div className="flex h-10 flex-1 items-center rounded-xl border border-white/40 bg-white/30 backdrop-blur-md px-3">
+                  <span className="truncate text-sm font-medium tracking-tight text-grey-500">
                     {student.name}{" "}
                     <span className="text-grey-400">({student.nim})</span>
                   </span>
@@ -369,32 +381,35 @@ export function AssignStudentsDialog({
             {/* Slot baru yang bisa diisi / dihapus */}
             {fields.map((field, index) => (
               <div key={field.id} className="flex items-center gap-2">
-                <span className="w-[74px] shrink-0 font-secondary text-xs font-bold text-grey-500">
+                <span className="w-[74px] shrink-0 font-secondary text-xs font-medium tracking-tight text-grey-500">
                   Anggota {existingStudents.length + index + 1}
                 </span>
                 <Input
                   {...register(`nims.${index}.value` as const)}
                   placeholder="cth. 1101210001"
-                  className="flex-1"
+                  className="flex-1 bg-white/50 backdrop-blur-md border-white/40 font-medium tracking-tight"
                 />
                 {fields.length > 1 && (
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-grey-400 transition hover:bg-error/10 hover:text-error"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-grey-400 transition hover:bg-white hover:text-error hover:shadow-sm"
                     aria-label={`Hapus baris anggota ${
                       existingStudents.length + index + 1
                     }`}
                   >
-                    <X className="h-4 w-4" strokeWidth={2} />
+                    <X className="h-4 w-4" strokeWidth={1.5} />
                   </button>
                 )}
               </div>
             ))}
 
             {isAtCapacity ? (
-              <div className="flex items-start gap-2.5 rounded-2xl border border-grey-200 bg-grey-50 px-4 py-3 font-secondary text-xs text-grey-500">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-grey-400" />
+              <div className="flex items-start gap-2.5 rounded-2xl border border-white/50 bg-white/30 backdrop-blur-md px-4 py-3 font-secondary text-xs font-medium tracking-tight text-grey-500 shadow-sm">
+                <AlertTriangle
+                  className="mt-0.5 h-4 w-4 shrink-0 text-grey-400"
+                  strokeWidth={1.5}
+                />
                 <span>
                   Kelompok ini sudah mencapai batas maksimal {MAX_TOTAL_SLOTS}{" "}
                   anggota.
@@ -405,9 +420,9 @@ export function AssignStudentsDialog({
                 type="button"
                 onClick={() => append({ value: "" })}
                 disabled={isGroupFull}
-                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-grey-300 py-2.5 font-secondary text-xs font-bold text-primary transition hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-grey-300 disabled:hover:bg-transparent"
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-white/60 bg-white/40 backdrop-blur-md py-2.5 font-secondary text-xs font-medium tracking-tight text-primary transition-all hover:border-primary/50 hover:bg-white/60 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                <Plus className="h-3.5 w-3.5" strokeWidth={1.5} />
                 {isGroupFull
                   ? `Maksimal ${MAX_TOTAL_SLOTS} anggota tercapai`
                   : "Tambah Anggota"}
@@ -415,13 +430,13 @@ export function AssignStudentsDialog({
             )}
 
             {errors.root?.empty && (
-              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
                 {errors.root.empty.message}
               </div>
             )}
 
             {errors.root?.serverError && (
-              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
                 {errors.root.serverError.message}
               </div>
             )}
@@ -432,7 +447,7 @@ export function AssignStudentsDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
               >
                 Tutup
               </Button>
@@ -440,7 +455,7 @@ export function AssignStudentsDialog({
             <Button
               type="submit"
               disabled={isPending || !!pendingConfirmation || isAtCapacity}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
             >
               {isPending ? "Menambahkan..." : "Tambah Anggota"}
             </Button>

@@ -6,6 +6,7 @@ export const questionFormSchema = z
   .object({
     moduleId: z.string().min(1, "Modul wajib dipilih"),
     type: z.enum(["TP", "TA"]),
+    tpVariant: z.enum(["ALL", "EVEN", "ODD"]).optional().default("ALL"),
     content: z.string().min(1, "Pertanyaan wajib diisi"),
     contentEn: z.string().optional(),
     optionA: z.string().optional(),

@@ -64,45 +64,45 @@ export function PreviewSubmissionDialog({
 
   return (
     <Dialog open={!!submission} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <DialogHeader className="text-left">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_12px_28px_-14px_rgba(0,101,176,0.65)]">
-            <FileText className="h-7 w-7" strokeWidth={1.8} />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
+            <FileText className="h-7 w-7" strokeWidth={1.5} />
           </div>
-          <DialogTitle>
+          <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
             {submission?.module.title} — {submission?.student.name}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-secondary text-sm tracking-tight text-grey-500">
             {submission?.student.nim} •{" "}
             {submission?.student.group?.name ?? "Belum ada kelompok"}
             {submission?.isLate && (
-              <span className="ml-2 inline-flex items-center rounded-full bg-error/10 px-2 py-0.5 font-secondary text-[10px] font-bold text-error">
+              <span className="ml-2 inline-flex items-center rounded-full bg-error/10 px-2 py-0.5 font-secondary text-[10px] font-medium text-error border border-error/10">
                 Terlambat
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-6 flex flex-col items-center justify-center rounded-[24px] border border-grey-200 bg-grey-50/50 p-6 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-info/10 text-info">
+        <div className="mt-6 flex flex-col items-center justify-center rounded-[24px] border border-white/50 bg-white/40 p-6 text-center backdrop-blur-md shadow-sm">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-info/10 text-info border border-info/10 backdrop-blur-md">
             <FileCheck className="h-8 w-8" strokeWidth={1.5} />
           </div>
 
           <div className="w-full px-2">
             <p
-              className="truncate font-secondary text-sm font-bold text-grey-900"
+              className="truncate font-secondary text-sm font-medium tracking-tight text-grey-900"
               title={fileName}
             >
               {fileName}
             </p>
-            <p className="mt-1 font-secondary text-xs text-grey-500">
+            <p className="mt-1 font-secondary text-xs tracking-tight text-grey-500">
               Dokumen siap ditinjau.
             </p>
           </div>
 
-          <div className="mt-5 inline-flex items-center rounded-full border border-grey-200 bg-white px-3.5 py-1.5 font-secondary text-[11px] font-medium text-grey-500 shadow-sm">
+          <div className="mt-5 inline-flex items-center rounded-full border border-white/50 bg-white/60 px-3.5 py-1.5 font-secondary text-[11px] font-medium tracking-tight text-grey-500 shadow-sm backdrop-blur-md">
             Dikumpulkan:{" "}
-            <span className="ml-1 font-bold text-grey-700">
+            <span className="ml-1 font-medium text-grey-700">
               {submission
                 ? new Date(submission.createdAt).toLocaleString("id-ID", {
                     dateStyle: "medium",
@@ -118,7 +118,7 @@ export function PreviewSubmissionDialog({
             <Button
               type="button"
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
               disabled={isDownloading}
             >
               Tutup
@@ -136,17 +136,17 @@ export function PreviewSubmissionDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
+                  className="w-full font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
                   disabled={isDownloading}
                 >
-                  <ExternalLink className="mr-2 h-4 w-4" strokeWidth={2} />
+                  <ExternalLink className="mr-2 h-4 w-4" strokeWidth={1.5} />
                   Buka Dokumen
                 </Button>
               </a>
 
               <Button
                 type="button"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
                 onClick={handleDownloadPdf}
                 disabled={isDownloading}
               >
@@ -157,7 +157,7 @@ export function PreviewSubmissionDialog({
                   </>
                 ) : (
                   <>
-                    <Download className="mr-2 h-4 w-4" strokeWidth={2} />
+                    <Download className="mr-2 h-4 w-4" strokeWidth={1.5} />
                     Unduh PDF
                   </>
                 )}

@@ -2,6 +2,7 @@ export type TpQuestion = {
   id: string;
   content: string;
   contentEn: string | null;
+  tpVariant?: "ALL" | "EVEN" | "ODD";
 };
 
 export type PracticumModule = {
@@ -17,6 +18,7 @@ export type PracticumModule = {
 
 export type PracticumModuleDetail = PracticumModule & {
   questions: TpQuestion[];
+  isTpReady: boolean;
 };
 
 export type PracticumModulesResponse = {

@@ -31,3 +31,11 @@ export const useDeleteAdminAccount = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-accounts"] }),
   });
 };
+
+export const useBulkDeleteAdminAccounts = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => adminAccountService.bulkDeleteAdmins(ids),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-accounts"] }),
+  });
+};

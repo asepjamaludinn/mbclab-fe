@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
-export type FilterDropdownOption<T extends string> = {
+export type FilterDropdownOption<T extends string | number> = {
   value: T;
   label: string;
 };
 
-type FilterDropdownProps<T extends string> = {
+type FilterDropdownProps<T extends string | number> = {
   icon?: React.ReactNode;
   value: T;
   options: FilterDropdownOption<T>[];
@@ -16,9 +16,10 @@ type FilterDropdownProps<T extends string> = {
   widthClassName?: string;
   size?: "md" | "sm";
   direction?: "down" | "up";
+  hideCheckIcon?: boolean;
 };
 
-export function FilterDropdown<T extends string>({
+export function FilterDropdown<T extends string | number>({
   icon,
   value,
   options,
@@ -26,6 +27,7 @@ export function FilterDropdown<T extends string>({
   widthClassName = "sm:w-56",
   size = "md",
   direction = "down",
+  hideCheckIcon = false,
 }: FilterDropdownProps<T>) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,47 +54,48 @@ export function FilterDropdown<T extends string>({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`flex ${heightClass} w-full items-center gap-2 rounded-xl border bg-white ${paddingClass} ${textClass} font-medium text-grey-900 outline-none transition ${
+        className={`flex ${heightClass} w-full items-center gap-2 rounded-xl border bg-white/50 backdrop-blur-md shadow-sm ${paddingClass} ${textClass} font-medium tracking-tight text-grey-900 outline-none transition-all ${
           open
-            ? "border-primary ring-2 ring-primary/10"
-            : "border-grey-200 hover:border-grey-300"
+            ? "border-primary/50 ring-2 ring-primary/10"
+            : "border-white/60 hover:border-white/80 hover:bg-white/80"
         }`}
       >
         {icon}
         <span className="flex-1 truncate text-left">{selected?.label}</span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-grey-400 transition-transform ${
-            open ? "rotate-180" : ""
+          className={`h-4 w-4 shrink-0 text-grey-400 transition-transform duration-300 ${
+            open ? "rotate-180 text-primary" : ""
           }`}
-          strokeWidth={2}
+          strokeWidth={1.5}
         />
       </button>
 
       {open && (
+        /* PERBAIKAN DI SINI: Ditambahkan z-50, max-h-60, overflow-y-auto, dan dihapus overflow-hidden yang membatasi */
         <div
-          className={`absolute z-20 w-full overflow-hidden rounded-xl border border-grey-200 bg-white shadow-lg ${
-            direction === "up" ? "bottom-full mb-1.5" : "mt-1.5"
+          className={`absolute z-50 w-full max-h-60 overflow-y-auto custom-scrollbar rounded-2xl border border-white/50 bg-white/90 backdrop-blur-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.15)] ${
+            direction === "up" ? "bottom-full mb-2" : "mt-2"
           }`}
         >
           {options.map((option) => {
             const isActive = option.value === value;
             return (
               <button
-                key={option.value}
+                key={String(option.value)}
                 type="button"
                 onClick={() => {
                   onChange(option.value);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-sm transition ${
+                className={`flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-sm tracking-tight transition-colors ${
                   isActive
-                    ? "bg-primary/10 font-semibold text-primary"
-                    : "text-grey-700 hover:bg-grey-50"
+                    ? "bg-primary/10 font-medium text-primary"
+                    : "text-grey-700 font-medium hover:bg-white/60"
                 }`}
               >
                 {option.label}
-                {isActive && (
-                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                {isActive && !hideCheckIcon && (
+                  <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                 )}
               </button>
             );

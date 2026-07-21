@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarClock } from "lucide-react";
 import axios from "axios";
@@ -19,6 +19,7 @@ import { useStudentModules } from "@/features/student-modules";
 import { useAdminGroups } from "@/features/admin-groups/hooks/use-admin-groups";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
 import {
   Dialog,
   DialogContent,
@@ -52,8 +53,29 @@ export function ExamSessionFormDialog({
 
   const { data: modulesRes } = useStudentModules(1, 50);
   const modules = modulesRes?.data ?? [];
+  const moduleOptions = useMemo(
+    () => [
+      { value: "", label: "Pilih modul..." },
+      ...modules.map((m) => ({
+        value: m.id,
+        label: `Modul ${m.order} — ${m.title}`,
+      })),
+    ],
+    [modules],
+  );
+
   const { data: groupsRes } = useAdminGroups({ page: 1, limit: 200 });
   const groups = groupsRes?.data ?? [];
+  const groupOptions = useMemo(
+    () => [
+      { value: "", label: "Pilih kelompok..." },
+      ...groups.map((g) => ({
+        value: g.id,
+        label: g.name,
+      })),
+    ],
+    [groups],
+  );
 
   const { mutateAsync: createSession, isPending: isCreating } =
     useCreateExamSession();
@@ -64,6 +86,7 @@ export function ExamSessionFormDialog({
   const {
     register,
     handleSubmit,
+    control,
     reset,
     setError,
     formState: { errors },
@@ -138,62 +161,66 @@ export function ExamSessionFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_12px_28px_-14px_rgba(0,101,176,0.65)]">
-              <CalendarClock className="h-7 w-7" strokeWidth={1.8} />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
+              <CalendarClock className="h-7 w-7" strokeWidth={1.5} />
             </div>
-            <DialogTitle>
+            <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
               {isEditing ? "Ubah Sesi Ujian" : "Buat Sesi Ujian"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
               {isEditing
                 ? "Kosongkan Kode Akses jika tidak ingin menggantinya."
                 : "Satu kelompok hanya bisa memiliki satu sesi per tanggal & shift."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-6 max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+          <div className="mt-6 max-h-[60vh] space-y-4 overflow-y-auto pr-1 custom-scrollbar">
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Modul Praktikum
               </label>
-              <select
-                {...register("moduleId")}
-                className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
-              >
-                <option value="">Pilih modul...</option>
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    Modul {m.order} — {m.title}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                control={control}
+                name="moduleId"
+                render={({ field }) => (
+                  <FilterDropdown<string>
+                    value={field.value}
+                    options={moduleOptions}
+                    onChange={field.onChange}
+                    widthClassName="w-full"
+                    hideCheckIcon={true}
+                  />
+                )}
+              />
               {errors.moduleId && (
-                <p className="mt-1 text-xs font-medium text-error">
+                <p className="mt-1 text-xs font-medium tracking-tight text-error">
                   {errors.moduleId.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Kelompok
               </label>
-              <select
-                {...register("groupId")}
-                className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
-              >
-                <option value="">Pilih kelompok...</option>
-                {groups.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                control={control}
+                name="groupId"
+                render={({ field }) => (
+                  <FilterDropdown<string>
+                    value={field.value}
+                    options={groupOptions}
+                    onChange={field.onChange}
+                    widthClassName="w-full"
+                    hideCheckIcon={true}
+                  />
+                )}
+              />
               {errors.groupId && (
-                <p className="mt-1 text-xs font-medium text-error">
+                <p className="mt-1 text-xs font-medium tracking-tight text-error">
                   {errors.groupId.message}
                 </p>
               )}
@@ -201,54 +228,69 @@ export function ExamSessionFormDialog({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Tanggal
                 </label>
-                <Input type="date" {...register("date")} />
+                <Input
+                  type="date"
+                  {...register("date")}
+                  className="bg-white/50 backdrop-blur-md border-white/40"
+                />
                 {errors.date && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.date.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Shift
                 </label>
-                <select
-                  {...register("shift")}
-                  className="h-11 w-full rounded-xl border border-grey-200 bg-grey-50 px-3.5 text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
-                >
-                  {SHIFT_OPTIONS.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  control={control}
+                  name="shift"
+                  render={({ field }) => (
+                    <FilterDropdown<string>
+                      value={field.value}
+                      options={SHIFT_OPTIONS as any}
+                      onChange={field.onChange}
+                      widthClassName="w-full"
+                      hideCheckIcon={true}
+                    />
+                  )}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Waktu Mulai
                 </label>
-                <Input type="time" {...register("startTime")} />
+                <Input
+                  type="time"
+                  {...register("startTime")}
+                  className="bg-white/50 backdrop-blur-md border-white/40"
+                />
                 {errors.startTime && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.startTime.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Waktu Selesai
                 </label>
-                <Input type="time" {...register("endTime")} />
+                <Input
+                  type="time"
+                  {...register("endTime")}
+                  className="bg-white/50 backdrop-blur-md border-white/40"
+                />
                 {errors.endTime && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.endTime.message}
                   </p>
                 )}
@@ -256,11 +298,12 @@ export function ExamSessionFormDialog({
             </div>
 
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Kode Akses {isEditing && "(opsional)"}
               </label>
               <Input
                 {...register("accessCode")}
+                className="bg-white/50 backdrop-blur-md border-white/40 font-mono tracking-wider"
                 placeholder={
                   isEditing
                     ? "Biarkan kosong jika tidak diubah"
@@ -268,14 +311,14 @@ export function ExamSessionFormDialog({
                 }
               />
               {errors.accessCode && (
-                <p className="mt-1 text-xs font-medium text-error">
+                <p className="mt-1 text-xs font-medium tracking-tight text-error">
                   {errors.accessCode.message}
                 </p>
               )}
             </div>
 
             {errors.root?.serverError && (
-              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
                 {errors.root.serverError.message}
               </div>
             )}
@@ -286,7 +329,7 @@ export function ExamSessionFormDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
               >
                 Batal
               </Button>
@@ -294,7 +337,7 @@ export function ExamSessionFormDialog({
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
             >
               {isPending ? "Menyimpan..." : "Simpan Sesi"}
             </Button>

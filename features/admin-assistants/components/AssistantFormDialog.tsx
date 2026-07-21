@@ -2,7 +2,7 @@
 
 import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserRoundCheck, Trash2, ImageOff } from "lucide-react";
 import axios from "axios";
@@ -70,6 +70,7 @@ export function AssistantFormDialog({
   const {
     register,
     handleSubmit,
+    control,
     watch,
     setValue,
     reset,
@@ -172,16 +173,16 @@ export function AssistantFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_12px_28px_-14px_rgba(0,101,176,0.65)]">
-              <UserRoundCheck className="h-7 w-7" strokeWidth={1.8} />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
+              <UserRoundCheck className="h-7 w-7" strokeWidth={1.5} />
             </div>
-            <DialogTitle>
+            <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
               {isEditing ? "Ubah Profil Asisten" : "Tambah Profil Asisten"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
               Foto akan otomatis dipangkas menjadi bentuk lingkaran di halaman
               publik.
             </DialogDescription>
@@ -190,7 +191,7 @@ export function AssistantFormDialog({
           <div className="mt-6 space-y-4">
             {/* Photo picker */}
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Foto Profil
               </label>
 
@@ -202,10 +203,10 @@ export function AssistantFormDialog({
                 }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
-                className={`relative flex items-center gap-4 rounded-2xl border-2 border-dashed p-4 transition ${
+                className={`relative flex items-center gap-4 rounded-2xl border-2 border-dashed p-4 backdrop-blur-md transition-all ${
                   isDragging
                     ? "border-primary bg-primary/5"
-                    : "border-grey-200 hover:border-primary/40 hover:bg-grey-50"
+                    : "border-white/60 bg-white/40 hover:border-primary/40 hover:bg-white/60 shadow-sm"
                 } cursor-pointer`}
               >
                 <input
@@ -216,7 +217,7 @@ export function AssistantFormDialog({
                   onChange={handleFileChange}
                 />
 
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-grey-200 bg-white">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/60 bg-white shadow-sm">
                   {previewUrl ? (
                     <Image
                       src={previewUrl}
@@ -227,16 +228,21 @@ export function AssistantFormDialog({
                       unoptimized
                     />
                   ) : (
-                    <ImageOff className="h-6 w-6 text-grey-300" />
+                    <ImageOff
+                      className="h-6 w-6 text-grey-300"
+                      strokeWidth={1.5}
+                    />
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="font-secondary text-xs font-semibold text-grey-700">
-                    <span className="text-primary">Klik untuk pilih</span> atau
-                    drag & drop foto
+                  <p className="font-secondary text-xs font-medium tracking-tight text-grey-700">
+                    <span className="text-primary font-semibold">
+                      Klik untuk pilih
+                    </span>{" "}
+                    atau drag & drop foto
                   </p>
-                  <p className="mt-1 font-secondary text-[11px] text-grey-500">
+                  <p className="mt-1 font-secondary text-[11px] tracking-tight text-grey-500">
                     JPG, PNG, WEBP · maks {MAX_PHOTO_SIZE_MB} MB
                   </p>
                 </div>
@@ -245,43 +251,48 @@ export function AssistantFormDialog({
                   <button
                     type="button"
                     onClick={handleRemovePhoto}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition-all hover:bg-error hover:text-white"
                     aria-label="Hapus foto"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" strokeWidth={1.5} />
                   </button>
                 )}
               </div>
 
               {photoError && (
-                <p className="mt-1.5 text-xs font-medium text-error">
+                <p className="mt-1.5 text-xs font-medium tracking-tight text-error">
                   {photoError}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Nama
               </label>
-              <Input {...register("name")} placeholder="cth. Budi Santoso" />
+              <Input
+                {...register("name")}
+                placeholder="cth. Budi Santoso"
+                className="bg-white/50 backdrop-blur-md border-white/40 font-medium tracking-tight"
+              />
               {errors.name && (
-                <p className="mt-1 text-xs font-medium text-error">
+                <p className="mt-1 text-xs font-medium tracking-tight text-error">
                   {errors.name.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Posisi / Jabatan
               </label>
               <Input
                 {...register("position")}
                 placeholder="cth. Asisten Praktikum"
+                className="bg-white/50 backdrop-blur-md border-white/40 font-medium tracking-tight"
               />
               {errors.position && (
-                <p className="mt-1 text-xs font-medium text-error">
+                <p className="mt-1 text-xs font-medium tracking-tight text-error">
                   {errors.position.message}
                 </p>
               )}
@@ -289,31 +300,38 @@ export function AssistantFormDialog({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Urutan Tampil
                 </label>
                 <Input
                   type="number"
                   min={0}
                   {...register("order", { valueAsNumber: true })}
+                  className="bg-white/50 backdrop-blur-md border-white/40 font-medium tracking-tight"
                 />
                 {errors.order && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.order.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Status
                 </label>
-                <div className="flex h-11 items-center gap-2.5 rounded-xl border border-grey-200 bg-grey-50 px-3.5">
-                  <Switch
-                    checked={isActive}
-                    onCheckedChange={(v) => setValue("isActive", v)}
+                <div className="flex h-11 items-center gap-2.5 rounded-xl border border-white/50 bg-white/40 px-3.5 backdrop-blur-md shadow-sm">
+                  <Controller
+                    control={control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   />
-                  <span className="font-secondary text-sm font-semibold text-grey-700">
+                  <span className="font-secondary text-sm font-medium tracking-tight text-grey-700">
                     {isActive ? "Aktif" : "Nonaktif"}
                   </span>
                 </div>
@@ -321,7 +339,7 @@ export function AssistantFormDialog({
             </div>
 
             {errors.root?.serverError && (
-              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
                 {errors.root.serverError.message}
               </div>
             )}
@@ -332,7 +350,7 @@ export function AssistantFormDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
               >
                 Batal
               </Button>
@@ -340,7 +358,7 @@ export function AssistantFormDialog({
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
             >
               {isUploadingPhoto
                 ? "Mengunggah foto..."

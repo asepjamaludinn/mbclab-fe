@@ -94,7 +94,12 @@ export function StudentDashboardFeature() {
         <DashboardHeader userName={user?.name} nim={user?.nim} />
 
         <section className="mt-8 space-y-7 px-5">
-          <DashboardProgressSummary userName={user?.name} group={user?.group} />
+          <DashboardProgressSummary
+            userName={user?.name}
+            group={user?.group}
+            modules={modules}
+            assistants={assistants}
+          />
 
           <DashboardQuickAccess />
 

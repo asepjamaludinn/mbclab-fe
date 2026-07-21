@@ -45,4 +45,8 @@ export const adminAssistantService = {
 
     return response.data.fileUrl;
   },
+  bulkDeleteAssistants: async (ids: string[]) => {
+    const res = await api.post("/assistant-profiles/bulk-delete", { ids });
+    return res.data;
+  },
 };

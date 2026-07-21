@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   ClipboardList,
   Download,
+  Clock,
 } from "lucide-react";
 import { generateTpReceiptPdf } from "../utils/tp-receipt";
 import { Button } from "@/shared/components/ui/button";
@@ -64,12 +65,32 @@ export function StudentSubmissionDetailFeature({
 
   const isProcessing = isUploadingFile || isSubmitting;
 
+  const studentNim = userProfile?.nim || "";
+
+  const isStudentEven = useMemo(() => {
+    if (!studentNim) return false;
+    const digitsOnly = studentNim.replace(/\D/g, "");
+    if (!digitsOnly) return false;
+    const lastDigit = parseInt(digitsOnly.slice(-1), 10);
+    if (isNaN(lastDigit)) return false;
+    return lastDigit % 2 === 0;
+  }, [studentNim]);
+
+  const studentVariantTarget: "ODD" | "EVEN" = isStudentEven ? "EVEN" : "ODD";
+
+  const filteredQuestions = moduleDetail?.questions || [];
+
+  const noQuestionsAvailable =
+    !isLoadingModule && moduleDetail !== undefined && !moduleDetail.isTpReady;
+
   const missingEnglishQuestions = useMemo(() => {
-    if (!isInter || !moduleDetail?.questions) return false;
-    return moduleDetail.questions.some(
+    if (!isInter || filteredQuestions.length === 0) return false;
+    return filteredQuestions.some(
       (q) => !q.contentEn || q.contentEn.trim() === "",
     );
-  }, [isInter, moduleDetail?.questions]);
+  }, [isInter, filteredQuestions]);
+
+  const isDownloadDisabled = noQuestionsAvailable || missingEnglishQuestions;
 
   const validateFile = (file: File | undefined | null) => {
     setSuccessMessage("");
@@ -230,83 +251,113 @@ export function StudentSubmissionDetailFeature({
             </div>
           ) : (
             <>
-              {/* === TAMPILAN DOWNLOAD SOAL TP === */}
-              {moduleDetail?.questions && moduleDetail.questions.length > 0 && (
-                <div className="mb-6 overflow-hidden rounded-[32px] border border-white/50 bg-white/80 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
-                  <div className="p-6 sm:p-7">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-primary/10 text-primary">
+              <div className="mb-6 overflow-hidden rounded-[32px] border border-white/50 bg-white/80 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
+                <div className="p-6 sm:p-7">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] ${
+                        noQuestionsAvailable
+                          ? "bg-grey-200 text-grey-500"
+                          : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {noQuestionsAvailable ? (
+                        <Clock className="h-7 w-7" strokeWidth={1.8} />
+                      ) : (
                         <ClipboardList className="h-7 w-7" strokeWidth={1.8} />
-                      </div>
-                      <div className="min-w-0 flex-1 pt-0.5">
-                        <h2 className="text-[19px] font-extrabold tracking-tight text-slate-900">
-                          {isInter
-                            ? "Preliminary Assignment Questions"
-                            : "Soal Tugas Pendahuluan"}
-                        </h2>
-                        <p className="mt-1 font-secondary text-sm font-medium text-slate-500">
-                          {isInter
-                            ? `Total of ${moduleDetail.questions.length} questions`
-                            : `Terdiri dari ${moduleDetail.questions.length} soal`}
-                        </p>
-                      </div>
+                      )}
                     </div>
-
-                    {missingEnglishQuestions ? (
-                      <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-warning/10 bg-warning/5 px-5 py-4 text-warning-700">
-                        <AlertTriangle
-                          className="mt-0.5 h-5 w-5 shrink-0 text-warning"
-                          strokeWidth={2}
-                        />
-                        <p className="font-secondary text-[13px] leading-relaxed">
-                          The English version of the questions is not fully
-                          available yet. Please contact your practicum
-                          assistant.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-info/10 bg-info/5 px-5 py-4 text-info-700">
-                        <FileText
-                          className="mt-0.5 h-5 w-5 shrink-0 text-info"
-                          strokeWidth={2}
-                        />
-                        <p className="font-secondary text-[13px] leading-relaxed">
-                          {isInter
-                            ? "Please download the PDF document to view the detailed questions and guidelines for your Preliminary Assignment."
-                            : "Silakan unduh dokumen PDF untuk melihat detail pertanyaan dan panduan dalam mengerjakan Tugas Pendahuluan Anda."}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mt-6">
-                      <Button
-                        type="button"
-                        disabled={missingEnglishQuestions}
-                        onClick={() =>
-                          generateTpReceiptPdf(
-                            userProfile?.name || "Praktikan",
-                            userProfile?.nim || "-",
-                            moduleDetail.title,
-                            moduleDetail.tpDeadline,
-                            isInter,
-                            moduleDetail.questions,
-                          )
-                        }
-                        className="h-12 w-full rounded-[20px] font-secondary text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:bg-secondary active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
-                      >
-                        <Download
-                          className="mr-2 h-4.5 w-4.5"
-                          strokeWidth={2.5}
-                        />
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <h2 className="text-[19px] font-extrabold tracking-tight text-slate-900">
                         {isInter
-                          ? "Download Questions (PDF)"
-                          : "Unduh Dokumen Soal (PDF)"}
-                      </Button>
+                          ? "Preliminary Assignment Questions"
+                          : "Soal Tugas Pendahuluan"}
+                      </h2>
+                      <p className="mt-1 font-secondary text-sm font-medium text-slate-500">
+                        {noQuestionsAvailable
+                          ? isInter
+                            ? "Not available yet"
+                            : "Belum tersedia"
+                          : isInter
+                            ? `Total of ${filteredQuestions.length} questions`
+                            : `Terdiri dari ${filteredQuestions.length} soal`}
+                      </p>
                     </div>
                   </div>
+
+                  {noQuestionsAvailable ? (
+                    <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-grey-200 bg-grey-100/60 px-5 py-4 text-grey-600">
+                      <Clock
+                        className="mt-0.5 h-5 w-5 shrink-0 text-grey-500"
+                        strokeWidth={2}
+                      />
+                      <p className="font-secondary text-[13px] leading-relaxed">
+                        {isInter
+                          ? `The practicum assistant has not prepared the Preliminary Assignment questions for the ${
+                              isStudentEven ? "Even" : "Odd"
+                            } Variant yet. Please wait and check back later. If there is no update, please contact the assistant.`
+                          : `Asisten praktikum belum menyiapkan soal Tugas Pendahuluan Variasi ${
+                              isStudentEven ? "Genap" : "Ganjil"
+                            }. Silakan tunggu dan cek kembali nanti. Apabila tidak ada update hubungi asisten.`}
+                      </p>
+                    </div>
+                  ) : missingEnglishQuestions ? (
+                    <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-warning/10 bg-warning/5 px-5 py-4 text-warning-700">
+                      <AlertTriangle
+                        className="mt-0.5 h-5 w-5 shrink-0 text-warning"
+                        strokeWidth={2}
+                      />
+                      <p className="font-secondary text-[13px] leading-relaxed">
+                        The English version of the questions is not fully
+                        available yet. Please contact your practicum assistant.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-info/10 bg-info/5 px-5 py-4 text-info-700">
+                      <FileText
+                        className="mt-0.5 h-5 w-5 shrink-0 text-info"
+                        strokeWidth={2}
+                      />
+                      <p className="font-secondary text-[13px] leading-relaxed">
+                        {isInter
+                          ? "Please download the PDF document to view the detailed questions and guidelines for your Preliminary Assignment."
+                          : "Silakan unduh dokumen PDF untuk melihat detail pertanyaan dan panduan dalam mengerjakan Tugas Pendahuluan Anda."}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-6">
+                    <Button
+                      type="button"
+                      disabled={isDownloadDisabled}
+                      onClick={() =>
+                        generateTpReceiptPdf(
+                          userProfile?.name || "Praktikan",
+                          userProfile?.nim || "-",
+                          moduleDetail!.title,
+                          moduleDetail!.tpDeadline,
+                          isInter,
+                          filteredQuestions,
+                          studentVariantTarget,
+                        )
+                      }
+                      className="h-12 w-full rounded-[20px] font-secondary text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:bg-secondary active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
+                    >
+                      <Download
+                        className="mr-2 h-4.5 w-4.5"
+                        strokeWidth={2.5}
+                      />
+                      {noQuestionsAvailable
+                        ? isInter
+                          ? "Waiting for Questions"
+                          : "Menunggu Soal Disiapkan"
+                        : isInter
+                          ? "Download Questions (PDF)"
+                          : "Unduh Dokumen Soal (PDF)"}
+                    </Button>
+                  </div>
                 </div>
-              )}
-              {/* === AKHIR TAMPILAN DOWNLOAD SOAL TP === */}
+              </div>
 
               <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/40 px-5 pb-6 pt-5 text-slate-900 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
                 <div className="relative z-10">

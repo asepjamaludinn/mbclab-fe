@@ -15,6 +15,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Switch } from "@/shared/components/ui/switch";
+import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
 import {
   Dialog,
   DialogContent,
@@ -136,69 +137,80 @@ export function ModuleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_12px_28px_-14px_rgba(0,101,176,0.65)]">
-              <BookOpenCheck className="h-7 w-7" strokeWidth={1.8} />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
+              <BookOpenCheck className="h-7 w-7" strokeWidth={1.5} />
             </div>
-            <DialogTitle>
+            <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
               {isEditing ? "Edit Modul" : "Tambah Modul"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
               {isEditing
                 ? "Perbarui informasi modul praktikum ini."
                 : "Lengkapi data untuk membuat modul praktikum baru."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-6 max-h-[65vh] space-y-4 overflow-y-auto pr-1">
+          <div className="mt-6 max-h-[65vh] space-y-4 overflow-y-auto pr-1 custom-scrollbar">
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Judul Modul
                 </label>
                 <Input
                   {...register("title")}
                   placeholder="cth. Pengenalan Jaringan"
+                  className="bg-white/50 backdrop-blur-md border-white/40"
                 />
                 {errors.title && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.title.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Urutan
                 </label>
-                <select
-                  {...register("order", { valueAsNumber: true })}
-                  className="w-full rounded-2xl border border-grey-200 bg-grey-50 px-3 py-3 font-secondary text-sm text-grey-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10"
-                >
-                  <option value={1}>Modul 1</option>
-                  <option value={2}>Modul 2</option>
-                  <option value={3}>Modul 3</option>
-                </select>
+                <Controller
+                  control={control}
+                  name="order"
+                  render={({ field }) => (
+                    <FilterDropdown<number>
+                      value={field.value}
+                      options={[
+                        { value: 1, label: "Modul 1" },
+                        { value: 2, label: "Modul 2" },
+                        { value: 3, label: "Modul 3" },
+                      ]}
+                      onChange={(val) => field.onChange(val)}
+                      widthClassName="w-full"
+                      hideCheckIcon={true}
+                    />
+                  )}
+                />
               </div>
             </div>
 
             <div>
-              <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                 Deskripsi
               </label>
               <Textarea
                 rows={3}
                 {...register("description")}
                 placeholder="Ringkasan materi modul (opsional)"
+                className="bg-white/50 backdrop-blur-md border-white/40"
               />
             </div>
 
             {/* --- Bagian Deadline TP (auto closed) --- */}
-            <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+            <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4 backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <label className="block font-secondary text-xs font-bold text-grey-700">
+                <label className="block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Deadline Pengumpulan TP
                 </label>
                 {tpDeadline && (
@@ -207,22 +219,29 @@ export function ModuleFormDialog({
                     onClick={() =>
                       setValue("tpDeadline", "", { shouldDirty: true })
                     }
-                    className="inline-flex items-center gap-1 font-secondary text-[11px] font-bold text-error hover:underline"
+                    className="inline-flex items-center gap-1 font-secondary text-[11px] font-medium tracking-tight text-error hover:underline"
                   >
-                    <X className="h-3 w-3" strokeWidth={2.5} />
+                    <X className="h-3 w-3" strokeWidth={1.5} />
                     Hapus deadline
                   </button>
                 )}
               </div>
 
-              <p className="mt-1 font-secondary text-[11px] leading-relaxed text-grey-500">
+              <p className="mt-1 font-secondary text-[11px] leading-relaxed tracking-tight text-grey-500">
                 Setelah waktu ini terlewati, praktikan{" "}
-                <strong>otomatis tidak bisa lagi mengunggah</strong> TP untuk
-                modul ini. Kosongkan jika TP tidak memiliki batas waktu.
+                <span className="font-medium text-grey-700">
+                  otomatis tidak bisa lagi mengunggah
+                </span>{" "}
+                TP untuk modul ini. Kosongkan jika TP tidak memiliki batas
+                waktu.
               </p>
 
               <div className="mt-3">
-                <Input type="datetime-local" {...register("tpDeadline")} />
+                <Input
+                  type="datetime-local"
+                  {...register("tpDeadline")}
+                  className="bg-white/50 backdrop-blur-md border-white/40"
+                />
               </div>
 
               <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -231,7 +250,7 @@ export function ModuleFormDialog({
                     key={preset.label}
                     type="button"
                     onClick={() => applyPreset(preset.hours)}
-                    className="rounded-full border border-primary/20 bg-white px-3 py-1 font-secondary text-[11px] font-bold text-primary transition hover:bg-primary hover:text-white"
+                    className="rounded-full border border-primary/20 bg-white/60 backdrop-blur-md px-3 py-1 font-secondary text-[11px] font-medium tracking-tight text-primary transition hover:bg-primary/90 hover:text-white"
                   >
                     {preset.label}
                   </button>
@@ -241,39 +260,43 @@ export function ModuleFormDialog({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Link Modul (Reguler)
                 </label>
                 <Input
                   {...register("fileUrlRegular")}
                   placeholder="https://..."
+                  className="bg-white/50 backdrop-blur-md border-white/40"
                 />
                 {errors.fileUrlRegular && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.fileUrlRegular.message}
                   </p>
                 )}
               </div>
               <div>
-                <label className="mb-1.5 block font-secondary text-xs font-bold text-grey-700">
+                <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Link Modul (Internasional)
                 </label>
                 <Input
                   {...register("fileUrlInternational")}
                   placeholder="https://..."
+                  className="bg-white/50 backdrop-blur-md border-white/40"
                 />
                 {errors.fileUrlInternational && (
-                  <p className="mt-1 text-xs font-medium text-error">
+                  <p className="mt-1 text-xs font-medium tracking-tight text-error">
                     {errors.fileUrlInternational.message}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl border border-grey-100 bg-grey-50/60 px-4 py-3">
+            <div className="flex items-center justify-between rounded-2xl border border-white/50 bg-white/40 backdrop-blur-md px-4 py-3">
               <div>
-                <p className="text-sm font-bold text-grey-900">Status Modul</p>
-                <p className="mt-0.5 font-secondary text-xs text-grey-500">
+                <p className="text-sm font-medium tracking-tight text-grey-900">
+                  Status Modul
+                </p>
+                <p className="mt-0.5 font-secondary text-xs tracking-tight text-grey-500">
                   Modul aktif akan tampil untuk praktikan
                 </p>
               </div>
@@ -290,7 +313,7 @@ export function ModuleFormDialog({
             </div>
 
             {errors.root?.serverError && (
-              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
                 {errors.root.serverError.message}
               </div>
             )}
@@ -301,7 +324,7 @@ export function ModuleFormDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
               >
                 Batal
               </Button>
@@ -309,7 +332,7 @@ export function ModuleFormDialog({
             <Button
               type="submit"
               disabled={isSaving}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
             >
               {isSaving
                 ? "Menyimpan..."

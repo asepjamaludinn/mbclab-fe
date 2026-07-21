@@ -32,10 +32,6 @@ export function ExamSelectModule({
 }: Props) {
   const activeModules = modules.filter((m) => m.isActive);
 
-  // Modul yang TA-nya sudah selesai dikerjakan (status SUBMITTED) tidak
-  // boleh lagi muncul di section "Ujian Tersedia" — cukup tampil di
-  // "Riwayat Ujian" di bawahnya. Section ini hanya untuk modul yang
-  // memang belum dikerjakan sama sekali.
   const availableModules = activeModules.filter((mod) => {
     const session = mySessions.find((s) => s.moduleId === mod.id);
     const hasSubmitted = session?.attempts?.some(
