@@ -38,13 +38,5 @@ export const useMyExamAttempts = () => {
 };
 
 export const useSyncAnswers = () => {
-  return useMutation({
-    mutationFn: (payload: {
-      sessionId: string;
-      answers: { questionId: string; selectedOption: string }[];
-    }) =>
-      api.patch(`/exam-attempts/${payload.sessionId}/sync-answers`, {
-        answers: payload.answers,
-      }),
-  });
+  return useMutation({ mutationFn: examService.syncAnswers });
 };

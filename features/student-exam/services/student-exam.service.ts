@@ -72,4 +72,18 @@ export const examService = {
     );
     return response.data;
   },
+
+  syncAnswers: async ({
+    sessionId,
+    answers,
+  }: {
+    sessionId: string;
+    answers: { questionId: string; selectedOption: string }[];
+  }) => {
+    const response = await api.patch(
+      `/exam-attempts/${sessionId}/sync-answers`,
+      { answers },
+    );
+    return response.data;
+  },
 };

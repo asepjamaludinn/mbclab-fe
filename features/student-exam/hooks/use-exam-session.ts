@@ -246,12 +246,11 @@ export function useExamSession() {
           localStorage.removeItem(`mbclab_exam_${attempt.id}`);
           return;
         }
-
         setAttempt((prev) =>
           prev
             ? {
                 ...prev,
-                status: res.attempt.status as ExamState,
+                status: res.attempt.status,
                 cheatCount: res.attempt.cheatCount,
               }
             : prev,
