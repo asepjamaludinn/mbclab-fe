@@ -16,14 +16,17 @@ import { StuckAttemptsCard } from "@/features/admin-exam-attempts";
 
 export function AdminDashboardFeature() {
   const { data: user, isLoading: isUserLoading } = useProfile("ADMIN");
+
+  const isPasswordForced = user?.mustChangePassword === true;
+
   const {
     data: summary,
     isLoading: isSummaryLoading,
     refetch,
     isRefetching,
-  } = useAdminDashboardSummary();
+  } = useAdminDashboardSummary(!isPasswordForced);
 
-  const isLoading = isUserLoading || isSummaryLoading;
+  const isLoading = isUserLoading || (isSummaryLoading && !isPasswordForced);
 
   if (isLoading) {
     return (

@@ -69,8 +69,16 @@ export function StudentDashboardFeature() {
   }
 
   const modules = modulesRes?.data || [];
+
+  // LOGIKA BARU: Cari modul aktif dari urutan paling belakang (terbaru),
+  // Jika tidak ada yang aktif, ambil modul terakhir (tertinggi).
   const activeModule =
-    modules.find((module) => module.isActive) || modules[0] || null;
+    modules
+      .slice()
+      .reverse()
+      .find((module) => module.isActive) ||
+    modules[modules.length - 1] ||
+    null;
 
   const activeSession = activeModule
     ? mySessions.find((s) => s.moduleId === activeModule.id)

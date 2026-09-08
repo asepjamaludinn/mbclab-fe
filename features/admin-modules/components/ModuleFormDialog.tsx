@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpenCheck, X } from "lucide-react";
+import { BookOpenCheck, X, ImageOff, Trash2 } from "lucide-react";
+import Image from "next/image";
 import axios from "axios";
 import {
   moduleFormSchema,
   ModuleFormData,
 } from "../schemas/admin-module.schema";
 import { AdminModule } from "../types/admin-module.type";
-import { useCreateModule, useUpdateModule } from "../hooks/use-admin-modules";
+import {
+  useCreateModule,
+  useUpdateModule,
+  useUploadModuleCover,
+} from "../hooks/use-admin-modules";
+import { resolveAssetUrl } from "@/shared/utils/asset-url";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -53,11 +59,21 @@ export function ModuleFormDialog({
   module,
 }: ModuleFormDialogProps) {
   const isEditing = !!module;
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [coverError, setCoverError] = useState("");
+
+  const { mutateAsync: uploadCover, isPending: isUploadingCover } =
+    useUploadModuleCover();
   const { mutateAsync: createModule, isPending: isCreating } =
     useCreateModule();
   const { mutateAsync: updateModule, isPending: isUpdating } =
     useUpdateModule();
-  const isSaving = isCreating || isUpdating;
+
+  const isSaving = isCreating || isUpdating || isUploadingCover;
 
   const {
     register,
@@ -69,7 +85,7 @@ export function ModuleFormDialog({
     setError,
     formState: { errors },
   } = useForm<ModuleFormData>({
-    resolver: zodResolver(moduleFormSchema) as any,
+    resolver: zodResolver(moduleFormSchema),
     defaultValues: {
       title: "",
       order: 1,
@@ -78,24 +94,81 @@ export function ModuleFormDialog({
       tpDeadline: "",
       fileUrlRegular: "",
       fileUrlInternational: "",
+      coverUrl: "",
     },
   });
 
   const tpDeadline = watch("tpDeadline");
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+
+    setSelectedFile(null);
+    setCoverError("");
+
+    if (module) {
       reset({
-        title: module?.title ?? "",
-        order: module?.order ?? 1,
-        description: module?.description ?? "",
-        isActive: module?.isActive ?? true,
-        tpDeadline: toDatetimeLocal(module?.tpDeadline),
-        fileUrlRegular: module?.fileUrlRegular ?? "",
-        fileUrlInternational: module?.fileUrlInternational ?? "",
+        title: module.title,
+        order: module.order,
+        description: module.description ?? "",
+        isActive: module.isActive,
+        tpDeadline: toDatetimeLocal(module.tpDeadline),
+        fileUrlRegular: module.fileUrlRegular ?? "",
+        fileUrlInternational: module.fileUrlInternational ?? "",
+        coverUrl: module.coverUrl ?? "",
       });
+      setPreviewUrl(resolveAssetUrl(module.coverUrl));
+    } else {
+      reset({
+        title: "",
+        order: 1,
+        description: "",
+        isActive: true,
+        tpDeadline: "",
+        fileUrlRegular: "",
+        fileUrlInternational: "",
+        coverUrl: "",
+      });
+      setPreviewUrl("");
     }
   }, [open, module, reset]);
+
+  const validateAndSetFile = (file: File | undefined | null) => {
+    setCoverError("");
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setCoverError("Format cover harus JPG, PNG, atau WEBP.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setCoverError("Ukuran cover maksimal 2 MB.");
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    validateAndSetFile(e.target.files?.[0]);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    validateAndSetFile(e.dataTransfer.files?.[0]);
+  };
+
+  const handleRemoveCover = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setPreviewUrl(
+      isEditing && module?.coverUrl ? resolveAssetUrl(module.coverUrl) : "",
+    );
+    setCoverError("");
+    if (inputRef.current) inputRef.current.value = "";
+  };
 
   const applyPreset = (hours: number) => {
     const target = new Date(Date.now() + hours * 60 * 60 * 1000);
@@ -105,19 +178,28 @@ export function ModuleFormDialog({
   };
 
   const onSubmit = async (data: ModuleFormData) => {
-    const payload = {
-      title: data.title,
-      order: data.order,
-      description: data.description || undefined,
-      isActive: data.isActive,
-      tpDeadline: data.tpDeadline
-        ? new Date(data.tpDeadline).toISOString()
-        : undefined,
-      fileUrlRegular: data.fileUrlRegular || undefined,
-      fileUrlInternational: data.fileUrlInternational || undefined,
-    };
-
     try {
+      let finalCoverUrl = module?.coverUrl || undefined;
+
+      if (selectedFile) {
+        finalCoverUrl = await uploadCover(selectedFile);
+      } else if (!previewUrl) {
+        finalCoverUrl = "";
+      }
+
+      const payload = {
+        title: data.title,
+        order: data.order,
+        description: data.description || undefined,
+        isActive: data.isActive,
+        tpDeadline: data.tpDeadline
+          ? new Date(data.tpDeadline).toISOString()
+          : undefined,
+        fileUrlRegular: data.fileUrlRegular || undefined,
+        fileUrlInternational: data.fileUrlInternational || undefined,
+        coverUrl: finalCoverUrl,
+      };
+
       if (isEditing && module) {
         await updateModule({ id: module.id, payload });
       } else {
@@ -137,7 +219,7 @@ export function ModuleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
+      <DialogContent className="sm:max-w-xl w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
@@ -148,12 +230,87 @@ export function ModuleFormDialog({
             </DialogTitle>
             <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
               {isEditing
-                ? "Perbarui informasi modul praktikum ini."
+                ? "Perbarui informasi dan dokumen modul praktikum ini."
                 : "Lengkapi data untuk membuat modul praktikum baru."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-6 max-h-[65vh] space-y-4 overflow-y-auto pr-1 custom-scrollbar">
+          <div className="mt-6 max-h-[60vh] space-y-5 overflow-y-auto pr-2 custom-scrollbar">
+            <div>
+              <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
+                Cover Modul (Opsional)
+              </label>
+              <div
+                onClick={() => inputRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`relative flex items-center gap-4 rounded-2xl border-2 border-dashed p-4 backdrop-blur-md transition-all ${
+                  isDragging
+                    ? "border-primary bg-primary/5"
+                    : "border-white/60 bg-white/40 hover:border-primary/40 hover:bg-white/60 shadow-sm"
+                } cursor-pointer`}
+              >
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
+                <div className="flex h-20 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/60 bg-white shadow-sm">
+                  {previewUrl ? (
+                    <Image
+                      src={previewUrl}
+                      alt="Preview"
+                      width={56}
+                      height={80}
+                      className="h-full w-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <ImageOff
+                      className="h-6 w-6 text-grey-300"
+                      strokeWidth={1.5}
+                    />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-secondary text-xs font-medium tracking-tight text-grey-700">
+                    <span className="text-primary font-semibold">
+                      Klik untuk pilih
+                    </span>{" "}
+                    atau drag & drop gambar
+                  </p>
+                  <p className="mt-1 font-secondary text-[10px] tracking-tight text-grey-500">
+                    Proporsi buku (potret) sangat disarankan · JPG/PNG/WEBP ·
+                    Maks 2MB
+                  </p>
+                </div>
+
+                {previewUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveCover}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition-all hover:bg-error hover:text-white"
+                    aria-label="Hapus cover"
+                  >
+                    <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                )}
+              </div>
+              {coverError && (
+                <p className="mt-1.5 text-xs font-medium tracking-tight text-error">
+                  {coverError}
+                </p>
+              )}
+            </div>
+
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
                 <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
@@ -170,7 +327,6 @@ export function ModuleFormDialog({
                   </p>
                 )}
               </div>
-
               <div>
                 <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
                   Urutan
@@ -207,7 +363,6 @@ export function ModuleFormDialog({
               />
             </div>
 
-            {/* --- Bagian Deadline TP (auto closed) --- */}
             <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4 backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <label className="block font-secondary text-xs font-medium tracking-tight text-grey-700">
@@ -221,29 +376,25 @@ export function ModuleFormDialog({
                     }
                     className="inline-flex items-center gap-1 font-secondary text-[11px] font-medium tracking-tight text-error hover:underline"
                   >
-                    <X className="h-3 w-3" strokeWidth={1.5} />
-                    Hapus deadline
+                    <X className="h-3 w-3" strokeWidth={1.5} /> Hapus deadline
                   </button>
                 )}
               </div>
-
               <p className="mt-1 font-secondary text-[11px] leading-relaxed tracking-tight text-grey-500">
                 Setelah waktu ini terlewati, praktikan{" "}
                 <span className="font-medium text-grey-700">
                   otomatis tidak bisa lagi mengunggah
                 </span>{" "}
-                TP untuk modul ini. Kosongkan jika TP tidak memiliki batas
-                waktu.
+                TP.
               </p>
-
               <div className="mt-3">
                 <Input
                   type="datetime-local"
+                  lang="en-GB"
                   {...register("tpDeadline")}
                   className="bg-white/50 backdrop-blur-md border-white/40"
                 />
               </div>
-
               <div className="mt-2.5 flex flex-wrap gap-1.5">
                 {DEADLINE_PRESETS.map((preset) => (
                   <button
@@ -276,7 +427,7 @@ export function ModuleFormDialog({
               </div>
               <div>
                 <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
-                  Link Modul (Internasional)
+                  Link Modul (Intl)
                 </label>
                 <Input
                   {...register("fileUrlInternational")}
@@ -334,11 +485,13 @@ export function ModuleFormDialog({
               disabled={isSaving}
               className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
             >
-              {isSaving
-                ? "Menyimpan..."
-                : isEditing
-                  ? "Simpan Perubahan"
-                  : "Buat Modul"}
+              {isUploadingCover
+                ? "Upload Cover..."
+                : isSaving
+                  ? "Menyimpan..."
+                  : isEditing
+                    ? "Simpan Perubahan"
+                    : "Buat Modul"}
             </Button>
           </DialogFooter>
         </form>

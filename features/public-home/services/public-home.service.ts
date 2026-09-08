@@ -32,6 +32,8 @@ export const publicHomeService = {
       isActive: module.isActive,
       fileUrlRegular: module.fileUrlRegular,
       fileUrlInternational: module.fileUrlInternational,
+      coverUrl: module.coverUrl,
+      order: module.order,
     }));
   },
 };

@@ -12,7 +12,7 @@ export const useAdminModules = (page = 1, limit = 20) => {
     queryKey: ["admin-modules", page, limit],
     queryFn: () => adminModuleService.getModules(page, limit),
   });
-};  
+};
 
 export const useCreateModule = () => {
   const qc = useQueryClient();
@@ -42,5 +42,11 @@ export const useDeleteModule = () => {
   return useMutation({
     mutationFn: (id: string) => adminModuleService.deleteModule(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-modules"] }),
+  });
+};
+
+export const useUploadModuleCover = () => {
+  return useMutation({
+    mutationFn: (file: File) => adminModuleService.uploadCover(file),
   });
 };

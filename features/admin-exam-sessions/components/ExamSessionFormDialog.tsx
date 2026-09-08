@@ -105,7 +105,7 @@ export function ExamSessionFormDialog({
         shift: session.shift,
         startTime: toTimeInputValue(session.startTime),
         endTime: toTimeInputValue(session.endTime),
-        accessCode: "",
+        accessCode: session.accessCode || "",
       });
     } else {
       reset({
@@ -171,9 +171,7 @@ export function ExamSessionFormDialog({
               {isEditing ? "Ubah Sesi Ujian" : "Buat Sesi Ujian"}
             </DialogTitle>
             <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
-              {isEditing
-                ? "Kosongkan Kode Akses jika tidak ingin menggantinya."
-                : "Satu kelompok hanya bisa memiliki satu sesi per tanggal & shift."}
+              Satu kelompok hanya bisa memiliki satu sesi per tanggal & shift.
             </DialogDescription>
           </DialogHeader>
 
@@ -233,6 +231,7 @@ export function ExamSessionFormDialog({
                 </label>
                 <Input
                   type="date"
+                  lang="en-GB"
                   {...register("date")}
                   className="bg-white/50 backdrop-blur-md border-white/40"
                 />
@@ -270,6 +269,7 @@ export function ExamSessionFormDialog({
                 </label>
                 <Input
                   type="time"
+                  lang="en-GB"
                   {...register("startTime")}
                   className="bg-white/50 backdrop-blur-md border-white/40"
                 />
@@ -286,6 +286,7 @@ export function ExamSessionFormDialog({
                 </label>
                 <Input
                   type="time"
+                  lang="en-GB"
                   {...register("endTime")}
                   className="bg-white/50 backdrop-blur-md border-white/40"
                 />
@@ -299,17 +300,18 @@ export function ExamSessionFormDialog({
 
             <div>
               <label className="mb-1.5 block font-secondary text-xs font-medium tracking-tight text-grey-700">
-                Kode Akses {isEditing && "(opsional)"}
+                Kode Akses
               </label>
               <Input
                 {...register("accessCode")}
                 className="bg-white/50 backdrop-blur-md border-white/40 font-mono tracking-wider"
-                placeholder={
-                  isEditing
-                    ? "Biarkan kosong jika tidak diubah"
-                    : "cth. MBCLAB123"
-                }
+                placeholder="cth. MBCLAB123"
               />
+              {isEditing && (
+                <p className="mt-1.5 font-secondary text-[11px] font-medium text-grey-500">
+                  Biarkan jika tidak ingin diubah.
+                </p>
+              )}
               {errors.accessCode && (
                 <p className="mt-1 text-xs font-medium tracking-tight text-error">
                   {errors.accessCode.message}

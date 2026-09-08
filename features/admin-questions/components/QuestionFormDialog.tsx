@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HelpCircle } from "lucide-react";
 import axios from "axios";
@@ -98,11 +98,13 @@ export function QuestionFormDialog({
     setError,
     formState: { errors },
   } = useForm<QuestionFormData>({
-    resolver: zodResolver(questionFormSchema),
-    defaultValues: { type: "TA" },
+    resolver: zodResolver(questionFormSchema) as any,
+    defaultValues: { type: "TA", tpVariant: "ALL" },
   });
 
   const selectedType = watch("type");
+  const hasValidationErrors =
+    Object.keys(errors).filter((k) => k !== "root").length > 0;
 
   useEffect(() => {
     if (!open) return;
@@ -149,6 +151,30 @@ export function QuestionFormDialog({
     }
   }, [open, question, defaultModuleId, reset]);
 
+  // LOGIKA BARU: Jika error saat submit, cek tab mana yang error lalu pindah otomatis
+  const onInvalid = (validationErrors: FieldErrors<QuestionFormData>) => {
+    if (
+      validationErrors.content ||
+      validationErrors.optionA ||
+      validationErrors.optionB ||
+      validationErrors.optionC ||
+      validationErrors.optionD ||
+      validationErrors.optionE ||
+      validationErrors.correctAnswer
+    ) {
+      setLangTab("ID");
+    } else if (
+      validationErrors.contentEn ||
+      validationErrors.optionAEn ||
+      validationErrors.optionBEn ||
+      validationErrors.optionCEn ||
+      validationErrors.optionDEn ||
+      validationErrors.optionEEn
+    ) {
+      setLangTab("EN");
+    }
+  };
+
   const onSubmit = async (data: QuestionFormData) => {
     const correctAnswer =
       data.correctAnswer === "" ? undefined : data.correctAnswer;
@@ -159,7 +185,7 @@ export function QuestionFormDialog({
         : {
             moduleId: data.moduleId,
             type: data.type,
-            tpVariant: data.tpVariant ?? "ALL", // FIX: sebelumnya tidak dikirim sama sekali
+            tpVariant: data.tpVariant ?? "ALL",
             content: data.content,
             contentEn: data.contentEn,
           };
@@ -185,7 +211,7 @@ export function QuestionFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
           <DialogHeader className="text-left">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/90 text-white shadow-xl shadow-primary/20 backdrop-blur-md">
               <HelpCircle className="h-7 w-7" strokeWidth={1.5} />
@@ -393,6 +419,14 @@ export function QuestionFormDialog({
                     {errors.correctAnswer.message}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Indikator Validasi Error UI Baru */}
+            {hasValidationErrors && (
+              <div className="rounded-2xl border border-warning/15 bg-warning/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-warning-700 backdrop-blur-md">
+                Ada isian yang masih kosong atau belum sesuai. Silakan periksa
+                kembali tanda merah pada form.
               </div>
             )}
 

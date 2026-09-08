@@ -32,12 +32,18 @@ export function ExamSelectModule({
 }: Props) {
   const activeModules = modules.filter((m) => m.isActive);
 
+  const finishedAttempts = myAttempts.filter(
+    (a) =>
+      a.status === "SUBMITTED" ||
+      a.status === "DISQUALIFIED" ||
+      a.cheatCount >= 5,
+  );
+
   const availableModules = activeModules.filter((mod) => {
-    const session = mySessions.find((s) => s.moduleId === mod.id);
-    const hasSubmitted = session?.attempts?.some(
-      (a) => a.status === "SUBMITTED",
+    const isFinished = finishedAttempts.some(
+      (a) => a.session.module.title === mod.title,
     );
-    return !hasSubmitted;
+    return !isFinished;
   });
 
   return (
@@ -192,14 +198,16 @@ export function ExamSelectModule({
           )}
         </section>
 
-        {!isLoadingData && myAttempts.length > 0 && (
+        {/* HANYA MAPPING finishedAttempts UNTUK RIWAYAT */}
+        {!isLoadingData && finishedAttempts.length > 0 && (
           <section className="mt-10 space-y-4 px-5">
             <h2 className="text-xl font-extrabold text-white drop-shadow-sm">
               Riwayat Ujian
             </h2>
 
-            {myAttempts.map((attempt) => {
-              const isDisqualified = attempt.cheatCount >= 5;
+            {finishedAttempts.map((attempt) => {
+              const isDisqualified =
+                attempt.status === "DISQUALIFIED" || attempt.cheatCount >= 5;
               const statusLabel = isDisqualified
                 ? "Didiskualifikasi"
                 : "Selesai";

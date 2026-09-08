@@ -77,22 +77,26 @@ export function QuestionsFeature() {
     {
       key: "module",
       header: "Modul",
+      cellClassName: "px-6 py-5 align-top",
       render: (q) => (
-        <span className="whitespace-nowrap font-secondary text-sm font-medium tracking-tight text-grey-900">
-          Modul{" "}
-          {q.module?.order ??
-            modules.find((m) => m.id === q.moduleId)?.order ??
-            "-"}
-        </span>
+        <div className="pt-0.5">
+          <span className="whitespace-nowrap font-secondary text-sm font-medium tracking-tight text-grey-900">
+            Modul{" "}
+            {q.module?.order ??
+              modules.find((m) => m.id === q.moduleId)?.order ??
+              "-"}
+          </span>
+        </div>
       ),
     },
     {
       key: "type",
       header: "Jenis",
+      cellClassName: "px-6 py-5 align-top",
       render: (q) => (
-        <div className="flex gap-1">
+        <div className="flex flex-col items-start gap-1.5 pt-0.5">
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-medium tracking-tight backdrop-blur-md border ${
+            className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-bold tracking-tight backdrop-blur-md border ${
               q.type === "TA"
                 ? "bg-warning/10 text-warning-700 border-warning/10"
                 : "bg-info/10 text-info-700 border-info/10"
@@ -101,7 +105,7 @@ export function QuestionsFeature() {
             {q.type}
           </span>
           {q.type === "TP" && q.tpVariant && q.tpVariant !== "ALL" && (
-            <span className="inline-flex items-center rounded-full bg-grey-100 px-2 py-1 font-secondary text-[10px] font-medium text-grey-600">
+            <span className="inline-flex items-center rounded-full bg-grey-100 border border-grey-200 px-2 py-0.5 font-secondary text-[10px] font-semibold text-grey-600">
               {q.tpVariant === "EVEN" ? "Genap" : "Ganjil"}
             </span>
           )}
@@ -111,35 +115,67 @@ export function QuestionsFeature() {
     {
       key: "content",
       header: "Pertanyaan",
-      cellClassName: "px-6 py-4 max-w-sm lg:max-w-md",
+      cellClassName:
+        "px-6 py-5 align-top max-w-xs sm:max-w-sm lg:max-w-2xl xl:max-w-3xl",
       render: (q) => (
-        <p
-          className="line-clamp-2 text-sm font-medium tracking-tight text-grey-900"
-          title={q.content}
-        >
-          {q.content}
-        </p>
+        <div className="flex flex-col gap-2.5">
+          {/* Pertanyaan ID */}
+          <div className="flex items-start gap-3">
+            <span className="mt-[3px] flex h-5 w-7 shrink-0 items-center justify-center rounded border border-primary/20 bg-primary/10 font-secondary text-[9px] font-extrabold tracking-wider text-primary">
+              ID
+            </span>
+            <p className="text-[13px] font-medium leading-relaxed tracking-tight text-grey-900 whitespace-pre-wrap">
+              {q.content}
+            </p>
+          </div>
+
+          {/* Pertanyaan EN */}
+          {q.contentEn ? (
+            <div className="flex items-start gap-3">
+              <span className="mt-[3px] flex h-5 w-7 shrink-0 items-center justify-center rounded border border-grey-300 bg-grey-200/50 font-secondary text-[9px] font-extrabold tracking-wider text-grey-600">
+                EN
+              </span>
+              <p className="text-[13px] font-medium leading-relaxed tracking-tight text-grey-500 whitespace-pre-wrap">
+                {q.contentEn}
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <div className="w-7 shrink-0" />
+              <p className="mt-1 font-secondary text-[11px] italic text-grey-400">
+                *Belum ada terjemahan bahasa Inggris
+              </p>
+            </div>
+          )}
+        </div>
       ),
     },
     {
       key: "answer",
       header: "Answer",
-      render: (q) =>
-        q.type === "TA" ? (
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-success/10 border border-success/10 backdrop-blur-md font-secondary text-xs font-medium tracking-tight text-success">
-            {q.correctAnswer}
-          </span>
-        ) : (
-          <span className="font-secondary text-xs text-grey-400">-</span>
-        ),
+      cellClassName: "px-6 py-5 align-top",
+      render: (q) => (
+        <div className="pt-0.5">
+          {q.type === "TA" ? (
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-success/10 border border-success/10 backdrop-blur-md font-secondary text-xs font-bold tracking-tight text-success">
+              {q.correctAnswer}
+            </span>
+          ) : (
+            <span className="font-secondary text-xs font-medium text-grey-400">
+              -
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       key: "actions",
       header: "Aksi",
       headerClassName:
-        "px-6 py-3.5 text-right font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+      cellClassName: "px-6 py-5 align-top",
       render: (q) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-start justify-end gap-1.5 pt-0.5">
           <button
             onClick={() => {
               setEditingQuestion(q);
@@ -259,7 +295,7 @@ export function QuestionsFeature() {
       />
       <BulkDeleteQuestionsDialog
         questions={selectedItems}
-        open={bulkDeleteOpen}
+        open={bulkDeleteOpen} 
         onOpenChange={setBulkDeleteOpen}
         onDeleted={clearSelection}
       />

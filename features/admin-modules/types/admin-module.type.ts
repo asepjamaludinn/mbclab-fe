@@ -7,6 +7,7 @@ export type AdminModule = {
   tpDeadline: string | null;
   fileUrlRegular: string | null;
   fileUrlInternational: string | null;
+  coverUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -24,6 +25,7 @@ export type CreateModulePayload = {
   tpDeadline?: string;
   fileUrlRegular?: string;
   fileUrlInternational?: string;
+  coverUrl?: string;
 };
 
 export type UpdateModulePayload = Partial<CreateModulePayload>;

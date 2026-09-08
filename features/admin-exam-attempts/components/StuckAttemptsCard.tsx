@@ -8,10 +8,17 @@ import {
 } from "../hooks/use-admin-exam-attempts";
 import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { StuckAttempt } from "../types/admin-exam-attempt.type";
+import { useProfile } from "@/features/auth";
 
 export function StuckAttemptsCard() {
-  const { data: attempts = [], isLoading } = useStuckAttempts();
+  const { data: user } = useProfile("ADMIN");
+  const isPasswordForced = user?.mustChangePassword === true;
+
+  const { data: attempts = [], isLoading: isStuckLoading } =
+    useStuckAttempts(!isPasswordForced);
   const { mutate: forceSubmit, isPending, variables } = useForceSubmitAttempt();
+
+  const isLoading = isStuckLoading && !isPasswordForced;
 
   if (isLoading) {
     return (
@@ -23,6 +30,7 @@ export function StuckAttemptsCard() {
     {
       key: "student",
       header: "Mahasiswa",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
         <div className="flex flex-col gap-0.5">
           <p className="font-medium tracking-tight text-grey-900">
@@ -37,6 +45,7 @@ export function StuckAttemptsCard() {
     {
       key: "module",
       header: "Modul & Kelompok",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
         <div className="flex flex-col gap-0.5">
           <p className="font-medium tracking-tight text-grey-900">
@@ -51,8 +60,9 @@ export function StuckAttemptsCard() {
     {
       key: "expired",
       header: "Kedaluwarsa",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
-        <span className="font-secondary text-xs tracking-tight text-grey-600">
+        <span className="font-secondary text-xs font-medium tracking-tight text-grey-600">
           {new Date(attempt.expiredAt).toLocaleString("id-ID")}
         </span>
       ),
@@ -60,12 +70,14 @@ export function StuckAttemptsCard() {
     {
       key: "actions",
       header: "Aksi",
-      headerClassName: "text-right",
+      headerClassName:
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500 whitespace-nowrap",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
         <div className="flex justify-end">
           <Button
             variant="danger"
-            className="h-8 rounded-lg px-3 text-xs font-medium tracking-tight shadow-sm"
+            className="h-8 rounded-lg px-3 text-xs font-medium tracking-tight shadow-sm whitespace-nowrap"
             disabled={isPending && variables === attempt.id}
             onClick={() => forceSubmit(attempt.id)}
           >
@@ -92,18 +104,20 @@ export function StuckAttemptsCard() {
         )}
       </div>
 
-      <DataTable
-        columns={columns}
-        data={attempts}
-        rowKey={(a) => a.id}
-        emptyTitle="Tidak ada attempt yang macet."
-        emptyDescription="Sweep otomatis berjalan tiap menit."
-        page={1}
-        pageSize={attempts.length || 10}
-        totalItems={attempts.length}
-        onPageChange={() => {}}
-        pageSizeOptions={[]}
-      />
+      <div className="p-1.5">
+        <DataTable
+          columns={columns}
+          data={attempts}
+          rowKey={(a) => a.id}
+          emptyTitle="Tidak ada attempt yang macet."
+          emptyDescription="Sweep otomatis berjalan tiap menit."
+          page={1}
+          pageSize={attempts.length || 10}
+          totalItems={attempts.length}
+          onPageChange={() => {}}
+          pageSizeOptions={[]}
+        />
+      </div>
     </div>
   );
 }

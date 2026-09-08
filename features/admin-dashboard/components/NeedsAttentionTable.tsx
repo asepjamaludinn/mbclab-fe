@@ -56,6 +56,7 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
     {
       key: "student",
       header: "Mahasiswa",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
         <div>
           <p className="font-medium tracking-tight text-grey-900">
@@ -70,6 +71,7 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
     {
       key: "module",
       header: "Modul & Shift",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
         <div>
           <p className="font-medium tracking-tight text-grey-900">
@@ -84,8 +86,9 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
     {
       key: "blockedAt",
       header: "Waktu Blokir",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => (
-        <span className="text-xs text-grey-600">
+        <span className="text-xs font-medium text-grey-600">
           {attempt.blockedAt
             ? new Date(attempt.blockedAt).toLocaleTimeString("id-ID", {
                 hour: "2-digit",
@@ -99,6 +102,7 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
     {
       key: "unblockCode",
       header: "Kode Unblock",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => {
         const expiresAt = attempt.unblockCodeExpiresAt
           ? new Date(attempt.unblockCodeExpiresAt).getTime()
@@ -119,6 +123,7 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
     {
       key: "status",
       header: "Status",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => {
         const expiresAt = attempt.unblockCodeExpiresAt
           ? new Date(attempt.unblockCodeExpiresAt).getTime()
@@ -151,7 +156,9 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
     {
       key: "actions",
       header: "Aksi",
-      headerClassName: "text-right",
+      headerClassName:
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500 whitespace-nowrap",
+      cellClassName: "px-6 py-4 whitespace-nowrap",
       render: (attempt) => {
         const expiresAt = attempt.unblockCodeExpiresAt
           ? new Date(attempt.unblockCodeExpiresAt).getTime()
@@ -166,7 +173,7 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
             <button
               onClick={() => handleRegenerate(attempt.id)}
               disabled={isRegeneratingThis}
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium tracking-tight transition disabled:cursor-not-allowed disabled:opacity-50 ${isExpired ? "border-primary bg-primary text-white shadow-md hover:bg-secondary backdrop-blur-md" : "border-white/50 text-grey-600 hover:bg-white/80 bg-white/40 shadow-sm backdrop-blur-md"}`}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium tracking-tight whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50 ${isExpired ? "border-primary bg-primary text-white shadow-md hover:bg-secondary backdrop-blur-md" : "border-grey-200 text-grey-700 hover:bg-grey-50 bg-white shadow-sm"}`}
             >
               <RotateCw
                 className={`h-3.5 w-3.5 ${isRegeneratingThis ? "animate-spin" : ""}`}
@@ -193,18 +200,20 @@ export function NeedsAttentionTable({ data }: NeedsAttentionTableProps) {
         )}
       </div>
 
-      <DataTable
-        columns={columns}
-        data={data}
-        rowKey={(a) => a.id}
-        emptyIcon={Activity}
-        emptyTitle="Tidak ada sesi terblokir"
-        page={1}
-        pageSize={data.length || 10}
-        totalItems={data.length}
-        onPageChange={() => {}}
-        pageSizeOptions={[]}
-      />
+      <div className="p-1.5">
+        <DataTable
+          columns={columns}
+          data={data}
+          rowKey={(a) => a.id}
+          emptyIcon={Activity}
+          emptyTitle="Tidak ada sesi terblokir"
+          page={1}
+          pageSize={data.length || 10}
+          totalItems={data.length}
+          onPageChange={() => {}}
+          pageSizeOptions={[]}
+        />
+      </div>
     </div>
   );
 }

@@ -3,11 +3,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { adminDashboardService } from "../services/admin-dashboard.service";
 
-export const useAdminDashboardSummary = () => {
+export const useAdminDashboardSummary = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["admin-dashboard-summary"],
     queryFn: adminDashboardService.getSummary,
     refetchInterval: 10 * 1000,
     refetchIntervalInBackground: false,
+    enabled,
   });
 };

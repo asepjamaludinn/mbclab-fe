@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, CalendarClock, Pencil, Trash2, Users } from "lucide-react";
+import {
+  Plus,
+  CalendarClock,
+  Pencil,
+  Trash2,
+  Users,
+  KeyRound,
+} from "lucide-react";
 import { useAdminExamSessions } from "../hooks/use-admin-exam-sessions";
 import { AdminExamSession } from "../types/admin-exam-session.type";
 import { getShiftLabel } from "../constants/admin-exam-session.constant";
@@ -85,6 +92,17 @@ export function ExamSessionsFeature() {
             hour: "2-digit",
             minute: "2-digit",
           })}
+        </span>
+      ),
+    },
+
+    {
+      key: "accessCode",
+      header: "Kode Akses",
+      render: (s) => (
+        <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-2.5 py-1 font-mono text-[13px] font-bold tracking-widest text-primary shadow-sm backdrop-blur-md">
+          <KeyRound className="h-3.5 w-3.5" strokeWidth={2} />
+          {s.accessCode}
         </span>
       ),
     },

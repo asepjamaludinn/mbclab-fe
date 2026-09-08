@@ -6,6 +6,7 @@ export const moduleFormSchema = z.object({
   description: z.string().optional(),
   isActive: z.boolean(),
   tpDeadline: z.string().optional(),
+  coverUrl: z.string().optional(),
   fileUrlRegular: z
     .string()
     .optional()

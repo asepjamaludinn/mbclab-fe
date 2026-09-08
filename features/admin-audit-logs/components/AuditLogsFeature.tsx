@@ -38,7 +38,7 @@ export function AuditLogsFeature() {
     dateTo: dateTo || undefined,
     page,
     limit: pageSize,
-  } as any);
+  });
 
   const logs = data?.data ?? [];
   const meta = data?.meta;
@@ -141,6 +141,7 @@ export function AuditLogsFeature() {
         <div className="flex items-center gap-2">
           <Input
             type="date"
+            lang="en-GB"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
             className="h-11 w-full sm:w-40"
@@ -148,6 +149,7 @@ export function AuditLogsFeature() {
           <span className="font-secondary text-xs text-grey-400">s/d</span>
           <Input
             type="date"
+            lang="en-GB"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
             className="h-11 w-full sm:w-40"

@@ -14,6 +14,8 @@ export type PublicModule = {
   isActive: boolean;
   fileUrlRegular: string | null;
   fileUrlInternational: string | null;
+  coverUrl: string | null;
+  order: number;
 };
 
 export type PublicQuickMenu = {
@@ -51,6 +53,7 @@ export type PublicModuleApiResponse = {
   fileUrlInternational: string | null;
   order: number;
   tpDeadline: string | null;
+  coverUrl: string | null;
 };
 
 export type HeroCard = {
