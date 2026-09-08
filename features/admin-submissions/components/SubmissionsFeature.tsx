@@ -11,6 +11,7 @@ import { resolveAssetUrl } from "@/shared/utils/asset-url";
 import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
 import { PreviewSubmissionDialog } from "./PreviewSubmissionDialog";
+import { AdminPageLayout } from "@/shared/components/layout/AdminPageLayout";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -76,14 +77,14 @@ export function SubmissionsFeature() {
       header: "Praktikan",
       render: (s) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-bold text-primary">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-medium text-primary">
             {getInitials(s.student.name)}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-grey-900">
+            <p className="truncate text-sm font-medium tracking-tight text-grey-900">
               {s.student.name}
             </p>
-            <p className="font-secondary text-xs text-grey-500">
+            <p className="font-secondary text-xs tracking-tight text-grey-500">
               {s.student.nim}
             </p>
           </div>
@@ -95,11 +96,11 @@ export function SubmissionsFeature() {
       header: "Kelompok",
       render: (s) =>
         s.student.group?.name ? (
-          <span className="font-secondary text-sm text-grey-600">
+          <span className="font-secondary text-sm tracking-tight text-grey-600">
             {s.student.group.name}
           </span>
         ) : (
-          <span className="font-secondary text-sm text-grey-400">
+          <span className="font-secondary text-sm tracking-tight text-grey-400">
             Belum ada
           </span>
         ),
@@ -108,7 +109,7 @@ export function SubmissionsFeature() {
       key: "module",
       header: "Modul",
       render: (s) => (
-        <span className="font-secondary text-sm text-grey-700">
+        <span className="font-secondary text-sm tracking-tight text-grey-700">
           {s.module.title}
         </span>
       ),
@@ -117,7 +118,7 @@ export function SubmissionsFeature() {
       key: "createdAt",
       header: "Dikumpulkan",
       render: (s) => (
-        <span className="font-secondary text-sm text-grey-600">
+        <span className="font-secondary text-sm tracking-tight text-grey-600">
           {new Date(s.createdAt).toLocaleString("id-ID", {
             dateStyle: "medium",
             timeStyle: "short",
@@ -130,8 +131,10 @@ export function SubmissionsFeature() {
       header: "Status",
       render: (s) => (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-xs font-bold ${
-            s.isLate ? "bg-error/10 text-error" : "bg-success/10 text-success"
+          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-medium tracking-tight backdrop-blur-md border ${
+            s.isLate
+              ? "bg-error/10 text-error border-error/10"
+              : "bg-success/10 text-success border-success/10"
           }`}
         >
           {s.isLate ? "Terlambat" : "Tepat Waktu"}
@@ -142,27 +145,23 @@ export function SubmissionsFeature() {
       key: "actions",
       header: "Aksi",
       headerClassName:
-        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
       render: (s) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => setPreviewingSubmission(s)}
-            title="Lihat PDF"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-primary/10 hover:text-primary"
-            aria-label="Lihat file PDF"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-primary hover:shadow-sm"
           >
-            <Eye className="h-4 w-4" strokeWidth={2} />
+            <Eye className="h-4 w-4" strokeWidth={1.5} />
           </button>
 
           <a
             href={resolveAssetUrl(s.fileUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            title="Buka di Tab Baru"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-primary/10 hover:text-primary"
-            aria-label="Buka file di tab baru"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-primary hover:shadow-sm"
           >
-            <ExternalLink className="h-4 w-4" strokeWidth={2} />
+            <ExternalLink className="h-4 w-4" strokeWidth={1.5} />
           </a>
         </div>
       ),
@@ -170,44 +169,41 @@ export function SubmissionsFeature() {
   ];
 
   return (
-    <div className="flex w-full flex-col gap-6 font-primary">
-      <div>
-        <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
-          Pengumpulan TP
-        </h1>
-        <p className="mt-1 font-secondary text-sm text-grey-500">
-          Lihat dan unduh file Tugas Pendahuluan (PDF) yang dikumpulkan
-          praktikan.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
-          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Cari berdasarkan NIM..."
-            className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+    <AdminPageLayout
+      title="Pengumpulan TP"
+      description="Lihat dan unduh file Tugas Pendahuluan (PDF) yang dikumpulkan praktikan."
+      filters={
+        <>
+          <div className="flex h-11 flex-1 items-center rounded-xl border border-white/50 bg-white/50 backdrop-blur-md shadow-sm px-4 sm:max-w-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+            <Search
+              className="mr-2.5 h-4 w-4 text-grey-400"
+              strokeWidth={1.5}
+            />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Cari berdasarkan NIM..."
+              className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
+            />
+          </div>
+          <FilterDropdown
+            value={moduleId}
+            options={moduleOptions}
+            onChange={setModuleId}
+            widthClassName="sm:w-64"
+            hideCheckIcon={true}
           />
-        </div>
-
-        <FilterDropdown
-          value={moduleId}
-          options={moduleOptions}
-          onChange={setModuleId}
-          widthClassName="sm:w-64"
-        />
-
-        <FilterDropdown
-          value={groupId}
-          options={groupOptions}
-          onChange={setGroupId}
-          widthClassName="sm:w-56"
-        />
-      </div>
-
+          <FilterDropdown
+            value={groupId}
+            options={groupOptions}
+            onChange={setGroupId}
+            widthClassName="sm:w-56"
+            hideCheckIcon={true}
+          />
+        </>
+      }
+    >
       <DataTable
         columns={columns}
         data={submissions}
@@ -231,6 +227,6 @@ export function SubmissionsFeature() {
         submission={previewingSubmission}
         onOpenChange={(open) => !open && setPreviewingSubmission(null)}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -30,7 +30,10 @@ export const publicHomeService = {
       title: module.title,
       description: module.description || "Deskripsi modul belum tersedia.",
       isActive: module.isActive,
-      fileUrl: module.fileUrl || "#",
+      fileUrlRegular: module.fileUrlRegular,
+      fileUrlInternational: module.fileUrlInternational,
+      coverUrl: module.coverUrl,
+      order: module.order,
     }));
   },
 };

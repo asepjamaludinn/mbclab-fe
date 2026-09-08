@@ -31,4 +31,16 @@ export const adminModuleService = {
     const res = await api.delete(`/practicum-modules/${id}`);
     return res.data;
   },
+  uploadCover: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post<{ message: string; fileUrl: string }>(
+      "/upload/module-cover",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data.fileUrl;
+  },
 };

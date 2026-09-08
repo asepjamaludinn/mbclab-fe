@@ -3,11 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminExamAttemptService } from "../services/admin-exam-attempt.service";
 
-export const useStuckAttempts = () => {
+export const useStuckAttempts = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["stuck-exam-attempts"],
     queryFn: adminExamAttemptService.getStuckAttempts,
     refetchInterval: 30 * 1000,
+    enabled,
   });
 };
 

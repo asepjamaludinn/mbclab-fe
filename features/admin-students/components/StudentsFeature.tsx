@@ -19,8 +19,8 @@ import { Button } from "@/shared/components/ui/button";
 import { getInitials } from "@/shared/utils/string";
 import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
-import { SelectionToolbar } from "@/shared/components/ui/selection-toolbar";
 import { useRowSelection } from "@/shared/hooks/use-row-selection";
+import { AdminPageLayout } from "@/shared/components/layout/AdminPageLayout";
 import { StudentFormDialog } from "./StudentFormDialog";
 import { EditStudentDialog } from "./EditStudentDialog";
 import { ResetPasswordDialog } from "./ResetPasswordDialog";
@@ -32,7 +32,6 @@ import {
 } from "./BulkStudentActionDialog";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
 const STATUS_OPTIONS: { value: StudentStatusFilter; label: string }[] = [
   { value: "active", label: "Akun Aktif" },
   { value: "inactive", label: "Akun Nonaktif" },
@@ -73,7 +72,6 @@ export function StudentsFeature() {
 
   const { data: groupsRes } = useAdminGroups({ page: 1, limit: 200 });
   const groups = groupsRes?.data ?? [];
-
   const groupOptions = useMemo(
     () => [
       { value: "", label: "Semua Kelompok" },
@@ -89,7 +87,6 @@ export function StudentsFeature() {
     groupId,
     status,
   });
-
   const students = data?.data ?? [];
   const meta = data?.meta;
 
@@ -109,10 +106,10 @@ export function StudentsFeature() {
       header: "Nama",
       render: (student) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-bold text-primary">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-medium text-primary">
             {getInitials(student.name)}
           </div>
-          <span className="text-sm font-semibold text-grey-900">
+          <span className="text-sm font-medium tracking-tight text-grey-900">
             {student.name}
           </span>
         </div>
@@ -122,7 +119,7 @@ export function StudentsFeature() {
       key: "nim",
       header: "NIM",
       render: (student) => (
-        <span className="font-secondary text-sm text-grey-500">
+        <span className="font-secondary text-sm tracking-tight text-grey-500">
           {student.nim}
         </span>
       ),
@@ -132,11 +129,11 @@ export function StudentsFeature() {
       header: "Kelompok",
       render: (student) =>
         student.group?.name ? (
-          <span className="font-secondary text-sm text-grey-600">
+          <span className="font-secondary text-sm font-medium tracking-tight text-grey-600">
             {student.group.name}
           </span>
         ) : (
-          <span className="font-secondary text-sm text-grey-400">
+          <span className="font-secondary text-sm font-medium tracking-tight text-grey-400">
             Belum ada
           </span>
         ),
@@ -146,10 +143,10 @@ export function StudentsFeature() {
       header: "Kelas",
       render: (student) => (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-bold ${
+          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-medium tracking-tight backdrop-blur-md border ${
             student.isInternational
-              ? "bg-primary/10 text-primary"
-              : "bg-grey-100 text-grey-500"
+              ? "bg-primary/10 text-primary border-primary/10"
+              : "bg-grey-100/50 text-grey-500 border-grey-200/50"
           }`}
         >
           {student.isInternational ? "Internasional" : "Reguler"}
@@ -161,10 +158,10 @@ export function StudentsFeature() {
       header: "Status",
       render: (student) => (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-xs font-bold ${
+          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-medium tracking-tight backdrop-blur-md border ${
             student.isDeleted
-              ? "bg-error/10 text-error"
-              : "bg-success/10 text-success"
+              ? "bg-error/10 text-error border-error/10"
+              : "bg-success/10 text-success border-success/10"
           }`}
         >
           {student.isDeleted ? "Nonaktif" : "Aktif"}
@@ -175,50 +172,38 @@ export function StudentsFeature() {
       key: "actions",
       header: "Aksi",
       headerClassName:
-        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
       render: (student) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => setEditingStudent(student)}
-            title="Ubah Data"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-primary/10 hover:text-primary"
-            aria-label="Ubah data praktikan"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-primary hover:shadow-sm"
           >
-            <Pencil className="h-4 w-4" strokeWidth={2} />
+            <Pencil className="h-4 w-4" strokeWidth={1.5} />
           </button>
           <button
             onClick={() => setResettingStudent(student)}
-            title="Reset Password"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-warning/10 hover:text-warning"
-            aria-label="Reset password"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-warning hover:shadow-sm"
           >
-            <KeyRound className="h-4 w-4" strokeWidth={2} />
+            <KeyRound className="h-4 w-4" strokeWidth={1.5} />
           </button>
           <button
             onClick={() => setTogglingStudent(student)}
-            title={student.isDeleted ? "Aktifkan" : "Nonaktifkan"}
-            className={`flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition ${
-              student.isDeleted
-                ? "hover:bg-success/10 hover:text-success"
-                : "hover:bg-error/10 hover:text-error"
+            className={`flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:shadow-sm ${
+              student.isDeleted ? "hover:text-success" : "hover:text-error"
             }`}
-            aria-label={
-              student.isDeleted ? "Aktifkan akun" : "Nonaktifkan akun"
-            }
           >
             {student.isDeleted ? (
-              <ShieldCheck className="h-4 w-4" strokeWidth={2} />
+              <ShieldCheck className="h-4 w-4" strokeWidth={1.5} />
             ) : (
-              <ShieldOff className="h-4 w-4" strokeWidth={2} />
+              <ShieldOff className="h-4 w-4" strokeWidth={1.5} />
             )}
           </button>
           <button
             onClick={() => setDeletingStudent(student)}
-            title="Hapus Permanen"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-error/10 hover:text-error"
-            aria-label="Hapus praktikan"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-error hover:shadow-sm"
           >
-            <Trash2 className="h-4 w-4" strokeWidth={2} />
+            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
           </button>
         </div>
       ),
@@ -226,98 +211,88 @@ export function StudentsFeature() {
   ];
 
   return (
-    <div className="flex w-full flex-col gap-6 font-primary">
-      <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
-            Praktikan
-          </h1>
-          <p className="mt-1 font-secondary text-sm text-grey-500">
-            Kelola akun, kelompok, dan status aktif praktikan.
-          </p>
-        </div>
-
+    <AdminPageLayout
+      title="Praktikan"
+      description="Kelola akun, kelompok, dan status aktif praktikan."
+      headerActions={
         <Button
           onClick={() => setFormOpen(true)}
-          className="h-10 shrink-0 rounded-lg px-4 shadow-sm"
+          className="h-10 shrink-0 rounded-xl px-4 shadow-md font-medium tracking-tight"
         >
-          <Plus className="mr-2 h-4 w-4" strokeWidth={2} />
-          Tambah Praktikan
+          <Plus className="mr-2 h-4 w-4" strokeWidth={1.5} /> Tambah Praktikan
         </Button>
-      </div>
-
-      {selectedIds.size > 0 ? (
-        <SelectionToolbar
-          count={selectedIds.size}
-          itemLabel="praktikan"
-          onClear={clearSelection}
-          actions={
-            <>
-              <Button
-                type="button"
-                variant="default"
-                className="h-9 rounded-lg px-3 text-xs"
-                onClick={() => setBulkAction("activate")}
-              >
-                <ShieldCheck className="mr-1.5 h-3.5 w-3.5" strokeWidth={2} />
-                Aktifkan
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-9 rounded-lg px-3 text-xs"
-                onClick={() => setBulkAction("deactivate")}
-              >
-                <ShieldOff className="mr-1.5 h-3.5 w-3.5" strokeWidth={2} />
-                Nonaktifkan
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                className="h-9 rounded-lg px-3 text-xs"
-                onClick={() => setBulkAction("delete")}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" strokeWidth={2} />
-                Hapus
-              </Button>
-            </>
-          }
-        />
-      ) : (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
-            <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
+      }
+      selectedCount={selectedIds.size}
+      itemLabel="praktikan"
+      onClearSelection={clearSelection}
+      bulkActions={
+        <>
+          <Button
+            type="button"
+            variant="default"
+            className="h-9 rounded-lg px-3 text-xs font-medium tracking-tight shadow-sm"
+            onClick={() => setBulkAction("activate")}
+          >
+            <ShieldCheck className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} />{" "}
+            Aktifkan
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-lg px-3 text-xs font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
+            onClick={() => setBulkAction("deactivate")}
+          >
+            <ShieldOff className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} />{" "}
+            Nonaktifkan
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            className="h-9 rounded-lg px-3 text-xs font-medium tracking-tight shadow-sm"
+            onClick={() => setBulkAction("delete")}
+          >
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} /> Hapus
+          </Button>
+        </>
+      }
+      filters={
+        <>
+          <div className="flex h-11 flex-1 items-center rounded-xl border border-white/50 bg-white/50 backdrop-blur-md shadow-sm px-4 sm:max-w-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+            <Search
+              className="mr-2.5 h-4 w-4 text-grey-400"
+              strokeWidth={1.5}
+            />
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Cari nama atau NIM..."
-              className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+              className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
             />
           </div>
-
           <FilterDropdown
             value={groupId}
             options={groupOptions}
             onChange={setGroupId}
             widthClassName="sm:w-56"
+            hideCheckIcon={true}
           />
-
           <FilterDropdown
             icon={
               <SlidersHorizontal
                 className="h-4 w-4 shrink-0 text-grey-400"
-                strokeWidth={2}
+                strokeWidth={1.5}
               />
             }
             value={status}
             options={STATUS_OPTIONS}
             onChange={setStatus}
             widthClassName="sm:w-48"
+            hideCheckIcon={true}
           />
-        </div>
-      )}
-
+        </>
+      }
+    >
       <DataTable
         columns={columns}
         data={students}
@@ -362,7 +337,6 @@ export function StudentsFeature() {
         student={deletingStudent}
         onOpenChange={(open) => !open && setDeletingStudent(null)}
       />
-
       {bulkAction && (
         <BulkStudentActionDialog
           students={selectedStudents}
@@ -372,6 +346,6 @@ export function StudentsFeature() {
           onDone={clearSelection}
         />
       )}
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -8,6 +8,7 @@ export type AdminExamSession = {
   shift: Shift;
   startTime: string;
   endTime: string;
+  accessCode: string;
   createdAt: string;
   updatedAt: string;
   module?: { title: string; order: number };

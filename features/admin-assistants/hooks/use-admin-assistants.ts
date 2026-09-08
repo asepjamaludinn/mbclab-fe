@@ -55,3 +55,12 @@ export const useUploadAssistantPhoto = () => {
     mutationFn: (file: File) => adminAssistantService.uploadPhoto(file),
   });
 };
+
+export const useBulkDeleteAssistants = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      adminAssistantService.bulkDeleteAssistants(ids),
+    onSuccess: () => invalidateAssistants(qc),
+  });
+};

@@ -46,7 +46,7 @@ const ACTION_CONFIG: Record<
 > = {
   activate: {
     icon: ShieldCheck,
-    iconBg: "bg-success",
+    iconBg: "bg-success/90 shadow-success/20",
     title: (count) => `Aktifkan ${count} Praktikan?`,
     description: "Akun yang diaktifkan kembali dapat login seperti biasa.",
     confirmLabel: (count) => `Ya, Aktifkan ${count} Praktikan`,
@@ -55,7 +55,7 @@ const ACTION_CONFIG: Record<
   },
   deactivate: {
     icon: ShieldOff,
-    iconBg: "bg-error",
+    iconBg: "bg-error/90 shadow-error/20",
     title: (count) => `Nonaktifkan ${count} Praktikan?`,
     description:
       "Akun yang dinonaktifkan tidak akan bisa login sampai diaktifkan kembali.",
@@ -65,7 +65,7 @@ const ACTION_CONFIG: Record<
   },
   delete: {
     icon: Trash2,
-    iconBg: "bg-error",
+    iconBg: "bg-error/90 shadow-error/20",
     title: (count) => `Hapus Permanen ${count} Praktikan?`,
     description:
       "Akun yang memiliki riwayat ujian, pengumpulan TP, atau nilai akan dilewati — gunakan nonaktifkan sebagai gantinya untuk akun tersebut.",
@@ -144,29 +144,33 @@ export function BulkStudentActionDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <DialogHeader className="text-left">
           <div
-            className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_12px_28px_-14px_rgba(0,0,0,0.3)] ${config.iconBg}`}
+            className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl backdrop-blur-md ${config.iconBg}`}
           >
-            <Icon className="h-7 w-7" strokeWidth={1.8} />
+            <Icon className="h-7 w-7" strokeWidth={1.5} />
           </div>
-          <DialogTitle>{config.title(students.length)}</DialogTitle>
-          <DialogDescription>{config.description}</DialogDescription>
+          <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
+            {config.title(students.length)}
+          </DialogTitle>
+          <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
+            {config.description}
+          </DialogDescription>
         </DialogHeader>
 
         {previewNames.length > 0 && !failedStudents && (
-          <ul className="mt-4 max-h-40 space-y-1.5 overflow-y-auto rounded-2xl border border-grey-100 bg-grey-50/60 p-3">
+          <ul className="mt-4 max-h-40 space-y-1.5 overflow-y-auto rounded-2xl border border-white/40 bg-white/30 backdrop-blur-md p-3 shadow-sm custom-scrollbar">
             {previewNames.map((name, idx) => (
               <li
                 key={idx}
-                className="truncate font-secondary text-xs font-semibold text-grey-700"
+                className="truncate font-secondary text-xs font-medium tracking-tight text-grey-700"
               >
                 {name}
               </li>
             ))}
             {remainingCount > 0 && (
-              <li className="font-secondary text-xs font-semibold text-grey-400">
+              <li className="font-secondary text-xs font-medium tracking-tight text-grey-400">
                 +{remainingCount} praktikan lainnya
               </li>
             )}
@@ -174,20 +178,23 @@ export function BulkStudentActionDialog({
         )}
 
         {failedStudents && failedStudents.length > 0 && (
-          <div className="mt-4 rounded-2xl border border-warning/20 bg-warning/5 p-4">
+          <div className="mt-4 rounded-2xl border border-warning/20 bg-warning/5 p-4 backdrop-blur-md">
             <div className="flex items-start gap-2.5">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-700" />
+              <AlertTriangle
+                className="mt-0.5 h-4 w-4 shrink-0 text-warning-700"
+                strokeWidth={1.5}
+              />
               <div className="min-w-0 flex-1">
-                <p className="font-secondary text-sm font-bold text-warning-700">
+                <p className="font-secondary text-sm font-medium tracking-tight text-warning-700">
                   {failedStudents.length} praktikan gagal diproses
                 </p>
-                <ul className="mt-3 space-y-1.5">
+                <ul className="mt-3 space-y-1.5 custom-scrollbar">
                   {failedStudents.map((s) => (
                     <li
                       key={s.id}
-                      className="rounded-lg bg-white/70 px-3 py-2 font-secondary text-xs"
+                      className="rounded-xl border border-white/40 bg-white/50 backdrop-blur-md px-3 py-2 font-secondary text-xs"
                     >
-                      <span className="font-semibold text-grey-900">
+                      <span className="font-medium tracking-tight text-grey-900">
                         {s.name}
                         {s.nim !== "-" && (
                           <span className="font-normal text-grey-500">
@@ -206,7 +213,7 @@ export function BulkStudentActionDialog({
         )}
 
         {error && (
-          <div className="mt-3 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+          <div className="mt-3 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
             {error}
           </div>
         )}
@@ -216,7 +223,7 @@ export function BulkStudentActionDialog({
             <Button
               type="button"
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
             >
               {failedStudents ? "Tutup" : "Batal"}
             </Button>
@@ -226,7 +233,11 @@ export function BulkStudentActionDialog({
               variant={config.variant}
               onClick={handleConfirm}
               disabled={isPending || students.length === 0}
-              className="w-full sm:w-auto"
+              className={`w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 ${
+                config.variant === "danger"
+                  ? "bg-error hover:bg-error/90 hover:shadow-error/20 text-white"
+                  : ""
+              }`}
             >
               {isPending
                 ? config.processingLabel

@@ -13,10 +13,13 @@ import { AdminAccount } from "../types/admin-account.type";
 import { Button } from "@/shared/components/ui/button";
 import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
+import { useRowSelection } from "@/shared/hooks/use-row-selection";
+import { AdminPageLayout } from "@/shared/components/layout/AdminPageLayout";
 import { AdminAccountFormDialog } from "./AdminAccountFormDialog";
 import { DeleteAdminAccountDialog } from "./DeleteAdminAccountDialog";
 import { getInitials } from "@/shared/utils/string";
 import { useProfile } from "@/features/auth";
+import { BulkDeleteAdminAccountsDialog } from "./BulkDeleteAdminAccountsDialog";
 
 const DIVISION_OPTIONS = [
   { value: "", label: "Semua Divisi" },
@@ -34,9 +37,9 @@ export function AdminAccountsFeature() {
   const [division, setDivision] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
   const [formOpen, setFormOpen] = useState(false);
   const [deletingAdmin, setDeletingAdmin] = useState<AdminAccount | null>(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(searchInput.trim()), 300);
@@ -53,9 +56,18 @@ export function AdminAccountsFeature() {
     search,
     division,
   );
-
   const admins = data?.data ?? [];
   const meta = data?.meta;
+
+  const {
+    selectedIds,
+    selectedItems,
+    toggleRow,
+    toggleList,
+    clearSelection,
+    isListAllSelected,
+    isListSomeSelected,
+  } = useRowSelection(admins, (a) => a.id);
 
   const columns: DataTableColumn<AdminAccount>[] = [
     {
@@ -63,12 +75,16 @@ export function AdminAccountsFeature() {
       header: "Asisten",
       render: (acc) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-bold text-primary">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-secondary text-xs font-medium text-primary">
             {getInitials(acc.name)}
           </div>
           <div>
-            <p className="text-sm font-semibold text-grey-900">{acc.name}</p>
-            <p className="font-secondary text-xs text-grey-500">{acc.nim}</p>
+            <p className="text-sm font-medium tracking-tight text-grey-900">
+              {acc.name}
+            </p>
+            <p className="font-secondary text-xs tracking-tight text-grey-500">
+              {acc.nim}
+            </p>
           </div>
         </div>
       ),
@@ -78,12 +94,12 @@ export function AdminAccountsFeature() {
       header: "Divisi",
       render: (acc) => (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-xs font-bold ${
+          className={`inline-flex items-center rounded-full px-2.5 py-1 font-secondary text-[10px] font-medium tracking-tight backdrop-blur-md border ${
             acc.division === "COORDINATOR"
-              ? "bg-error/10 text-error-700"
+              ? "bg-error/10 text-error border-error/10"
               : acc.division === "ACADEMIC"
-                ? "bg-info/10 text-info-700"
-                : "bg-success/10 text-success-700"
+                ? "bg-info/10 text-info-700 border-info/10"
+                : "bg-success/10 text-success border-success/10"
           }`}
         >
           {acc.division}
@@ -94,16 +110,15 @@ export function AdminAccountsFeature() {
       key: "actions",
       header: "Aksi",
       headerClassName:
-        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
       render: (acc) => (
         <div className="flex justify-end gap-1.5">
           <button
             onClick={() => setDeletingAdmin(acc)}
-            title="Hapus Akun"
             disabled={!isCoordinator || acc.id === userProfile?.id}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-error/10 hover:text-error disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-grey-400"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-error hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent"
           >
-            <Trash2 className="h-4 w-4" strokeWidth={2} />
+            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
           </button>
         </div>
       ),
@@ -111,48 +126,64 @@ export function AdminAccountsFeature() {
   ];
 
   return (
-    <div className="flex w-full flex-col gap-6 font-primary">
-      <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
-            Manajemen Akun Asisten
-          </h1>
-          <p className="mt-1 font-secondary text-sm text-grey-500">
-            Kelola kredensial login (username/password) dan divisi untuk
-            asisten.
-          </p>
-        </div>
-        {isCoordinator && (
+    <AdminPageLayout
+      title="Manajemen Akun Asisten"
+      description="Kelola kredensial login (username/password) dan divisi untuk asisten."
+      headerActions={
+        isCoordinator && (
           <Button
             onClick={() => setFormOpen(true)}
-            className="h-10 shrink-0 rounded-lg px-4 shadow-sm"
+            className="h-10 shrink-0 rounded-xl px-4 shadow-md font-medium tracking-tight"
           >
-            <Plus className="mr-2 h-4 w-4" strokeWidth={2} />
-            Buat Akun Asisten
+            <Plus className="mr-2 h-4 w-4" strokeWidth={1.5} /> Buat Akun
+            Asisten
           </Button>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
-          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Cari nama atau username..."
-            className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+        )
+      }
+      selectedCount={selectedIds.size}
+      itemLabel="akun"
+      onClearSelection={clearSelection}
+      bulkActions={
+        <Button
+          variant="danger"
+          className="h-9 rounded-lg px-3 text-xs font-medium tracking-tight shadow-sm"
+          onClick={() => setBulkDeleteOpen(true)}
+        >
+          <Trash2 className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} /> Hapus{" "}
+          {selectedIds.size} Akun
+        </Button>
+      }
+      filters={
+        <>
+          <div className="flex h-11 flex-1 items-center rounded-xl border border-white/50 bg-white/50 backdrop-blur-md shadow-sm px-4 sm:max-w-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+            <Search
+              className="mr-2.5 h-4 w-4 text-grey-400"
+              strokeWidth={1.5}
+            />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Cari nama atau username..."
+              className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
+            />
+          </div>
+          <FilterDropdown
+            value={division}
+            options={DIVISION_OPTIONS}
+            onChange={setDivision}
+            widthClassName="sm:w-48"
+            icon={
+              <SlidersHorizontal
+                className="h-4 w-4 shrink-0 text-grey-400"
+                strokeWidth={1.5}
+              />
+            }
+            hideCheckIcon={true}
           />
-        </div>
-        <FilterDropdown
-          value={division}
-          options={DIVISION_OPTIONS}
-          onChange={setDivision}
-          widthClassName="sm:w-48"
-          icon={<SlidersHorizontal className="h-4 w-4 text-grey-400" />}
-        />
-      </div>
-
+        </>
+      }
+    >
       <DataTable
         columns={columns}
         data={admins}
@@ -162,6 +193,13 @@ export function AdminAccountsFeature() {
         errorMessage="Gagal memuat data akun asisten."
         emptyIcon={ShieldCheck}
         emptyTitle="Tidak ada akun asisten"
+        selection={{
+          isAllSelected: isListAllSelected(admins),
+          isSomeSelected: isListSomeSelected(admins),
+          onToggleRow: toggleRow,
+          onToggleAll: () => toggleList(admins),
+          isRowSelected: (id) => selectedIds.has(id),
+        }}
         page={page}
         pageSize={pageSize}
         totalItems={meta?.total ?? 0}
@@ -169,12 +207,17 @@ export function AdminAccountsFeature() {
         onPageSizeChange={setPageSize}
         itemsLabel="akun"
       />
-
       <AdminAccountFormDialog open={formOpen} onOpenChange={setFormOpen} />
       <DeleteAdminAccountDialog
         admin={deletingAdmin}
         onOpenChange={(open) => !open && setDeletingAdmin(null)}
       />
-    </div>
+      <BulkDeleteAdminAccountsDialog
+        admins={selectedItems}
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onDeleted={clearSelection}
+      />
+    </AdminPageLayout>
   );
 }

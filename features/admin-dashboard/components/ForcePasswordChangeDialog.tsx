@@ -68,7 +68,7 @@ export function ForcePasswordChangeDialog() {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="sm:max-w-md w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]"
+        className="sm:max-w-md w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl"
         onEscapeKeyDown={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
@@ -76,15 +76,15 @@ export function ForcePasswordChangeDialog() {
       >
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader className="text-left">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-error text-white shadow-[0_12px_28px_-14px_rgba(220,38,38,0.65)]">
-              <ShieldAlert className="h-7 w-7" strokeWidth={1.8} />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-error/90 text-white shadow-xl shadow-error/20 backdrop-blur-md">
+              <ShieldAlert className="h-7 w-7" strokeWidth={1.5} />
             </div>
 
-            <DialogTitle className="text-xl font-extrabold text-grey-900">
+            <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
               Password Wajib Diganti
             </DialogTitle>
 
-            <DialogDescription className="font-secondary text-sm leading-relaxed text-grey-500">
+            <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
               Akun Anda masih menggunakan password default (sama dengan NIM).
               Untuk keamanan, Anda wajib mengganti password sebelum melanjutkan.
             </DialogDescription>
@@ -102,7 +102,7 @@ export function ForcePasswordChangeDialog() {
                 placeholder="Password baru"
                 error={errors.newPassword?.message}
               />
-              <p className="mt-1.5 font-secondary text-[11px] text-grey-500">
+              <p className="mt-1.5 font-secondary text-[11px] tracking-tight text-grey-500">
                 {PASSWORD_POLICY_HINT}
               </p>
             </div>
@@ -113,12 +113,12 @@ export function ForcePasswordChangeDialog() {
             />
 
             {passwordError && (
-              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+              <div className="rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
                 {passwordError}
               </div>
             )}
             {passwordMessage && (
-              <div className="rounded-2xl border border-success/15 bg-success/5 px-4 py-3 font-secondary text-sm text-success">
+              <div className="rounded-2xl border border-success/15 bg-success/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-success backdrop-blur-md">
                 {passwordMessage}
               </div>
             )}
@@ -128,7 +128,7 @@ export function ForcePasswordChangeDialog() {
             <Button
               type="submit"
               disabled={isChangingPassword}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg"
             >
               {isChangingPassword ? "Menyimpan..." : "Simpan Password"}
             </Button>

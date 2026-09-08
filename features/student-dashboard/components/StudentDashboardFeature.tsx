@@ -1,5 +1,3 @@
-// features/student-dashboard/components/StudentDashboardFeature.tsx
-
 "use client";
 
 import { useProfile } from "@/features/auth";
@@ -71,8 +69,16 @@ export function StudentDashboardFeature() {
   }
 
   const modules = modulesRes?.data || [];
+
+  // LOGIKA BARU: Cari modul aktif dari urutan paling belakang (terbaru),
+  // Jika tidak ada yang aktif, ambil modul terakhir (tertinggi).
   const activeModule =
-    modules.find((module) => module.isActive) || modules[0] || null;
+    modules
+      .slice()
+      .reverse()
+      .find((module) => module.isActive) ||
+    modules[modules.length - 1] ||
+    null;
 
   const activeSession = activeModule
     ? mySessions.find((s) => s.moduleId === activeModule.id)
@@ -82,7 +88,6 @@ export function StudentDashboardFeature() {
     ? submissions.some((sub) => sub.moduleId === activeModule.id)
     : false;
 
-  // Cek apakah TA sudah disubmit (status === 'SUBMITTED')
   const isTaSubmitted =
     activeSession?.attempts?.some(
       (attempt) => attempt.status === "SUBMITTED",
@@ -97,7 +102,12 @@ export function StudentDashboardFeature() {
         <DashboardHeader userName={user?.name} nim={user?.nim} />
 
         <section className="mt-8 space-y-7 px-5">
-          <DashboardProgressSummary userName={user?.name} group={user?.group} />
+          <DashboardProgressSummary
+            userName={user?.name}
+            group={user?.group}
+            modules={modules}
+            assistants={assistants}
+          />
 
           <DashboardQuickAccess />
 
@@ -105,6 +115,7 @@ export function StudentDashboardFeature() {
             activeModule={activeModule}
             isTpSubmitted={isTpSubmitted}
             isTaSubmitted={isTaSubmitted}
+            isInternational={user?.isInternational}
           />
 
           <DashboardInfo />

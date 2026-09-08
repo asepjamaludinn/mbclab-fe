@@ -64,4 +64,9 @@ export const adminQuestionService = {
     );
     return res.data;
   },
+
+  bulkDeleteQuestions: async (questionIds: string[]) => {
+    const res = await api.post("/questions/bulk-delete", { questionIds });
+    return res.data;
+  },
 };

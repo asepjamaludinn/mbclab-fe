@@ -1,5 +1,8 @@
 import { api } from "@/shared/lib/api";
-import { PracticumModulesResponse } from "../types/student-modules.type";
+import {
+  PracticumModuleDetail,
+  PracticumModulesResponse,
+} from "../types/student-modules.type";
 
 export const studentModulesService = {
   getModules: async (
@@ -11,6 +14,13 @@ export const studentModulesService = {
       {
         params: { page, limit },
       },
+    );
+    return response.data;
+  },
+
+  getModule: async (id: string): Promise<PracticumModuleDetail> => {
+    const response = await api.get<PracticumModuleDetail>(
+      `/practicum-modules/${id}`,
     );
     return response.data;
   },

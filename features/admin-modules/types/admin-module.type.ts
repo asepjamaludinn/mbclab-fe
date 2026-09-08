@@ -5,7 +5,9 @@ export type AdminModule = {
   description: string | null;
   isActive: boolean;
   tpDeadline: string | null;
-  fileUrl: string | null;
+  fileUrlRegular: string | null;
+  fileUrlInternational: string | null;
+  coverUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -21,7 +23,9 @@ export type CreateModulePayload = {
   description?: string;
   isActive?: boolean;
   tpDeadline?: string;
-  fileUrl?: string;
+  fileUrlRegular?: string;
+  fileUrlInternational?: string;
+  coverUrl?: string;
 };
 
 export type UpdateModulePayload = Partial<CreateModulePayload>;

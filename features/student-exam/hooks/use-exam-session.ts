@@ -6,6 +6,7 @@ import {
   useSaveAnswer,
   useSubmitExam,
   useUnblockAttempt,
+  useSyncAnswers,
 } from "./use-student-exam";
 import { examService } from "../services/student-exam.service";
 import { showToast } from "@/shared/lib/toast";
@@ -39,6 +40,8 @@ export function useExamSession() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const cheatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isResyncingRef = useRef(false);
+  const isReportingCheatRef = useRef(false);
 
   const { mutateAsync: joinExam, isPending: isJoining } = useJoinExam();
   const { mutateAsync: saveAnswer } = useSaveAnswer();
@@ -46,9 +49,158 @@ export function useExamSession() {
   const { mutateAsync: reportCheat } = useReportCheat();
   const { mutateAsync: unblockAttempt, isPending: isUnblocking } =
     useUnblockAttempt();
+  const { mutateAsync: syncAnswers } = useSyncAnswers();
+
+  const restoreAnswers = useCallback(
+    (
+      savedAnswers?: { questionId: string; selectedOption: AnswerOption }[],
+      currentAttemptId?: string,
+      currentSessionId?: string,
+    ) => {
+      const restored: Record<string, AnswerOption> = {};
+
+      if (savedAnswers && savedAnswers.length > 0) {
+        savedAnswers.forEach((a) => {
+          restored[a.questionId] = a.selectedOption;
+        });
+      }
+
+      const pendingSync: {
+        questionId: string;
+        selectedOption: AnswerOption;
+      }[] = [];
+
+      if (currentAttemptId && currentSessionId) {
+        const storageKey = `mbclab_exam_${currentAttemptId}`;
+        try {
+          const ls = localStorage.getItem(storageKey);
+          if (ls) {
+            const localAnswers: Record<string, AnswerOption> = JSON.parse(ls);
+            for (const [qId, opt] of Object.entries(localAnswers)) {
+              if (restored[qId] !== opt) {
+                restored[qId] = opt;
+                pendingSync.push({ questionId: qId, selectedOption: opt });
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Gagal membaca local storage", e);
+        }
+
+        localStorage.setItem(storageKey, JSON.stringify(restored));
+
+        if (pendingSync.length > 0) {
+          syncAnswers({
+            sessionId: currentSessionId,
+            answers: pendingSync,
+          }).catch(() => console.warn("Background bulk sync failed"));
+        }
+      }
+
+      setAnswers((prev) => ({ ...prev, ...restored }));
+    },
+    [syncAnswers],
+  );
+
+  const applyKnownErrorState = useCallback(
+    (error: unknown, fallbackMsg: string): boolean => {
+      if (!axios.isAxiosError(error)) return false;
+      const errorMsg = String(
+        error.response?.data?.message ?? "",
+      ).toLowerCase();
+      const status = error.response?.status;
+
+      if (
+        errorMsg.includes("melebihi batas") ||
+        errorMsg.includes("disqualified") ||
+        errorMsg.includes("diskualifikasi") ||
+        errorMsg.includes("exceeded")
+      ) {
+        setStatusMessage(error.response?.data?.message ?? fallbackMsg);
+        setExamState("DISQUALIFIED");
+        return true;
+      }
+
+      if (
+        status === 403 ||
+        errorMsg.includes("blocked") ||
+        errorMsg.includes("diblokir") ||
+        errorMsg.includes("terblokir")
+      ) {
+        setStatusMessage(error.response?.data?.message ?? fallbackMsg);
+        setExamState("BLOCKED");
+        return true;
+      }
+
+      if (
+        errorMsg.includes("sudah diselesaikan") ||
+        errorMsg.includes("menyelesaikan ujian") ||
+        errorMsg.includes("already completed") ||
+        (errorMsg.includes("waktu") && errorMsg.includes("habis")) ||
+        errorMsg.includes("waktu akses") ||
+        errorMsg.includes("telah berakhir") ||
+        errorMsg.includes("sudah tidak aktif")
+      ) {
+        setStatusMessage(error.response?.data?.message ?? fallbackMsg);
+        setExamState("SUBMITTED");
+        return true;
+      }
+
+      return false;
+    },
+    [],
+  );
+
+  const resyncAttemptState = useCallback(async () => {
+    if (isResyncingRef.current || !selectedSessionId || !accessCode) return;
+    isResyncingRef.current = true;
+    try {
+      const res = await joinExam({ sessionId: selectedSessionId, accessCode });
+      setAttempt(res.attempt);
+      setQuestions(res.questions);
+      restoreAnswers(
+        res.attempt.savedAnswers,
+        res.attempt.id,
+        selectedSessionId,
+      );
+      setExamState(res.attempt.status as ExamState);
+    } catch (error) {
+      const handled = applyKnownErrorState(
+        error,
+        "Status ujian Anda telah berubah. Silakan periksa kembali.",
+      );
+      if (!handled) {
+        showToast.error(
+          "Gagal Sinkronisasi",
+          "Tidak dapat memverifikasi status ujian Anda. Silakan refresh halaman.",
+        );
+      }
+    } finally {
+      isResyncingRef.current = false;
+    }
+  }, [
+    joinExam,
+    selectedSessionId,
+    accessCode,
+    restoreAnswers,
+    applyKnownErrorState,
+  ]);
 
   useEffect(() => {
     if (examState !== "IN_PROGRESS" || !attempt) return;
+
+    const doForceSubmit = async () => {
+      try {
+        await submitExam(selectedSessionId);
+        setExamState("SUBMITTED");
+        localStorage.removeItem(`mbclab_exam_${attempt.id}`);
+      } catch (error) {
+        const handled = applyKnownErrorState(error, "Waktu ujian telah habis.");
+        if (!handled) {
+          await resyncAttemptState();
+        }
+      }
+    };
 
     const interval = setInterval(() => {
       const now = new Date().getTime();
@@ -58,7 +210,7 @@ export function useExamSession() {
       if (distance <= 0) {
         clearInterval(interval);
         setTimeLeft("00:00");
-        handleForceSubmit();
+        doForceSubmit();
       } else {
         const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((distance % (1000 * 60)) / 1000);
@@ -69,22 +221,31 @@ export function useExamSession() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [examState, attempt]);
+  }, [
+    examState,
+    attempt,
+    selectedSessionId,
+    submitExam,
+    applyKnownErrorState,
+    resyncAttemptState,
+  ]);
 
   useEffect(() => {
     if (examState !== "IN_PROGRESS" || !attempt) return;
 
     const executeCheatReport = async () => {
+      if (isReportingCheatRef.current) return;
+      isReportingCheatRef.current = true;
+
       try {
         const res = await reportCheat(selectedSessionId);
-
         setStatusMessage(res.message);
 
         if (res.disqualified) {
           setExamState("DISQUALIFIED");
+          localStorage.removeItem(`mbclab_exam_${attempt.id}`);
           return;
         }
-
         setAttempt((prev) =>
           prev
             ? {
@@ -97,14 +258,26 @@ export function useExamSession() {
         setExamState("BLOCKED");
       } catch (error) {
         console.error("Gagal merekam indikasi kecurangan:", error);
+
+        const handled = applyKnownErrorState(
+          error,
+          "Terjadi perubahan status pada ujian Anda.",
+        );
+
+        if (!handled) {
+          await resyncAttemptState();
+        }
+      } finally {
+        isReportingCheatRef.current = false;
       }
     };
 
     const handleHidden = () => {
       if (cheatTimeoutRef.current) return;
-
       cheatTimeoutRef.current = setTimeout(() => {
-        executeCheatReport();
+        if (!document.hasFocus() || document.visibilityState === "hidden") {
+          executeCheatReport();
+        }
         cheatTimeoutRef.current = null;
       }, 3000);
     };
@@ -136,16 +309,16 @@ export function useExamSession() {
       return "";
     };
 
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleHidden);
     window.addEventListener("focus", handleVisible);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pagehide", handlePageHide);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleHidden);
       window.removeEventListener("focus", handleVisible);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("beforeunload", handleBeforeUnload);
 
@@ -154,46 +327,62 @@ export function useExamSession() {
         cheatTimeoutRef.current = null;
       }
     };
-  }, [examState, attempt, selectedSessionId, reportCheat]);
+  }, [
+    examState,
+    attempt,
+    selectedSessionId,
+    reportCheat,
+    applyKnownErrorState,
+    resyncAttemptState,
+  ]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     setJoinError("");
+
     if (!selectedSessionId || !accessCode) {
       setJoinError("Kode Akses wajib diisi.");
       return;
     }
+
     try {
       const res = await joinExam({ sessionId: selectedSessionId, accessCode });
+
       setAttempt(res.attempt);
       setQuestions(res.questions);
+      restoreAnswers(
+        res.attempt.savedAnswers,
+        res.attempt.id,
+        selectedSessionId,
+      );
       setExamState(res.attempt.status as ExamState);
     } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response?.status === 403 &&
-        String(error.response.data?.message).includes("diblokir")
-      ) {
-        setExamState("BLOCKED");
-      } else if (
-        axios.isAxiosError(error) &&
-        String(error.response?.data?.message).includes("melebihi batas")
-      ) {
-        setStatusMessage(error.response?.data?.message ?? "");
-        setExamState("DISQUALIFIED");
-      } else if (axios.isAxiosError(error)) {
-        setJoinError(
-          error.response?.data?.message || "Gagal masuk ke sesi ujian.",
-        );
-      } else {
-        setJoinError("Gagal masuk ke sesi ujian.");
+      const handled = applyKnownErrorState(error, "Gagal masuk ke sesi ujian.");
+      if (!handled) {
+        if (axios.isAxiosError(error)) {
+          setJoinError(
+            error.response?.data?.message || "Gagal masuk ke sesi ujian.",
+          );
+        } else {
+          setJoinError("Gagal masuk ke sesi ujian.");
+        }
       }
     }
   };
 
   const handleSelectAnswer = useCallback(
     async (questionId: string, option: AnswerOption, retryCount = 0) => {
-      setAnswers((prev) => ({ ...prev, [questionId]: option }));
+      setAnswers((prev) => {
+        const next = { ...prev, [questionId]: option };
+        if (attempt?.id) {
+          localStorage.setItem(
+            `mbclab_exam_${attempt.id}`,
+            JSON.stringify(next),
+          );
+        }
+        return next;
+      });
+
       setSaveStatus("saving");
 
       try {
@@ -203,10 +392,16 @@ export function useExamSession() {
           selectedOption: option,
         });
         setSaveStatus("success");
-        setTimeout(() => setSaveStatus("idle"), 2000);
+        setTimeout(() => setSaveStatus("idle"), 1500);
       } catch (error) {
+        const handled = applyKnownErrorState(
+          error,
+          "Terjadi perubahan status pada ujian Anda.",
+        );
+        if (handled) return;
+
         if (retryCount < 3) {
-          const delay = Math.pow(2, retryCount) * 1000;
+          const delay = Math.pow(2, retryCount) * 500;
           setTimeout(
             () => handleSelectAnswer(questionId, option, retryCount + 1),
             delay,
@@ -216,30 +411,27 @@ export function useExamSession() {
         }
       }
     },
-    [selectedSessionId, saveAnswer],
+    [selectedSessionId, saveAnswer, applyKnownErrorState, attempt?.id],
   );
-
-  const handleForceSubmit = async () => {
-    try {
-      await submitExam(selectedSessionId);
-      setExamState("SUBMITTED");
-    } catch (error) {
-      setExamState("SUBMITTED");
-    }
-  };
 
   const handleManualSubmit = async () => {
     try {
       await submitExam(selectedSessionId);
       setExamState("SUBMITTED");
+      if (attempt?.id) {
+        localStorage.removeItem(`mbclab_exam_${attempt.id}`);
+      }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        showToast.error(
-          "Gagal Submit",
-          error.response?.data?.message || "Gagal menyelesaikan ujian.",
-        );
-      } else {
-        showToast.error("Gagal Submit", "Gagal menyelesaikan ujian.");
+      const handled = applyKnownErrorState(error, "Gagal menyelesaikan ujian.");
+      if (!handled) {
+        if (axios.isAxiosError(error)) {
+          showToast.error(
+            "Gagal Submit",
+            error.response?.data?.message || "Gagal menyelesaikan ujian.",
+          );
+        } else {
+          showToast.error("Gagal Submit", "Gagal menyelesaikan ujian.");
+        }
       }
     }
   };
@@ -252,8 +444,14 @@ export function useExamSession() {
         sessionId: selectedSessionId,
         code: unblockCode,
       });
+
       setAttempt(res.attempt);
       setQuestions(res.questions);
+      restoreAnswers(
+        res.attempt.savedAnswers,
+        res.attempt.id,
+        selectedSessionId,
+      );
       setExamState("IN_PROGRESS");
       setUnblockCode("");
       setStatusMessage("");
@@ -263,7 +461,11 @@ export function useExamSession() {
           error.response?.data?.message || "Kode unblock tidak valid.";
         setUnblockError(message);
 
-        if (String(message).includes("diakhiri")) {
+        if (
+          String(message).toLowerCase().includes("diakhiri") ||
+          String(message).toLowerCase().includes("diskualifikasi") ||
+          String(message).toLowerCase().includes("disqualified")
+        ) {
           setStatusMessage(message);
           setExamState("DISQUALIFIED");
         }

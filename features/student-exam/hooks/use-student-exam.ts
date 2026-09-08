@@ -36,3 +36,7 @@ export const useMyExamAttempts = () => {
     queryFn: examService.getMyAttempts,
   });
 };
+
+export const useSyncAnswers = () => {
+  return useMutation({ mutationFn: examService.syncAnswers });
+};

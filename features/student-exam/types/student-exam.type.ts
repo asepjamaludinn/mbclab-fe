@@ -14,13 +14,21 @@ export type Question = {
   optionEEn: string | null;
 };
 
+export type AnswerOption = "A" | "B" | "C" | "D" | "E";
+
 export type ExamAttempt = {
   id: string;
-  status: "NOT_STARTED" | "IN_PROGRESS" | "BLOCKED" | "SUBMITTED";
+  status:
+    | "NOT_STARTED"
+    | "IN_PROGRESS"
+    | "BLOCKED"
+    | "SUBMITTED"
+    | "DISQUALIFIED";
   startedAt: string;
   submittedAt: string | null;
   expiredAt: string;
   cheatCount: number;
+  savedAnswers?: { questionId: string; selectedOption: AnswerOption }[];
 };
 
 export type JoinExamResponse = {
@@ -32,7 +40,7 @@ export type JoinExamResponse = {
 export type SaveAnswerPayload = {
   sessionId: string;
   questionId: string;
-  selectedOption: "A" | "B" | "C" | "D" | "E";
+  selectedOption: AnswerOption;
 };
 
 export type UnblockPayload = {

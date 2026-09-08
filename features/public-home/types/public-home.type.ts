@@ -12,7 +12,10 @@ export type PublicModule = {
   title: string;
   description: string;
   isActive: boolean;
-  fileUrl: string;
+  fileUrlRegular: string | null;
+  fileUrlInternational: string | null;
+  coverUrl: string | null;
+  order: number;
 };
 
 export type PublicQuickMenu = {
@@ -46,9 +49,11 @@ export type PublicModuleApiResponse = {
   title: string;
   description: string | null;
   isActive: boolean;
-  fileUrl: string | null;
+  fileUrlRegular: string | null;
+  fileUrlInternational: string | null;
   order: number;
   tpDeadline: string | null;
+  coverUrl: string | null;
 };
 
 export type HeroCard = {

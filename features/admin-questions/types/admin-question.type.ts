@@ -1,5 +1,6 @@
 export type QuestionType = "TP" | "TA";
 export type AnswerOption = "A" | "B" | "C" | "D" | "E";
+export type TpVariant = "ALL" | "EVEN" | "ODD";
 
 export type AdminQuestion = {
   id: string;
@@ -20,6 +21,7 @@ export type AdminQuestion = {
   correctAnswer: AnswerOption | null;
   createdAt: string;
   updatedAt: string;
+  tpVariant: TpVariant;
   module?: {
     title: string;
     order: number;
@@ -29,6 +31,7 @@ export type AdminQuestion = {
 export type CreateQuestionPayload = {
   moduleId: string;
   type: QuestionType;
+  tpVariant?: TpVariant;
   content: string;
   contentEn?: string;
   optionA?: string;

@@ -58,41 +58,48 @@ export function StatusToggleDialog({
 
   return (
     <Dialog open={!!student} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <DialogHeader className="text-left">
           <div
-            className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_12px_28px_-14px_rgba(0,0,0,0.3)] ${
-              isDeactivateAction ? "bg-error" : "bg-success"
+            className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl backdrop-blur-md ${
+              isDeactivateAction
+                ? "bg-error/90 shadow-error/20"
+                : "bg-success/90 shadow-success/20"
             }`}
           >
             {isDeactivateAction ? (
-              <ShieldOff className="h-7 w-7" strokeWidth={1.8} />
+              <ShieldOff className="h-7 w-7" strokeWidth={1.5} />
             ) : (
-              <ShieldCheck className="h-7 w-7" strokeWidth={1.8} />
+              <ShieldCheck className="h-7 w-7" strokeWidth={1.5} />
             )}
           </div>
-          <DialogTitle>
+          <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
             {isDeactivateAction
               ? "Nonaktifkan Akun?"
               : "Aktifkan Kembali Akun?"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
             {isDeactivateAction ? (
               <>
-                <strong>{student?.name}</strong> ({student?.nim}) tidak akan
-                bisa login sampai akunnya diaktifkan kembali.
+                <strong className="font-medium text-grey-800">
+                  {student?.name}
+                </strong>{" "}
+                ({student?.nim}) tidak akan bisa login sampai akunnya diaktifkan
+                kembali.
               </>
             ) : (
               <>
-                <strong>{student?.name}</strong> ({student?.nim}) akan dapat
-                login kembali seperti biasa.
+                <strong className="font-medium text-grey-800">
+                  {student?.name}
+                </strong>{" "}
+                ({student?.nim}) akan dapat login kembali seperti biasa.
               </>
             )}
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <div className="mt-2 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+          <div className="mt-2 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
             {error}
           </div>
         )}
@@ -102,7 +109,7 @@ export function StatusToggleDialog({
             <Button
               type="button"
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
             >
               Batal
             </Button>
@@ -111,7 +118,11 @@ export function StatusToggleDialog({
             variant={isDeactivateAction ? "danger" : "default"}
             onClick={handleConfirm}
             disabled={isPending}
-            className="w-full sm:w-auto"
+            className={`w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 ${
+              isDeactivateAction
+                ? "bg-error hover:bg-error/90 text-white shadow-error/20"
+                : ""
+            }`}
           >
             {isPending
               ? "Memproses..."

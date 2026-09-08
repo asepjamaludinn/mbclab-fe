@@ -65,60 +65,62 @@ export function ModulesFeature() {
     <div className="flex w-full flex-col gap-6 font-primary">
       <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
+          <h1 className="font-primary text-2xl font-medium tracking-tighter text-grey-900">
             Modul Praktikum
           </h1>
-          <p className="mt-1 font-secondary text-sm text-grey-500">
+          <p className="mt-1 font-secondary text-sm tracking-tight text-grey-500">
             Kelola materi, status, dan tenggat waktu pengumpulan TP tiap modul.
           </p>
         </div>
 
         <Button
           onClick={openCreate}
-          className="h-10 shrink-0 rounded-lg px-4 shadow-sm"
+          className="h-10 shrink-0 rounded-xl px-4 shadow-md font-medium tracking-tight"
         >
-          <Plus className="mr-2 h-4 w-4" strokeWidth={2} />
+          <Plus className="mr-2 h-4 w-4" strokeWidth={1.5} />
           Tambah Modul
         </Button>
       </div>
 
       {/* Ringkasan status */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="flex items-center gap-3 rounded-2xl border border-grey-200 bg-white p-4 shadow-sm">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Layers className="h-5 w-5" strokeWidth={2} />
+        <div className="flex items-center gap-3 rounded-[28px] border border-white/60 bg-white/60 backdrop-blur-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/10 backdrop-blur-md">
+            <Layers className="h-5 w-5" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-xl font-extrabold text-grey-900">
+            <p className="text-2xl font-medium tracking-tighter text-grey-900">
               {summary.total}
             </p>
-            <p className="font-secondary text-xs text-grey-500">Total Modul</p>
+            <p className="font-secondary text-xs font-medium tracking-tight text-grey-500">
+              Total Modul
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-grey-200 bg-white p-4 shadow-sm">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info-700">
-            <Clock className="h-5 w-5" strokeWidth={2} />
+        <div className="flex items-center gap-3 rounded-[28px] border border-white/60 bg-white/60 backdrop-blur-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info-700 border border-info/10 backdrop-blur-md">
+            <Clock className="h-5 w-5" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-xl font-extrabold text-grey-900">
+            <p className="text-2xl font-medium tracking-tighter text-grey-900">
               {summary.total - summary.closed}
             </p>
-            <p className="font-secondary text-xs text-grey-500">
+            <p className="font-secondary text-xs font-medium tracking-tight text-grey-500">
               TP Masih Terbuka
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-grey-200 bg-white p-4 shadow-sm">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-error/10 text-error">
-            <Lock className="h-5 w-5" strokeWidth={2} />
+        <div className="flex items-center gap-3 rounded-[28px] border border-white/60 bg-white/60 backdrop-blur-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-error/10 text-error border border-error/10 backdrop-blur-md">
+            <Lock className="h-5 w-5" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-xl font-extrabold text-grey-900">
+            <p className="text-2xl font-medium tracking-tighter text-grey-900">
               {summary.closed}
             </p>
-            <p className="font-secondary text-xs text-grey-500">
+            <p className="font-secondary text-xs font-medium tracking-tight text-grey-500">
               TP Sudah Ditutup
             </p>
           </div>
@@ -126,14 +128,14 @@ export function ModulesFeature() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
-          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
+        <div className="flex h-11 flex-1 items-center rounded-xl border border-white/50 bg-white/50 backdrop-blur-md shadow-sm px-4 sm:max-w-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={1.5} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari modul..."
-            className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+            className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
           />
         </div>
 
@@ -150,27 +152,27 @@ export function ModulesFeature() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-[180px] animate-pulse rounded-[28px] bg-grey-100"
+              className="h-[180px] animate-pulse rounded-[32px] bg-white/40 backdrop-blur-md border border-white/50"
             />
           ))}
         </div>
       ) : isError ? (
-        <div className="rounded-2xl border border-grey-200 bg-white p-10 text-center">
-          <p className="font-secondary text-sm font-semibold text-error">
+        <div className="rounded-[32px] border border-error/20 bg-error/5 backdrop-blur-md p-10 text-center">
+          <p className="font-secondary text-sm font-medium tracking-tight text-error">
             Gagal memuat data modul.
           </p>
         </div>
       ) : filteredModules.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-grey-200 bg-white p-14 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <BookOpen className="h-7 w-7" strokeWidth={1.8} />
+        <div className="flex flex-col items-center justify-center rounded-[32px] border border-white/60 bg-white/50 backdrop-blur-2xl p-14 text-center shadow-sm">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/10 backdrop-blur-md">
+            <BookOpen className="h-7 w-7" strokeWidth={1.5} />
           </div>
-          <p className="text-sm font-bold text-grey-900">
+          <p className="text-sm font-medium tracking-tighter text-grey-900">
             {modules.length === 0
               ? "Belum ada modul"
               : "Tidak ada modul yang cocok"}
           </p>
-          <p className="mt-1 font-secondary text-xs text-grey-500">
+          <p className="mt-1 font-secondary text-xs tracking-tight text-grey-500">
             {modules.length === 0
               ? 'Klik "Tambah Modul" untuk membuat modul praktikum pertama.'
               : "Coba ubah kata kunci pencarian atau filter."}

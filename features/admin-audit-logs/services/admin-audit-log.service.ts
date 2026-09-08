@@ -3,6 +3,9 @@ import { AuditLogsResponse } from "../types/admin-audit-log.type";
 
 export type AuditLogsQueryParams = {
   action?: string;
+  entity?: string;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   limit?: number;
 };
@@ -14,6 +17,9 @@ export const adminAuditLogService = {
     const res = await api.get<AuditLogsResponse>("/audit-logs", {
       params: {
         action: params.action || undefined,
+        entity: params.entity || undefined,
+        dateFrom: params.dateFrom || undefined,
+        dateTo: params.dateTo || undefined,
         page: params.page ?? 1,
         limit: params.limit ?? 15,
       },

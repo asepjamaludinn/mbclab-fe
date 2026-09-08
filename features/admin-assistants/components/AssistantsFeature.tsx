@@ -9,6 +9,7 @@ import {
   Pencil,
   Trash2,
   ImageOff,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   useAdminAssistants,
@@ -20,13 +21,14 @@ import { Switch } from "@/shared/components/ui/switch";
 import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
 import { resolveAssetUrl } from "@/shared/utils/asset-url";
+import { useRowSelection } from "@/shared/hooks/use-row-selection";
+import { AdminPageLayout } from "@/shared/components/layout/AdminPageLayout";
 import { AssistantFormDialog } from "./AssistantFormDialog";
 import { DeleteAssistantDialog } from "./DeleteAssistantDialog";
+import { BulkDeleteAssistantsDialog } from "./BulkDeleteAssistantsDialog";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
 type StatusFilter = "all" | "active" | "inactive";
-
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Semua Status" },
   { value: "active", label: "Aktif" },
@@ -42,7 +44,7 @@ export function AssistantsFeature() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingAssistant, setEditingAssistant] =
     useState<AdminAssistantProfile | null>(null);
@@ -59,10 +61,8 @@ export function AssistantsFeature() {
         a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         a.position.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-
     if (statusFilter === "active") result = result.filter((a) => a.isActive);
     if (statusFilter === "inactive") result = result.filter((a) => !a.isActive);
-
     return [...result].sort((a, b) => a.order - b.order);
   }, [assistants, searchQuery, statusFilter]);
 
@@ -73,15 +73,15 @@ export function AssistantsFeature() {
     safePage * pageSize,
   );
 
-  const openCreateDialog = () => {
-    setEditingAssistant(null);
-    setFormOpen(true);
-  };
-
-  const openEditDialog = (assistant: AdminAssistantProfile) => {
-    setEditingAssistant(assistant);
-    setFormOpen(true);
-  };
+  const {
+    selectedIds,
+    toggleRow,
+    selectedItems,
+    toggleList,
+    clearSelection,
+    isListAllSelected,
+    isListSomeSelected,
+  } = useRowSelection(paginated, (a) => a.id);
 
   const isTogglingRow = (id: string) => togglingVariables?.id === id;
 
@@ -90,9 +90,9 @@ export function AssistantsFeature() {
       key: "photo",
       header: "Foto",
       headerClassName:
-        "w-16 px-6 py-3.5 font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+        "w-16 px-6 py-3.5 font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
       render: (a) => (
-        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-grey-200 bg-grey-50">
+        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-white/60 bg-white/50 shadow-sm backdrop-blur-md">
           {a.photoUrl ? (
             <Image
               src={resolveAssetUrl(a.photoUrl)}
@@ -103,7 +103,7 @@ export function AssistantsFeature() {
               unoptimized
             />
           ) : (
-            <ImageOff className="h-4 w-4 text-grey-300" />
+            <ImageOff className="h-4 w-4 text-grey-300" strokeWidth={1.5} />
           )}
         </div>
       ),
@@ -113,8 +113,10 @@ export function AssistantsFeature() {
       header: "Nama",
       render: (a) => (
         <div>
-          <p className="text-sm font-semibold text-grey-900">{a.name}</p>
-          <p className="mt-0.5 font-secondary text-xs text-grey-500">
+          <p className="text-sm font-medium tracking-tight text-grey-900">
+            {a.name}
+          </p>
+          <p className="mt-0.5 font-secondary text-xs tracking-tight text-grey-500">
             {a.position}
           </p>
         </div>
@@ -124,7 +126,9 @@ export function AssistantsFeature() {
       key: "order",
       header: "Urutan",
       render: (a) => (
-        <span className="font-secondary text-sm text-grey-600">{a.order}</span>
+        <span className="font-secondary text-sm font-medium tracking-tight text-grey-600">
+          {a.order}
+        </span>
       ),
     },
     {
@@ -139,7 +143,7 @@ export function AssistantsFeature() {
               updateAssistant({ id: a.id, payload: { isActive: checked } })
             }
           />
-          <span className="font-secondary text-xs font-semibold text-grey-500">
+          <span className="font-secondary text-xs font-medium tracking-tight text-grey-500">
             {a.isActive ? "Aktif" : "Nonaktif"}
           </span>
         </div>
@@ -149,22 +153,23 @@ export function AssistantsFeature() {
       key: "actions",
       header: "Aksi",
       headerClassName:
-        "px-6 py-3.5 text-right font-secondary text-[11px] font-bold uppercase tracking-wider text-grey-500",
+        "px-6 py-3.5 text-right font-secondary text-[11px] font-medium uppercase tracking-wider text-grey-500",
       render: (a) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
-            onClick={() => openEditDialog(a)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-primary/10 hover:text-primary"
-            aria-label="Ubah profil asisten"
+            onClick={() => {
+              setEditingAssistant(a);
+              setFormOpen(true);
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-primary hover:shadow-sm"
           >
-            <Pencil className="h-4 w-4" strokeWidth={2} />
+            <Pencil className="h-4 w-4" strokeWidth={1.5} />
           </button>
           <button
             onClick={() => setDeletingAssistant(a)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-grey-400 transition hover:bg-error/10 hover:text-error"
-            aria-label="Hapus profil asisten"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-error hover:shadow-sm"
           >
-            <Trash2 className="h-4 w-4" strokeWidth={2} />
+            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
           </button>
         </div>
       ),
@@ -172,46 +177,64 @@ export function AssistantsFeature() {
   ];
 
   return (
-    <div className="flex w-full flex-col gap-6 font-primary">
-      <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="font-primary text-2xl font-bold tracking-tight text-grey-900">
-            Asisten Laboratorium
-          </h1>
-          <p className="mt-1 font-secondary text-sm text-grey-500">
-            Kelola profil, foto, dan urutan tampil asisten di halaman publik.
-          </p>
-        </div>
-
+    <AdminPageLayout
+      title="Asisten Laboratorium"
+      description="Kelola profil, foto, dan urutan tampil asisten di halaman publik."
+      headerActions={
         <Button
-          onClick={openCreateDialog}
-          className="h-10 shrink-0 rounded-lg px-4 shadow-sm"
+          onClick={() => {
+            setEditingAssistant(null);
+            setFormOpen(true);
+          }}
+          className="h-10 shrink-0 rounded-xl px-4 shadow-md font-medium tracking-tight"
         >
-          <Plus className="mr-2 h-4 w-4" strokeWidth={2} />
-          Tambah Asisten
+          <Plus className="mr-2 h-4 w-4" strokeWidth={1.5} /> Tambah Asisten
         </Button>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex h-11 flex-1 items-center rounded-xl border border-grey-200 bg-white px-4 sm:max-w-md">
-          <Search className="mr-2.5 h-4 w-4 text-grey-400" strokeWidth={2} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama atau posisi..."
-            className="flex-1 bg-transparent text-sm text-grey-900 placeholder:text-grey-400 focus:outline-none"
+      }
+      selectedCount={selectedIds.size}
+      itemLabel="asisten"
+      onClearSelection={clearSelection}
+      bulkActions={
+        <Button
+          variant="danger"
+          className="h-9 rounded-lg px-3 text-xs font-medium tracking-tight shadow-sm"
+          onClick={() => setBulkDeleteOpen(true)}
+        >
+          <Trash2 className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} /> Hapus{" "}
+          {selectedIds.size} Profil
+        </Button>
+      }
+      filters={
+        <>
+          <div className="flex h-11 flex-1 items-center rounded-xl border border-white/50 bg-white/50 backdrop-blur-md shadow-sm px-4 sm:max-w-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+            <Search
+              className="mr-2.5 h-4 w-4 text-grey-400"
+              strokeWidth={1.5}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama atau posisi..."
+              className="flex-1 bg-transparent text-sm font-medium tracking-tight text-grey-900 placeholder:font-normal placeholder:text-grey-400 focus:outline-none"
+            />
+          </div>
+          <FilterDropdown
+            icon={
+              <SlidersHorizontal
+                className="h-4 w-4 shrink-0 text-grey-400"
+                strokeWidth={1.5}
+              />
+            }
+            value={statusFilter}
+            options={STATUS_OPTIONS}
+            onChange={setStatusFilter}
+            widthClassName="sm:w-48"
+            hideCheckIcon={true}
           />
-        </div>
-
-        <FilterDropdown
-          value={statusFilter}
-          options={STATUS_OPTIONS}
-          onChange={setStatusFilter}
-          widthClassName="sm:w-48"
-        />
-      </div>
-
+        </>
+      }
+    >
       <DataTable
         columns={columns}
         data={paginated}
@@ -230,6 +253,13 @@ export function AssistantsFeature() {
             ? 'Klik "Tambah Asisten" untuk membuat profil pertama.'
             : "Coba ubah kata kunci pencarian atau filter."
         }
+        selection={{
+          isAllSelected: isListAllSelected(paginated),
+          isSomeSelected: isListSomeSelected(paginated),
+          onToggleRow: toggleRow,
+          onToggleAll: () => toggleList(paginated),
+          isRowSelected: (id) => selectedIds.has(id),
+        }}
         page={safePage}
         pageSize={pageSize}
         totalItems={filteredSorted.length}
@@ -251,6 +281,12 @@ export function AssistantsFeature() {
         assistant={deletingAssistant}
         onOpenChange={(open) => !open && setDeletingAssistant(null)}
       />
-    </div>
+      <BulkDeleteAssistantsDialog
+        assistants={selectedItems}
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onDeleted={clearSelection}
+      />
+    </AdminPageLayout>
   );
 }

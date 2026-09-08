@@ -16,14 +16,14 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
     title: assistant.name,
     ariaLabel: assistant.name,
     node: (
-      <article className="w-[122px] rounded-[26px] border border-white/70 bg-white/75 px-3 py-5 text-center shadow-sm backdrop-blur-xl">
-        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-primary/5">
+      <article className="flex h-full w-[140px] flex-col items-center justify-start rounded-[26px] border border-white/70 bg-white/75 px-3 py-4 text-center shadow-sm backdrop-blur-xl">
+        <div className="mx-auto mb-3 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-primary/5">
           {assistant.photoUrl ? (
             <Image
               src={resolveAssetUrl(assistant.photoUrl)}
               alt={assistant.name}
-              width={56}
-              height={56}
+              width={64}
+              height={64}
               className="h-full w-full object-cover"
               loading="lazy"
               unoptimized
@@ -35,11 +35,11 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
           )}
         </div>
 
-        <h3 className="line-clamp-2 text-xs font-extrabold leading-tight text-grey-900">
+        <h3 className="line-clamp-2 w-full text-xs font-extrabold leading-tight text-grey-900">
           {assistant.name}
         </h3>
 
-        <p className="mt-1 line-clamp-1 font-secondary text-[10px] text-grey-500">
+        <p className="mt-1.5 line-clamp-2 w-full font-secondary text-[10px] leading-[1.3] text-grey-500">
           {assistant.role}
         </p>
       </article>
@@ -67,7 +67,7 @@ export function HomeAssistantList({ assistants }: HomeAssistantListProps) {
             speed={30}
             direction="left"
             gap={12}
-            logoHeight={140}
+            logoHeight={164}
             pauseOnHover
             scaleOnHover
             fadeOut

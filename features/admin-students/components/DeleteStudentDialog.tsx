@@ -54,44 +54,56 @@ export function DeleteStudentDialog({
 
   return (
     <Dialog open={!!student} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] rounded-[28px] border border-grey-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.18)]">
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-3xl">
         <DialogHeader className="text-left">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-error text-white shadow-[0_12px_28px_-14px_rgba(220,38,38,0.65)]">
-            <Trash2 className="h-7 w-7" strokeWidth={1.8} />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-error/90 text-white shadow-xl shadow-error/20 backdrop-blur-md">
+            <Trash2 className="h-7 w-7" strokeWidth={1.5} />
           </div>
-          <DialogTitle>Hapus Praktikan?</DialogTitle>
-          <DialogDescription>
-            Akun praktikan <strong>{student?.name}</strong> ({student?.nim})
-            akan dihapus dari sistem.
+          <DialogTitle className="text-xl font-medium tracking-tighter text-grey-900">
+            Hapus Praktikan?
+          </DialogTitle>
+          <DialogDescription className="font-secondary text-sm leading-relaxed tracking-tight text-grey-500">
+            Akun praktikan{" "}
+            <strong className="font-medium text-grey-800">
+              {student?.name}
+            </strong>{" "}
+            ({student?.nim}) akan dihapus dari sistem.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Jika terdeteksi punya data, kunci tombol dan tampilkan UI Notice khusus */}
         {hasHistoryData ? (
-          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-xs text-warning-700">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-xs text-warning-700 backdrop-blur-md">
+            <AlertTriangle
+              className="mt-0.5 h-5 w-5 shrink-0 text-warning-700"
+              strokeWidth={1.5}
+            />
             <div className="space-y-1">
-              <p className="font-bold">Penghapusan Permanen Dikunci</p>
-              <p className="leading-relaxed">
+              <p className="font-medium tracking-tight">
+                Penghapusan Permanen Dikunci
+              </p>
+              <p className="leading-relaxed opacity-90">
                 Praktikan ini sudah memiliki riwayat ujian, pengumpulan TP, atau
                 nilai di dalam basis data lab. Sistem mengunci fitur hapus demi
                 menjaga integritas data nilai akademik.
               </p>
-              <p className="font-medium mt-1 text-slate-700">
-                💡 **Solusi:** Tutup dialog ini dan gunakan tombol **Nonaktifkan
-                Akun** (ikon perisai) pada baris tabel praktikan.
+              <p className="font-medium mt-2 text-grey-700">
+                💡 Solusi: Tutup dialog ini dan gunakan tombol{" "}
+                <span className="font-bold text-grey-900">
+                  Nonaktifkan Akun
+                </span>{" "}
+                pada baris tabel praktikan.
               </p>
             </div>
           </div>
         ) : (
-          <p className="mt-2 font-secondary text-xs leading-relaxed text-grey-500">
+          <p className="mt-2 font-secondary text-xs leading-relaxed tracking-tight text-grey-500">
             Tindakan ini bersifat permanen. Anda hanya dapat menghapus praktikan
             yang belum memiliki aktivitas praktikum sama sekali.
           </p>
         )}
 
         {error && (
-          <div className="mt-3 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm text-error">
+          <div className="mt-3 rounded-2xl border border-error/15 bg-error/5 px-4 py-3 font-secondary text-sm font-medium tracking-tight text-error backdrop-blur-md">
             {error}
           </div>
         )}
@@ -101,7 +113,7 @@ export function DeleteStudentDialog({
             <Button
               type="button"
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-medium tracking-tight border-white/60 bg-white/50 backdrop-blur-md hover:bg-white/80"
             >
               {hasHistoryData ? "Kembali" : "Batal"}
             </Button>
@@ -111,7 +123,7 @@ export function DeleteStudentDialog({
             variant="danger"
             onClick={handleDelete}
             disabled={isPending || hasHistoryData}
-            className="w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto font-medium tracking-tight rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 bg-error hover:bg-error/90 hover:shadow-error/20 text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
           >
             {isPending ? "Menghapus..." : "Ya, Hapus Permanen"}
           </Button>

@@ -19,7 +19,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Question } from "../types/student-exam.type";
 import { AnswerOption, SaveStatus } from "../hooks/use-exam-session";
-import { useProfile } from "@/features/auth"; // <-- IMPORT USE PROFILE
+import { useProfile } from "@/features/auth";
 
 function hashString(str: string) {
   let hash = 0;
@@ -68,7 +68,7 @@ export function ExamInProgress({
   onSelectAnswer,
   onManualSubmit,
 }: Props) {
-  const { data: user } = useProfile("STUDENT"); // <-- CEK STATUS MAHASISWA
+  const { data: user } = useProfile("STUDENT");
   const isInter = user?.isInternational === true;
 
   const [confirmOpen, setConfirmOpen] = useState(false);

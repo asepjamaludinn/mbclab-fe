@@ -24,4 +24,8 @@ export const adminAccountService = {
     const res = await api.delete(`/users/admins/${id}`);
     return res.data;
   },
+  bulkDeleteAdmins: async (ids: string[]) => {
+    const res = await api.post("/users/admins/bulk-delete", { ids });
+    return res.data;
+  },
 };
