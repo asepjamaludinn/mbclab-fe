@@ -70,8 +70,6 @@ export function StudentDashboardFeature() {
 
   const modules = modulesRes?.data || [];
 
-  // LOGIKA BARU: Cari modul aktif dari urutan paling belakang (terbaru),
-  // Jika tidak ada yang aktif, ambil modul terakhir (tertinggi).
   const activeModule =
     modules
       .slice()

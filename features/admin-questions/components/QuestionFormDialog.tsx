@@ -151,7 +151,6 @@ export function QuestionFormDialog({
     }
   }, [open, question, defaultModuleId, reset]);
 
-  // LOGIKA BARU: Jika error saat submit, cek tab mana yang error lalu pindah otomatis
   const onInvalid = (validationErrors: FieldErrors<QuestionFormData>) => {
     if (
       validationErrors.content ||

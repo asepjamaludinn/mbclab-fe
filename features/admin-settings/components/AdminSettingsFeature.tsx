@@ -12,6 +12,7 @@ import { useChangePassword, useProfile } from "@/features/auth";
 import { Button } from "@/shared/components/ui/button";
 import { PasswordInput } from "@/shared/components/ui/password-input";
 import { getInitials } from "@/shared/utils/string";
+import { SessionsCard } from "@/shared/components/ui/SessionsCard";
 
 export function AdminSettingsFeature() {
   const { data: userProfile } = useProfile("ADMIN");
@@ -159,6 +160,9 @@ export function AdminSettingsFeature() {
           </div>
         </form>
       </div>
+
+      {/* Manajemen Sesi Perangkat */}
+      <SessionsCard />
     </div>
   );
 }

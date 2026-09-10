@@ -14,14 +14,6 @@ export const useAdminStudents = (params: StudentsQueryParams) => {
   });
 };
 
-export const useAdminStudent = (id: string) => {
-  return useQuery({
-    queryKey: ["admin-student", id],
-    queryFn: () => adminStudentService.getStudent(id),
-    enabled: !!id,
-  });
-};
-
 export const useCreateStudent = () => {
   const qc = useQueryClient();
   return useMutation({

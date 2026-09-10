@@ -11,6 +11,7 @@ import {
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { GroupInfoCard } from "./GroupInfoCard";
 import { LogoutDialog } from "./LogoutDialog";
+import { SessionsCard } from "@/shared/components/ui/SessionsCard";
 
 type AccountActionsProps = {
   role?: string;
@@ -104,6 +105,8 @@ export function AccountActions({
           </div>
         </div>
       </div>
+
+      <SessionsCard />
 
       <GroupInfoCard
         groupName={groupName}
