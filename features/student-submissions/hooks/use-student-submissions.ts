@@ -27,3 +27,15 @@ export const useSubmitTp = () => {
     },
   });
 };
+
+export const useDeleteSubmission = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (moduleId: string) =>
+      submissionsService.deleteSubmission(moduleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-submissions"] });
+    },
+  });
+};

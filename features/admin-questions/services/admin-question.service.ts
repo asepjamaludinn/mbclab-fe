@@ -6,6 +6,8 @@ import {
   QuestionType,
   UpdateQuestionPayload,
   BulkImportQuestionsResult,
+  BulkCreateQuestionsPayload,
+  BulkCreateQuestionsResult,
 } from "../types/admin-question.type";
 
 export type QuestionsQueryParams = {
@@ -61,6 +63,16 @@ export const adminQuestionService = {
       "/questions/bulk-import",
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data;
+  },
+
+  bulkCreateManual: async (
+    payload: BulkCreateQuestionsPayload,
+  ): Promise<BulkCreateQuestionsResult> => {
+    const res = await api.post<BulkCreateQuestionsResult>(
+      "/questions/bulk-create",
+      payload,
     );
     return res.data;
   },

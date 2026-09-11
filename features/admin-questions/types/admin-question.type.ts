@@ -65,3 +65,21 @@ export type BulkImportQuestionsResult = {
 };
 
 export type UpdateQuestionPayload = Partial<CreateQuestionPayload>;
+
+export type BulkCreateQuestionsPayload = {
+  questions: CreateQuestionPayload[];
+};
+
+export type BulkCreateQuestionItemResult = {
+  index: number;
+  success: boolean;
+  reason?: string;
+  questionId?: string;
+};
+
+export type BulkCreateQuestionsResult = {
+  message: string;
+  successCount: number;
+  failedCount: number;
+  results: BulkCreateQuestionItemResult[];
+};

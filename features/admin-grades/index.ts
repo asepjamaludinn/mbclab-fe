@@ -3,3 +3,7 @@ export * from "./components/EditTpScoreDialog";
 export * from "./types/admin-grade.type";
 export * from "./services/admin-grade.service";
 export * from "./hooks/use-admin-grades";
+export * from "./components/ExamReviewDialog";
+export * from "./hooks/use-admin-exam-review";
+export * from "./services/admin-exam-review.service";
+export * from "./types/admin-exam-review.type";

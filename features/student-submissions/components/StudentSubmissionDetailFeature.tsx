@@ -14,10 +14,16 @@ import {
   ClipboardList,
   Download,
   Clock,
+  ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { generateTpReceiptPdf } from "../utils/tp-receipt";
 import { Button } from "@/shared/components/ui/button";
-import { useUploadFile, useSubmitTp } from "../hooks/use-student-submissions";
+import {
+  useUploadFile,
+  useSubmitTp,
+  useMySubmissions,
+} from "../hooks/use-student-submissions";
 import { useStudentModuleDetail } from "@/features/student-modules";
 import { useProfile } from "@/features/auth";
 import axios from "axios";
@@ -30,10 +36,18 @@ import {
   isInGracePeriod,
   formatDeadline,
 } from "@/shared/utils/deadline";
+import { resolveAssetUrl } from "@/shared/utils/asset-url";
+import { showToast } from "@/shared/lib/toast";
+import { DeleteSubmissionDialog } from "./DeleteSubmissionDialog";
 
 type StudentSubmissionDetailFeatureProps = {
   moduleId: string;
 };
+
+function getFileNameFromUrl(fileUrl: string) {
+  const parts = fileUrl.split("/");
+  return parts[parts.length - 1] || "Tugas_Pendahuluan.pdf";
+}
 
 export function StudentSubmissionDetailFeature({
   moduleId,
@@ -42,16 +56,24 @@ export function StudentSubmissionDetailFeature({
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const [validationError, setValidationError] = useState("");
   const [apiError, setApiError] = useState("");
+  const [deletingModuleId, setDeletingModuleId] = useState<string | null>(null);
 
   const { data: userProfile } = useProfile("STUDENT");
   const isInter = userProfile?.isInternational === true;
 
   const { data: moduleDetail, isLoading: isLoadingModule } =
     useStudentModuleDetail(moduleId);
+
+  const { data: mySubmissions = [], isLoading: isLoadingSubmissions } =
+    useMySubmissions();
+
+  const existingSubmission = useMemo(
+    () => mySubmissions.find((sub) => sub.moduleId === moduleId) || null,
+    [mySubmissions, moduleId],
+  );
 
   const moduleTitle = moduleDetail ? moduleDetail.title : `Memuat Modul...`;
 
@@ -93,7 +115,6 @@ export function StudentSubmissionDetailFeature({
   const isDownloadDisabled = noQuestionsAvailable || missingEnglishQuestions;
 
   const validateFile = (file: File | undefined | null) => {
-    setSuccessMessage("");
     setApiError("");
     setValidationError("");
 
@@ -123,7 +144,7 @@ export function StudentSubmissionDetailFeature({
     validateFile(file);
   };
 
-  const handleRemoveFile = (e: React.MouseEvent) => {
+  const handleRemoveSelectedFile = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedFile(null);
     setValidationError("");
@@ -135,7 +156,6 @@ export function StudentSubmissionDetailFeature({
   const handleSubmit = async () => {
     if (deadlineClosed) return;
 
-    setSuccessMessage("");
     setApiError("");
     setValidationError("");
 
@@ -151,33 +171,31 @@ export function StudentSubmissionDetailFeature({
       const fileUrl = await uploadFile(selectedFile as File);
       await submitTp({ moduleId, fileUrl });
 
-      setSuccessMessage(
+      showToast.success(
+        isInter ? "Assignment submitted" : "TP berhasil dikumpulkan",
         isInter
-          ? "Preliminary assignment successfully submitted."
-          : "Tugas Pendahuluan berhasil dikumpulkan.",
+          ? "Your preliminary assignment has been successfully submitted."
+          : "Tugas Pendahuluan Anda berhasil dikumpulkan.",
       );
-      setSelectedFile(null);
 
+      setSelectedFile(null);
       if (inputRef.current) {
         inputRef.current.value = "";
       }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setApiError(
-          error.response?.data?.message ||
-            (isInter
-              ? "Failed to upload. Please try again."
-              : "Gagal mengunggah TP. Silakan coba lagi."),
-        );
-      } else {
-        setApiError(
-          isInter
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message ||
+          (isInter
             ? "Failed to upload. Please try again."
-            : "Gagal mengunggah TP. Silakan coba lagi.",
-        );
-      }
+            : "Gagal mengunggah TP. Silakan coba lagi.")
+        : isInter
+          ? "Failed to upload. Please try again."
+          : "Gagal mengunggah TP. Silakan coba lagi.";
+      setApiError(message);
     }
   };
+
+  const isLoadingExistingState = isLoadingModule || isLoadingSubmissions;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0065b0_0%,#1e3f75_30%,#eaf6ff_58%,#ffffff_86%)] pb-10 font-primary selection:bg-primary/20">
@@ -208,9 +226,9 @@ export function StudentSubmissionDetailFeature({
         </section>
 
         <section className="mt-8 px-5">
-          {isLoadingModule ? (
+          {isLoadingExistingState ? (
             <div className="h-64 w-full animate-pulse rounded-[32px] bg-white/40 backdrop-blur-xl" />
-          ) : deadlineClosed ? (
+          ) : deadlineClosed && !existingSubmission ? (
             <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/80 px-6 py-10 text-center shadow-[0_24px_60px_-38px_rgba(0,101,176,0.3)] backdrop-blur-2xl">
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[22px] bg-error/10 text-error">
                 <LockKeyhole className="h-8 w-8" strokeWidth={1.8} />
@@ -361,132 +379,235 @@ export function StudentSubmissionDetailFeature({
 
               <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/40 px-5 pb-6 pt-5 text-slate-900 shadow-[0_24px_60px_-38px_rgba(0,101,176,0.25)] backdrop-blur-2xl">
                 <div className="relative z-10">
-                  {inGracePeriod && (
-                    <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-sm font-semibold text-warning-700">
-                      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
-                      <span>
-                        {isInter
-                          ? 'The regular submission time has ended. You are in the 15-minute grace period. Submissions uploaded now will be marked as "Late".'
-                          : 'Waktu reguler pengumpulan telah habis. Anda berada dalam masa tenggang 15 menit. TP yang diunggah sekarang akan ditandai "Terlambat".'}
-                      </span>
-                    </div>
-                  )}
-
-                  <div
-                    onClick={() => !selectedFile && inputRef.current?.click()}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      if (!selectedFile) setIsDragging(true);
-                    }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={(event) => {
-                      if (!selectedFile) handleDrop(event);
-                    }}
-                    className={`relative rounded-[24px] border-2 p-6 transition-all duration-300 backdrop-blur-xl ${
-                      selectedFile
-                        ? "border-primary/20 bg-white/80 shadow-sm"
-                        : isDragging
-                          ? "cursor-pointer border-dashed border-primary bg-primary/10"
-                          : "cursor-pointer border-dashed border-slate-300 bg-white/50 text-center hover:border-primary/40 hover:bg-white/80"
-                    }`}
-                  >
-                    <input
-                      ref={inputRef}
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      onChange={handleFileChange}
-                    />
-
-                    {selectedFile ? (
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex min-w-0 items-center gap-4">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/10 text-info">
-                            <FileText className="h-6 w-6" strokeWidth={1.8} />
+                  {/* ===== Sudah ada submission: tampilkan info file + aksi hapus ===== */}
+                  {existingSubmission ? (
+                    <div className="space-y-4">
+                      <div className="rounded-[24px] border border-success/20 bg-success/5 p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success text-white shadow-sm">
+                            <CheckCircle2
+                              className="h-6 w-6"
+                              strokeWidth={1.8}
+                            />
                           </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-extrabold text-slate-900">
-                              {selectedFile.name}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-secondary text-sm font-extrabold text-success-700">
+                              {isInter
+                                ? "Assignment already submitted"
+                                : "Tugas Pendahuluan berhasil dikumpulkan"}
                             </p>
-                            <p className="font-secondary text-xs font-medium text-slate-500">
-                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            <p className="mt-1.5 truncate font-secondary text-xs font-semibold text-slate-700">
+                              {getFileNameFromUrl(existingSubmission.fileUrl)}
                             </p>
+                            <p className="mt-1 font-secondary text-[11px] text-slate-500">
+                              {isInter ? "Submitted on " : "Dikumpulkan pada "}
+                              {new Date(
+                                existingSubmission.updatedAt,
+                              ).toLocaleString(isInter ? "en-GB" : "id-ID", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </p>
+
+                            {existingSubmission.isLate && (
+                              <span className="mt-2 inline-flex items-center rounded-full bg-warning/15 px-2.5 py-0.5 font-secondary text-[10px] font-bold text-warning-700">
+                                {isInter ? "Late" : "Terlambat"}
+                              </span>
+                            )}
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={handleRemoveFile}
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
-                          aria-label={isInter ? "Remove file" : "Hapus file"}
-                        >
-                          <Trash2 className="h-5 w-5" strokeWidth={1.8} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="text-center py-2">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-white text-primary shadow-sm backdrop-blur-xl transition-transform group-hover:-translate-y-1">
-                          <UploadCloud className="h-8 w-8" strokeWidth={1.8} />
+                        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-success/10 pt-4">
+                          {/* PERBAIKAN: Menambahkan tag pembuka <a> di bawah ini */}
+                          <a
+                            href={resolveAssetUrl(existingSubmission.fileUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/60 bg-white px-3.5 font-secondary text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            {isInter ? "View File" : "Lihat File"}
+                          </a>
+
+                          {!deadlineClosed && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDeletingModuleId(existingSubmission.moduleId)
+                              }
+                              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-error/20 bg-error/5 px-3.5 font-secondary text-xs font-bold text-error transition hover:bg-error/10"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              {isInter
+                                ? "Delete & Re-upload"
+                                : "Hapus & Unggah Ulang"}
+                            </button>
+                          )}
                         </div>
-
-                        <p className="mx-auto max-w-[220px] font-secondary text-[13px] font-medium leading-relaxed text-slate-600">
-                          <strong className="font-bold text-slate-900">
-                            {isInter ? "Click to select" : "Klik untuk memilih"}
-                          </strong>{" "}
-                          {isInter
-                            ? "or drag & drop a PDF file here. If you have already uploaded an assignment, the previous file will be replaced."
-                            : "atau drag & drop file PDF ke sini. Jika Anda telah mengunggah TP, file sebelumnya akan digantikan."}
-                        </p>
-
-                        <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
-                          {isInter
-                            ? `Maximum ${MAX_FILE_SIZE_MB} MB`
-                            : `Maksimal ${MAX_FILE_SIZE_MB} MB`}
-                        </p>
                       </div>
-                    )}
-                  </div>
 
-                  {validationError && (
-                    <span className="mt-3 block font-secondary text-sm font-semibold text-error">
-                      {validationError}
-                    </span>
-                  )}
-
-                  {apiError && (
-                    <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error-700">
-                      <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-error" />
-                      <span>{apiError}</span>
+                      {deadlineClosed && (
+                        <div className="flex items-start gap-2.5 rounded-2xl border border-grey-200 bg-grey-100/60 p-4 font-secondary text-xs leading-relaxed text-slate-500">
+                          <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span>
+                            {isInter
+                              ? "The submission deadline has passed, so this file can no longer be replaced."
+                              : "Batas waktu pengumpulan sudah lewat, sehingga file ini tidak dapat diganti lagi."}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  ) : (
+                    <>
+                      {/* ===== Belum ada submission: form upload ===== */}
+                      {inGracePeriod && (
+                        <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-secondary text-sm font-semibold text-warning-700">
+                          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-700" />
+                          <span>
+                            {isInter
+                              ? 'The regular submission time has ended. You are in the 15-minute grace period. Submissions uploaded now will be marked as "Late".'
+                              : 'Waktu reguler pengumpulan telah habis. Anda berada dalam masa tenggang 15 menit. TP yang diunggah sekarang akan ditandai "Terlambat".'}
+                          </span>
+                        </div>
+                      )}
 
-                  {successMessage && (
-                    <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-success/10 bg-success/10 p-4 font-secondary text-sm font-semibold text-success-700">
-                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
-                      <span>{successMessage}</span>
-                    </div>
-                  )}
+                      <div
+                        onClick={() =>
+                          !selectedFile && inputRef.current?.click()
+                        }
+                        onDragOver={(event) => {
+                          event.preventDefault();
+                          if (!selectedFile) setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(event) => {
+                          if (!selectedFile) handleDrop(event);
+                        }}
+                        className={`relative rounded-[24px] border-2 p-6 transition-all duration-300 backdrop-blur-xl ${
+                          selectedFile
+                            ? "border-primary/20 bg-white/80 shadow-sm"
+                            : isDragging
+                              ? "cursor-pointer border-dashed border-primary bg-primary/10"
+                              : "cursor-pointer border-dashed border-slate-300 bg-white/50 text-center hover:border-primary/40 hover:bg-white/80"
+                        }`}
+                      >
+                        <input
+                          ref={inputRef}
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
 
-                  <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={!selectedFile || isProcessing}
-                    className="mt-6 h-[52px] w-full rounded-2xl text-[15px] shadow-primary/25 disabled:opacity-50 disabled:shadow-none"
-                  >
-                    {isProcessing
-                      ? isInter
-                        ? "Uploading..."
-                        : "Mengunggah..."
-                      : isInter
-                        ? "Submit Assignment"
-                        : "Kumpulkan TP"}
-                  </Button>
+                        {selectedFile ? (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex min-w-0 items-center gap-4">
+                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/10 text-info">
+                                <FileText
+                                  className="h-6 w-6"
+                                  strokeWidth={1.8}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-extrabold text-slate-900">
+                                  {selectedFile.name}
+                                </p>
+                                <p className="font-secondary text-xs font-medium text-slate-500">
+                                  {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
+                                  MB
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={handleRemoveSelectedFile}
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10 text-error transition hover:bg-error hover:text-white"
+                              aria-label={
+                                isInter ? "Remove file" : "Hapus file"
+                              }
+                            >
+                              <Trash2 className="h-5 w-5" strokeWidth={1.8} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center py-2">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-white text-primary shadow-sm backdrop-blur-xl transition-transform group-hover:-translate-y-1">
+                              <UploadCloud
+                                className="h-8 w-8"
+                                strokeWidth={1.8}
+                              />
+                            </div>
+
+                            <p className="mx-auto max-w-[220px] font-secondary text-[13px] font-medium leading-relaxed text-slate-600">
+                              <strong className="font-bold text-slate-900">
+                                {isInter
+                                  ? "Click to select"
+                                  : "Klik untuk memilih"}
+                              </strong>{" "}
+                              {isInter
+                                ? "or drag & drop a PDF file here."
+                                : "atau drag & drop file PDF ke sini."}
+                            </p>
+
+                            <p className="mt-4 inline-flex rounded-full bg-primary/10 px-3 py-1 font-secondary text-[11px] font-bold text-primary">
+                              {isInter
+                                ? `Maximum ${MAX_FILE_SIZE_MB} MB`
+                                : `Maksimal ${MAX_FILE_SIZE_MB} MB`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {validationError && (
+                        <span className="mt-3 block font-secondary text-sm font-semibold text-error">
+                          {validationError}
+                        </span>
+                      )}
+
+                      {apiError && (
+                        <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-error/10 bg-error/10 p-4 font-secondary text-sm font-semibold text-error-700">
+                          <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-error" />
+                          <span>{apiError}</span>
+                        </div>
+                      )}
+
+                      <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={!selectedFile || isProcessing}
+                        className="mt-6 h-[52px] w-full rounded-2xl text-[15px] shadow-primary/25 disabled:opacity-50 disabled:shadow-none"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            {isInter ? "Uploading..." : "Mengunggah..."}
+                          </>
+                        ) : isInter ? (
+                          "Submit Assignment"
+                        ) : (
+                          "Kumpulkan TP"
+                        )}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </>
           )}
         </section>
       </div>
+
+      <DeleteSubmissionDialog
+        moduleId={deletingModuleId}
+        fileName={
+          existingSubmission
+            ? getFileNameFromUrl(existingSubmission.fileUrl)
+            : ""
+        }
+        onOpenChange={(open) => !open && setDeletingModuleId(null)}
+        onDeleted={() => setDeletingModuleId(null)}
+      />
     </main>
   );
 }

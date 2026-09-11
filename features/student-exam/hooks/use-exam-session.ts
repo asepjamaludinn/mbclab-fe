@@ -24,6 +24,10 @@ export type ExamState =
 export type AnswerOption = "A" | "B" | "C" | "D" | "E";
 export type SaveStatus = "idle" | "saving" | "error" | "success";
 
+const HIDDEN_GRACE_PERIOD_MS = 3000;
+const QUICK_SWITCH_WINDOW_MS = 15000;
+const QUICK_SWITCH_THRESHOLD = 3;
+
 export function useExamSession() {
   const [examState, setExamState] = useState<ExamState>("SELECT_MODULE");
   const [selectedSessionId, setSelectedSessionId] = useState("");
@@ -42,6 +46,8 @@ export function useExamSession() {
   const cheatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isResyncingRef = useRef(false);
   const isReportingCheatRef = useRef(false);
+
+  const quickSwitchTimestampsRef = useRef<number[]>([]);
 
   const { mutateAsync: joinExam, isPending: isJoining } = useJoinExam();
   const { mutateAsync: saveAnswer } = useSaveAnswer();
@@ -279,13 +285,29 @@ export function useExamSession() {
           executeCheatReport();
         }
         cheatTimeoutRef.current = null;
-      }, 3000);
+      }, HIDDEN_GRACE_PERIOD_MS);
     };
 
     const handleVisible = () => {
+      const wasQuickSwitch = !!cheatTimeoutRef.current;
+
       if (cheatTimeoutRef.current) {
         clearTimeout(cheatTimeoutRef.current);
         cheatTimeoutRef.current = null;
+      }
+
+      if (!wasQuickSwitch) return;
+
+      const now = Date.now();
+
+      quickSwitchTimestampsRef.current = [
+        ...quickSwitchTimestampsRef.current,
+        now,
+      ].filter((t) => now - t <= QUICK_SWITCH_WINDOW_MS);
+
+      if (quickSwitchTimestampsRef.current.length >= QUICK_SWITCH_THRESHOLD) {
+        quickSwitchTimestampsRef.current = [];
+        executeCheatReport();
       }
     };
 
@@ -356,6 +378,8 @@ export function useExamSession() {
         selectedSessionId,
       );
       setExamState(res.attempt.status as ExamState);
+
+      quickSwitchTimestampsRef.current = [];
     } catch (error: unknown) {
       const handled = applyKnownErrorState(error, "Gagal masuk ke sesi ujian.");
       if (!handled) {
@@ -455,6 +479,8 @@ export function useExamSession() {
       setExamState("IN_PROGRESS");
       setUnblockCode("");
       setStatusMessage("");
+
+      quickSwitchTimestampsRef.current = [];
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const message =
