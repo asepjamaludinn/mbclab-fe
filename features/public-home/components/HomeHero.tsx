@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Search,
-  SlidersHorizontal,
   BookOpenCheck,
   ClipboardCheck,
   UserRoundCheck,

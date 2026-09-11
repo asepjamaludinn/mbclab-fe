@@ -28,4 +28,9 @@ export const submissionsService = {
     const response = await api.post("/submissions", payload);
     return response.data;
   },
+
+  deleteSubmission: async (moduleId: string) => {
+    const response = await api.delete(`/submissions/${moduleId}`);
+    return response.data;
+  },
 };

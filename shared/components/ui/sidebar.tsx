@@ -4,7 +4,6 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
-
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
@@ -17,7 +16,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/shared/components/ui/sheet";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -475,34 +473,6 @@ function SidebarMenuButton({
   );
 }
 
-function SidebarMenuSkeleton({
-  className,
-  showIcon = false,
-}: React.ComponentProps<"div"> & { showIcon?: boolean }) {
-  const width = React.useMemo(
-    () => `${Math.floor(Math.random() * 40) + 50}%`,
-    [],
-  );
-
-  return (
-    <div
-      data-slot="sidebar-menu-skeleton"
-      className={cn("flex h-10 items-center gap-2 rounded-md px-2", className)}
-    >
-      {showIcon && (
-        <Skeleton
-          className="size-4 rounded-md"
-          data-sidebar="menu-skeleton-icon"
-        />
-      )}
-      <Skeleton
-        className="h-4 max-w-(--skeleton-width) flex-1"
-        style={{ "--skeleton-width": width } as React.CSSProperties}
-      />
-    </div>
-  );
-}
-
 export {
   Sidebar,
   SidebarContent,
@@ -516,7 +486,6 @@ export {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
   SidebarProvider,
   SidebarSeparator,
   SidebarTrigger,

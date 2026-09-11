@@ -32,3 +32,13 @@ export interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
 }
+
+export type UserSession = {
+  id: string;
+  userAgent: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  lastUsedAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+};

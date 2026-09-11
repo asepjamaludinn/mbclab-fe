@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Download, Pencil, GraduationCap } from "lucide-react";
+import { Search, Download, Pencil, GraduationCap, Eye } from "lucide-react";
 import { useAdminGrades } from "../hooks/use-admin-grades";
 import { AdminGrade } from "../types/admin-grade.type";
 import { adminGradeService } from "../services/admin-grade.service";
@@ -13,6 +13,7 @@ import { DataTable, DataTableColumn } from "@/shared/components/ui/data-table";
 import { FilterDropdown } from "@/shared/components/ui/filter-dropdown";
 import { AdminPageLayout } from "@/shared/components/layout/AdminPageLayout";
 import { EditTpScoreDialog } from "./EditTpScoreDialog";
+import { ExamReviewDialog } from "./ExamReviewDialog";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -59,6 +60,7 @@ export function GradesFeature() {
   const [pageSize, setPageSize] = useState(10);
 
   const [editingGrade, setEditingGrade] = useState<AdminGrade | null>(null);
+  const [reviewingGrade, setReviewingGrade] = useState<AdminGrade | null>(null);
 
   useEffect(() => {
     const timeout = setTimeout(() => setNim(searchInput.trim()), 300);
@@ -189,6 +191,19 @@ export function GradesFeature() {
           >
             <Pencil className="h-4 w-4" strokeWidth={1.5} />
           </button>
+          <button
+            onClick={() => grade.taScore !== null && setReviewingGrade(grade)}
+            disabled={grade.taScore === null}
+            title={
+              grade.taScore === null
+                ? "Belum ada hasil TA"
+                : "Lihat Detail Jawaban TA"
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-full text-grey-500 transition-all hover:bg-white hover:text-primary hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none"
+            aria-label="Lihat detail jawaban TA"
+          >
+            <Eye className="h-4 w-4" strokeWidth={1.5} />
+          </button>
         </div>
       ),
     },
@@ -269,6 +284,13 @@ export function GradesFeature() {
       <EditTpScoreDialog
         grade={editingGrade}
         onOpenChange={(open) => !open && setEditingGrade(null)}
+      />
+
+      <ExamReviewDialog
+        moduleId={reviewingGrade?.moduleId ?? null}
+        studentId={reviewingGrade?.studentId ?? null}
+        studentName={reviewingGrade?.student.name}
+        onOpenChange={(open) => !open && setReviewingGrade(null)}
       />
     </AdminPageLayout>
   );

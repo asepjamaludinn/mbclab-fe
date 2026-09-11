@@ -32,11 +32,6 @@ export const adminStudentService = {
     return res.data;
   },
 
-  getStudent: async (id: string): Promise<AdminStudent> => {
-    const res = await api.get<AdminStudent>(`/users/${id}`);
-    return res.data;
-  },
-
   createStudent: async (
     payload: CreateStudentPayload,
   ): Promise<AdminStudent> => {

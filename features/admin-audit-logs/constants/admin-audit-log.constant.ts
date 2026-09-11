@@ -117,6 +117,11 @@ export const AUDIT_ACTION_CATEGORIES: AuditActionCategory[] = [
     category: "Tugas Pendahuluan & Nilai",
     actions: [
       { value: "SUBMIT_TP", label: "Kumpulkan TP", tone: "info" },
+      {
+        value: "DELETE_TP_SUBMISSION",
+        label: "Hapus Pengumpulan TP",
+        tone: "warning",
+      },
       { value: "UPDATE_TP_SCORE", label: "Ubah Nilai TP", tone: "info" },
     ],
   },

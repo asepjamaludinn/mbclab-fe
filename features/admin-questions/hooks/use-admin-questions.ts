@@ -8,6 +8,7 @@ import {
 import {
   CreateQuestionPayload,
   UpdateQuestionPayload,
+  BulkCreateQuestionsPayload,
 } from "../types/admin-question.type";
 
 export const useAdminQuestions = (params: QuestionsQueryParams) => {
@@ -53,6 +54,15 @@ export const useBulkImportQuestions = () => {
   return useMutation({
     mutationFn: ({ moduleId, file }: { moduleId: string; file: File }) =>
       adminQuestionService.bulkImportCsv(moduleId, file),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-questions"] }),
+  });
+};
+
+export const useBulkCreateQuestionsManual = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: BulkCreateQuestionsPayload) =>
+      adminQuestionService.bulkCreateManual(payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-questions"] }),
   });
 };
